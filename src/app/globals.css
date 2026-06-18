@@ -1,26 +1,116 @@
 @import "tailwindcss";
+@import "../styles/tokens.css";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: var(--baize-center);
+  --foreground: var(--ui-text);
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  --font-sans: var(--font-ui);
 }
 
 body {
-  background: var(--background);
+  background: radial-gradient(
+      ellipse at center,
+      var(--baize-center) 0%,
+      var(--baize-edge) 100%
+    );
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-ui);
+  min-height: 100vh;
+}
+
+.baize-surface {
+  position: relative;
+  isolation: isolate;
+  background: radial-gradient(
+    ellipse 120% 100% at 50% 40%,
+    var(--baize-center) 0%,
+    var(--baize-edge) 100%
+  );
+}
+
+.baize-surface::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(
+    ellipse at center,
+    transparent 35%,
+    rgba(0, 0, 0, var(--table-vignette-alpha)) 100%
+  );
+  z-index: var(--z-baize);
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.game-screen {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.game-screen__hud {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px var(--board-pad);
+  z-index: var(--z-hud);
+  color: var(--ui-text);
+  background: color-mix(in srgb, var(--ui-surface) 88%, transparent);
+  backdrop-filter: blur(8px);
+}
+
+.game-screen__stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  font-size: var(--text-hud);
+  font-variant-numeric: tabular-nums;
+}
+
+.game-screen__themes {
+  display: flex;
+  gap: 8px;
+}
+
+.game-screen__theme-btn {
+  border: 1px solid color-mix(in srgb, var(--ui-text) 20%, transparent);
+  background: var(--ui-surface-2);
+  color: var(--ui-text);
+  border-radius: var(--ui-radius);
+  padding: 8px 12px;
+  font-size: var(--text-hud);
+  font-weight: var(--text-button-weight);
+  cursor: pointer;
+}
+
+.game-screen__theme-btn--active {
+  background: var(--accent);
+  color: var(--accent-text);
+  border-color: transparent;
+}
+
+.game-screen__table {
+  flex: 1;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding-bottom: var(--board-pad);
 }

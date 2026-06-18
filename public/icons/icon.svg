@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Solitaire app icon">
+  <defs>
+    <linearGradient id="felt" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1C7A52"/>
+      <stop offset="100%" stop-color="#0C4A30"/>
+    </linearGradient>
+  </defs>
+  <rect width="512" height="512" rx="96" fill="url(#felt)"/>
+  <rect x="156" y="96" width="200" height="280" rx="18" fill="#FBF8F1" stroke="#E9E1D0" stroke-width="6"/>
+  <text x="196" y="168" fill="#C0362C" font-family="Inter, system-ui, sans-serif" font-size="56" font-weight="800">A</text>
+  <path fill="#C0362C" d="M196 188 C196 176 204 168 214 168 C222 168 228 172 232 180 C236 172 242 168 250 168 C260 168 268 176 268 188 C268 200 258 210 232 238 C206 210 196 200 196 188 Z"/>
+  <rect x="96" y="136" width="200" height="280" rx="18" fill="#8E2A2A" opacity="0.92"/>
+  <path fill="#F3E9D2" d="M196 256 L256 296 L196 336 L136 296 Z"/>
+</svg>

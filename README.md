@@ -1,36 +1,75 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Solitaire
 
-## Getting Started
+Premium Klondike solitaire — calm, ad-free, and offline-first. Built with Next.js 16, a pure deterministic engine, Motion-powered interactions, and optional Supabase cloud sync.
 
-First, run the development server:
+## Requirements
+
+- Node.js 20+
+- npm 10+
+
+## Development
 
 ```bash
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### Scripts
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+| Command | Description |
+|---|---|
+| `npm run dev` | Start Next.js dev server (Turbopack) |
+| `npm run build` | Production build (includes Serwist service worker) |
+| `npm run start` | Serve production build |
+| `npm test` | Run Vitest unit tests |
+| `npm run generate-pool` | Generate verified winnable seed pools into `public/data/` |
+| `npm run lint` | ESLint |
+| `npm run format` | Prettier |
 
-## Learn More
+### Winnable seed pools
 
-To learn more about Next.js, take a look at the following resources:
+Bundled pools power **Winnable deals only** mode offline:
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+```bash
+npm run generate-pool -- --target 50 --draw both
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+This writes `public/data/winnable-draw1.json` and `winnable-draw3.json`. Pools are precached by the service worker.
+
+### Environment variables (optional cloud sync)
+
+Create `.env.local` for Supabase (game works fully offline without these):
+
+```env
+NEXT_PUBLIC_SUPABASE_URL=
+NEXT_PUBLIC_SUPABASE_ANON_KEY=
+```
 
 ## Deploy on Vercel
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+1. Push the repository to GitHub.
+2. Import the project in [Vercel](https://vercel.com/new).
+3. Framework preset: **Next.js** (auto-detected).
+4. Add Supabase env vars if using cloud sync.
+5. Deploy.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+`vercel.json` sets cache headers for the web manifest, service worker route, and winnable pool JSON.
+
+### PWA install
+
+After deployment, the app is installable from supported browsers (Add to Home Screen / Install app). The Serwist service worker precaches:
+
+- App shell and static assets
+- Winnable seed pools (`/data/winnable-draw*.json`)
+- Offline fallback page (`/~offline`)
+
+## Architecture notes
+
+- **Engine:** Pure TypeScript in `src/engine/` — deterministic deals, reducer, scoring.
+- **Solver:** DFS backtracking with transposition table; Web Worker via `src/solver/solverClient.ts` (code-split).
+- **Persistence:** IndexedDB via `idb`; optional Supabase sync.
+- **A11y:** Keyboard play, `LiveRegion` move announcements, four-color deck toggle, 44px touch targets, focus rings.
+
+See `docs/SPEC.md` for the full product and design contract.

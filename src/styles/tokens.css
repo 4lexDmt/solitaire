@@ -1,0 +1,169 @@
+/**
+ * Design tokens — SPEC §5–§8
+ * Heritage (default) on :root; Midnight and Studio override via [data-theme].
+ */
+
+:root {
+  /* §5.1 Color — Heritage (default) */
+  --baize-center: #1c7a52;
+  --baize-edge: #0c4a30;
+  --table-vignette-alpha: 0.45;
+  --card-face: #fbf8f1;
+  --card-face-edge: #e9e1d0;
+  --ink-red: #c0362c;
+  --ink-black: #23262e;
+  --ink-suit-hearts: var(--ink-red);
+  --ink-suit-diamonds: var(--ink-red);
+  --ink-suit-clubs: var(--ink-black);
+  --ink-suit-spades: var(--ink-black);
+  --card-back-base: #8e2a2a;
+  --card-back-accent: #f3e9d2;
+  --card-border: rgba(0, 0, 0, 0.18);
+  --placeholder-stroke: rgba(255, 255, 255, 0.3);
+  --placeholder-fill: rgba(0, 0, 0, 0.1);
+  --foundation-watermark: rgba(255, 255, 255, 0.16);
+  --highlight-valid: #ffcf5c;
+  --highlight-invalid: #e04a37;
+  --hint-pulse: #74e0a8;
+  --ui-surface: #ffffff;
+  --ui-surface-2: #f4f1ea;
+  --ui-text: #1e2128;
+  --ui-text-muted: #6b6f77;
+  --accent: #2e7d5b;
+  --accent-text: #ffffff;
+
+  /* §5.2 Typography */
+  --font-ui: "Inter", system-ui, sans-serif;
+  --font-index: "Inter", system-ui, sans-serif;
+  --font-index-weight: 800;
+  --font-court: "Inter", system-ui, sans-serif;
+  --font-court-weight: 700;
+  --text-hud: clamp(13px, 2.6vw, 16px);
+  --text-title: clamp(22px, 5vw, 34px);
+  --text-button-size: 15px;
+  --text-button-weight: 600;
+
+  /* §5.3 Spacing, radius, elevation */
+  --space-unit: 4px;
+  --card-radius-ratio: 0.06;
+  --ui-radius: 12px;
+  --elev-card-resting: 0 1px 2px rgba(0, 0, 0, 0.22);
+  --elev-card-lifted: 0 8px 18px rgba(0, 0, 0, 0.3);
+  --elev-card-dragging: 0 16px 32px rgba(0, 0, 0, 0.38);
+  --elev-modal: 0 24px 60px rgba(0, 0, 0, 0.4);
+
+  /* §6 Card & board geometry */
+  --card-aspect: 0.7142857143; /* 5 / 7 */
+  --card-w-max: 104px;
+  --card-w-min: 40px;
+  --gap-x-ratio: 0.18;
+  --overlap-faceup-ratio: 0.24;
+  --overlap-facedown-ratio: 0.11;
+  --waste-fan-ratio: 0.26;
+  --board-pad-ratio: 0.22;
+  --row-gap-ratio: 0.3;
+  /* Resolved from (100vw - 2*pad - 6*gap) / 7 with pad/gap ∝ card-w → 100vw / 8.52 */
+  --card-w: clamp(
+    var(--card-w-min),
+    calc(100vw / 8.52),
+    var(--card-w-max)
+  );
+  --card-h: calc(var(--card-w) * 1.4);
+  --card-radius: calc(var(--card-w) * var(--card-radius-ratio));
+  --gap-x: calc(var(--card-w) * var(--gap-x-ratio));
+  --overlap-faceup: calc(var(--card-h) * var(--overlap-faceup-ratio));
+  --overlap-facedown: calc(var(--card-h) * var(--overlap-facedown-ratio));
+  --waste-fan: calc(var(--card-w) * var(--waste-fan-ratio));
+  --board-pad: calc(var(--card-w) * var(--board-pad-ratio));
+  --row-gap: calc(var(--card-h) * var(--row-gap-ratio));
+
+  /* §7 Z-index layers */
+  --z-baize: 0;
+  --z-pile-placeholder: 1;
+  --z-card-base: 10;
+  --z-card-lifted: 500;
+  --z-card-dragging: 1000;
+  --z-cascade: 2000;
+  --z-hud: 2500;
+  --z-modal: 3000;
+  --z-toast: 3500;
+
+  /* §8.1 Easing & spring reference (springs consumed in JS via tokens.ts) */
+  --ease-standard: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --ease-decel: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-accel: cubic-bezier(0.4, 0, 1, 1);
+
+  /* §8.2–§8.7 Motion durations */
+  --dur-flip: 180ms;
+  --dur-snap: 220ms;
+  --dur-deal-card: 300ms;
+  --dur-deal-stagger: 45ms;
+  --dur-hover-lift: 120ms;
+  --dur-press: 90ms;
+  --dur-invalid-shake: 320ms;
+  --dur-autocomplete-card: 160ms;
+  --dur-autocomplete-stagger: 60ms;
+  --dur-cascade-launch-stagger: 80ms;
+  --dur-reduced-flip: 80ms;
+  --dur-reduced-snap: 120ms;
+  --cascade-timeout: 12s;
+}
+
+[data-four-color='true'] {
+  --ink-suit-hearts: #c0362c;
+  --ink-suit-diamonds: #2563eb;
+  --ink-suit-clubs: #15803d;
+  --ink-suit-spades: #23262e;
+}
+
+[data-theme="midnight"] {
+  --baize-center: #15323b;
+  --baize-edge: #0a1a1f;
+  --table-vignette-alpha: 0.55;
+  --card-face: #f5f3ec;
+  --card-face-edge: #ded9cc;
+  --ink-red: #d4584c;
+  --ink-black: #2a2d34;
+  --card-back-base: #1e3a4c;
+  --card-back-accent: #5fa8c9;
+  --card-border: rgba(0, 0, 0, 0.3);
+  --placeholder-stroke: rgba(255, 255, 255, 0.22);
+  --placeholder-fill: rgba(0, 0, 0, 0.18);
+  --foundation-watermark: rgba(255, 255, 255, 0.12);
+  --highlight-valid: #6fe3c0;
+  --highlight-invalid: #ff6b57;
+  --hint-pulse: #5fe0ff;
+  --ui-surface: #16191f;
+  --ui-surface-2: #1f242c;
+  --ui-text: #eceff3;
+  --ui-text-muted: #9aa1ab;
+  --accent: #3dd6a6;
+  --accent-text: #08110e;
+}
+
+[data-theme="studio"] {
+  --baize-center: #2e9e86;
+  --baize-edge: #26876f;
+  --table-vignette-alpha: 0.18;
+  --card-face: #ffffff;
+  --card-face-edge: #ececec;
+  --ink-red: #d8392b;
+  --ink-black: #15171c;
+  --card-back-base: #0e7c66;
+  --card-back-accent: #bfead9;
+  --card-border: rgba(0, 0, 0, 0.12);
+  --placeholder-stroke: rgba(255, 255, 255, 0.4);
+  --placeholder-fill: rgba(0, 0, 0, 0.06);
+  --foundation-watermark: rgba(255, 255, 255, 0.22);
+  --highlight-valid: #ffd66b;
+  --highlight-invalid: #e5533c;
+  --hint-pulse: #4fd0a0;
+  --ui-surface: #ffffff;
+  --ui-surface-2: #f3f6f4;
+  --ui-text: #15181c;
+  --ui-text-muted: #5c6168;
+  --accent: #0e7c66;
+  --accent-text: #ffffff;
+  --card-radius-ratio: 0.08;
+  --ui-radius: 16px;
+}
