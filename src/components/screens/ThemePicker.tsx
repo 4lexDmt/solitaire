@@ -23,7 +23,7 @@ export function ThemePicker({ compact }: ThemePickerProps) {
   return (
     <div
       className={cn(
-        'rounded-ui bg-ui-surface/95 p-4 shadow-modal backdrop-blur-sm',
+        'surface-panel p-4',
         compact && 'p-3',
       )}
     >

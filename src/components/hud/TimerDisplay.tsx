@@ -15,7 +15,7 @@ export function TimerDisplay({ elapsedMs, visible = true, className }: TimerDisp
   return (
     <div
       className={cn(
-        'font-ui text-hud font-medium tabular-nums text-accent-text drop-shadow-sm',
+        'font-ui text-hud font-medium tabular-nums text-ui-text',
         className,
       )}
       aria-label={`Elapsed time ${formatDuration(elapsedMs)}`}

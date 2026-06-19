@@ -50,7 +50,7 @@ export function GameScreen({
   const { reducedMotion } = useReducedMotion();
 
   return (
-    <div className="flex min-h-full flex-1 flex-col">
+    <div className="game-screen flex min-h-full flex-1 flex-col">
       <HUD
         game={game}
         onMenu={onMenu}
@@ -60,7 +60,7 @@ export function GameScreen({
         onRestart={onRestart}
       />
 
-      <main className="relative flex flex-1 flex-col overflow-x-auto pb-6">
+      <main className="game-screen__table relative flex flex-1 flex-col overflow-x-auto">
         <Board game={game} />
       </main>
 

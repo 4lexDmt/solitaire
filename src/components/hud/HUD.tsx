@@ -32,16 +32,13 @@ export function HUD({
   const scoreMode = useSettingsStore((s) => s.scoreMode);
 
   return (
-    <header
-      className="relative flex flex-wrap items-center justify-between gap-3 px-board-pad py-3"
-      style={{ zIndex: 'var(--z-hud)' }}
-    >
+    <header className="game-screen__hud">
       <div className="flex items-center gap-2">
         <MenuButton onClick={onMenu} />
         <RestartButton onClick={onRestart} />
       </div>
 
-      <div className="flex flex-wrap items-center gap-3">
+      <div className="game-screen__stats">
         <TimerDisplay elapsedMs={game.elapsedMs} visible={showTimer} />
         <MoveCounter moves={game.moves} />
         <ScoreDisplay

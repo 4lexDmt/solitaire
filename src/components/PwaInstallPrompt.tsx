@@ -1,6 +1,7 @@
 'use client';
 
 import { Button } from '@/components/ui/Button';
+import { BRAND } from '@/config/brand';
 import { useEffect, useState } from 'react';
 
 interface BeforeInstallPromptEvent extends Event {
@@ -28,8 +29,10 @@ export function PwaInstallPrompt() {
   if (!deferred || dismissed) return null;
 
   return (
-    <div className="mx-board-pad mb-4 rounded-ui border border-accent/30 bg-ui-surface/95 p-4 shadow-modal backdrop-blur-sm">
-      <p className="font-ui text-hud font-semibold text-ui-text">Install Solitaire</p>
+    <div className="surface-panel mx-board-pad mb-4 border border-accent/30 p-4">
+      <p className="font-ui text-hud font-semibold text-ui-text">
+        Install {BRAND.name}
+      </p>
       <p className="mt-1 font-ui text-sm text-ui-text-muted">
         Add to your home screen for offline play and a full-screen experience.
       </p>

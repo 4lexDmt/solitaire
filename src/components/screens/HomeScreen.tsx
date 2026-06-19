@@ -5,6 +5,7 @@ import { CalendarIcon, PlayIcon, StatsIcon, SettingsIcon } from '@/components/ui
 import { DailyChallengeBanner } from '@/components/screens/DailyChallengeBanner';
 import { ThemePicker } from '@/components/screens/ThemePicker';
 import { PwaInstallPrompt } from '@/components/PwaInstallPrompt';
+import { BRAND } from '@/config/brand';
 import { useStatsStore, winRate } from '@/state/stats';
 import { winRateMessage } from '@/lib/stats-copy';
 
@@ -30,9 +31,14 @@ export function HomeScreen({
   return (
     <div className="flex min-h-full flex-1 flex-col">
       <header className="flex items-center justify-between px-board-pad py-4">
-        <h1 className="font-ui text-title font-semibold text-accent-text drop-shadow-sm">
-          Solitaire
-        </h1>
+        <div>
+          <h1 className="on-baize-title font-ui text-title font-semibold">
+            {BRAND.name}
+          </h1>
+          <p className="mt-0.5 font-ui text-sm text-baize-text-muted">
+            {BRAND.product}
+          </p>
+        </div>
         <div className="flex gap-2">
           <Button variant="ghost" onClick={onOpenStats} aria-label="Statistics">
             <StatsIcon size={18} />
@@ -48,7 +54,7 @@ export function HomeScreen({
           <PwaInstallPrompt />
           <DailyChallengeBanner onPlay={onDailyChallenge} />
 
-          <div className="rounded-ui bg-ui-surface/95 p-5 shadow-modal backdrop-blur-sm">
+          <div className="surface-panel p-5">
             <p className="font-ui text-hud text-ui-text-muted">
               {winRateMessage(winRate(stats.gamesWon, stats.gamesPlayed), stats.gamesPlayed)}
             </p>

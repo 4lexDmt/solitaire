@@ -41,7 +41,8 @@ export function Sheet({
       <button
         type="button"
         aria-label="Close panel"
-        className="absolute inset-0 bg-black/45"
+        className="absolute inset-0"
+        style={{ background: 'var(--ui-scrim)' }}
         onClick={onClose}
       />
       <div

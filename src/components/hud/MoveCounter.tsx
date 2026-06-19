@@ -12,7 +12,7 @@ export function MoveCounter({ moves, className }: MoveCounterProps) {
   return (
     <div
       className={cn(
-        'font-ui text-hud font-medium tabular-nums text-accent-text drop-shadow-sm',
+        'font-ui text-hud font-medium tabular-nums text-ui-text',
         className,
       )}
       aria-label={`${moves} moves`}

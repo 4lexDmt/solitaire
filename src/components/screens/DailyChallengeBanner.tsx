@@ -16,7 +16,7 @@ export function DailyChallengeBanner({ onPlay }: DailyChallengeBannerProps) {
   const label = formatDailyLabel();
 
   return (
-    <div className="rounded-ui bg-ui-surface/95 p-5 shadow-modal backdrop-blur-sm">
+    <div className="surface-panel p-5">
       <div className="flex items-start gap-3">
         <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-accent text-accent-text">
           <CalendarIcon size={18} />
