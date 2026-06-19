@@ -8,6 +8,8 @@ const config: Config = {
         baize: {
           center: "var(--baize-center)",
           edge: "var(--baize-edge)",
+          text: "var(--on-baize-text)",
+          "text-muted": "var(--on-baize-text-muted)",
         },
         card: {
           face: "var(--card-face)",

@@ -58,6 +58,18 @@ body {
   border: 0;
 }
 
+.on-baize-title {
+  color: var(--on-baize-text);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.28);
+}
+
+.surface-panel {
+  border-radius: var(--ui-radius);
+  background: color-mix(in srgb, var(--ui-surface) 95%, transparent);
+  box-shadow: var(--elev-modal);
+  backdrop-filter: blur(8px);
+}
+
 .game-screen {
   display: flex;
   flex-direction: column;
@@ -73,8 +85,9 @@ body {
   padding: 12px var(--board-pad);
   z-index: var(--z-hud);
   color: var(--ui-text);
-  background: color-mix(in srgb, var(--ui-surface) 88%, transparent);
+  background: var(--ui-surface-glass);
   backdrop-filter: blur(8px);
+  border-bottom: 1px solid color-mix(in srgb, var(--ui-text) 8%, transparent);
 }
 
 .game-screen__stats {

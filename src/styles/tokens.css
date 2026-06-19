@@ -31,6 +31,10 @@
   --ui-text-muted: #6b6f77;
   --accent: #2e7d5b;
   --accent-text: #ffffff;
+  --on-baize-text: #ffffff;
+  --on-baize-text-muted: rgba(255, 255, 255, 0.78);
+  --ui-scrim: rgba(0, 0, 0, 0.45);
+  --ui-surface-glass: color-mix(in srgb, var(--ui-surface) 88%, transparent);
 
   /* §5.2 Typography */
   --font-ui: "Inter", system-ui, sans-serif;
@@ -139,6 +143,10 @@
   --ui-text-muted: #9aa1ab;
   --accent: #3dd6a6;
   --accent-text: #08110e;
+  --on-baize-text: #eceff3;
+  --on-baize-text-muted: rgba(236, 239, 243, 0.72);
+  --ui-scrim: rgba(0, 0, 0, 0.58);
+  --ui-surface-glass: color-mix(in srgb, var(--ui-surface) 92%, transparent);
 }
 
 [data-theme="studio"] {
@@ -164,6 +172,8 @@
   --ui-text-muted: #5c6168;
   --accent: #0e7c66;
   --accent-text: #ffffff;
+  --on-baize-text: #ffffff;
+  --on-baize-text-muted: rgba(255, 255, 255, 0.82);
   --card-radius-ratio: 0.08;
   --ui-radius: 16px;
 }
