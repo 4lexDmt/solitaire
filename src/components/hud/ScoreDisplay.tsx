@@ -32,7 +32,7 @@ export function ScoreDisplay({
   return (
     <div
       className={cn(
-        'font-ui text-hud font-medium tabular-nums text-accent-text drop-shadow-sm',
+        'font-ui text-hud font-medium tabular-nums text-ui-text',
         className,
       )}
       aria-label={`${label} ${score}`}

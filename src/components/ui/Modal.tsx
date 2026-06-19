@@ -35,7 +35,8 @@ export function Modal({ open, onClose, title, children, className }: ModalProps)
       <button
         type="button"
         aria-label="Close dialog"
-        className="absolute inset-0 bg-black/45"
+        className="absolute inset-0"
+        style={{ background: 'var(--ui-scrim)' }}
         onClick={onClose}
       />
       <div
