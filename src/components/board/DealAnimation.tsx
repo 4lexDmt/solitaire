@@ -56,6 +56,8 @@ export function DealAnimation({
   onComplete,
 }: DealAnimationProps) {
   const completedRef = useRef(false);
+  const onCompleteRef = useRef(onComplete);
+  onCompleteRef.current = onComplete;
   const fallbackSlots = useMemo(() => buildDealSlots(), []);
   const dealSlots = slots.length > 0 ? slots : fallbackSlots;
 
@@ -69,12 +71,12 @@ export function DealAnimation({
     const id = window.setTimeout(() => {
       if (!completedRef.current) {
         completedRef.current = true;
-        onComplete();
+        onCompleteRef.current();
       }
     }, lastDelay);
 
     return () => window.clearTimeout(id);
-  }, [dealKey, dealSlots.length, onComplete, reducedMotion]);
+  }, [dealKey, dealSlots.length, reducedMotion]);
 
   const stockRect = boardRef.current
     ?.querySelector('[data-pile-id="stock"]')

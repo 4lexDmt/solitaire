@@ -266,6 +266,10 @@ export function Board({ game }: BoardProps) {
     [dealing, foundationSparkle, invalidFlashCardId, reducedMotion, shakeCardId],
   );
 
+  const handleDealComplete = useCallback(() => {
+    setDealing(false);
+  }, []);
+
   const stockFocus = getFocusProps({ kind: 'pile', pileId: 'stock' });
 
   return (
@@ -344,7 +348,7 @@ export function Board({ game }: BoardProps) {
           boardRef={boardRef}
           slots={dealSlots}
           reducedMotion={reducedMotion}
-          onComplete={() => setDealing(false)}
+          onComplete={handleDealComplete}
         />
       ) : null}
 
