@@ -5,7 +5,7 @@ import type { Card } from '@/engine/types';
 import { dealTransition } from '@/lib/motionPresets';
 import { playSound } from '@/lib/sound';
 import { motion } from 'motion/react';
-import { useEffect, useMemo, useRef } from 'react';
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { CardBack } from './CardBack';
 import { CardFace } from './CardFace';
 
@@ -22,6 +22,13 @@ interface DealAnimationProps {
   slots: DealSlot[];
   reducedMotion: boolean;
   onComplete: () => void;
+}
+
+interface SlotTarget {
+  fromX: number;
+  fromY: number;
+  toX: number;
+  toY: number;
 }
 
 function buildDealSlots(): DealSlot[] {
@@ -56,43 +63,76 @@ export function DealAnimation({
   onComplete,
 }: DealAnimationProps) {
   const completedRef = useRef(false);
+  const finishedCardsRef = useRef(0);
   const onCompleteRef = useRef(onComplete);
   onCompleteRef.current = onComplete;
   const fallbackSlots = useMemo(() => buildDealSlots(), []);
   const dealSlots = slots.length > 0 ? slots : fallbackSlots;
+  const [targets, setTargets] = useState<Record<string, SlotTarget>>({});
+
+  const finishDeal = useRef(() => {
+    if (completedRef.current) return;
+    completedRef.current = true;
+    onCompleteRef.current();
+  });
+
+  finishDeal.current = () => {
+    if (completedRef.current) return;
+    completedRef.current = true;
+    onCompleteRef.current();
+  };
+
+  useLayoutEffect(() => {
+    completedRef.current = false;
+    finishedCardsRef.current = 0;
+
+    const board = boardRef.current;
+    if (!board) return;
+
+    const stockRect = board
+      .querySelector('[data-pile-id="stock"]')
+      ?.getBoundingClientRect();
+    const fromX = stockRect?.left ?? 0;
+    const fromY = stockRect?.top ?? 0;
+
+    const nextTargets: Record<string, SlotTarget> = {};
+    for (const slot of dealSlots) {
+      const targetEl = board.querySelector(
+        `[data-pile-id="${slot.pileId}"] [data-card-id="${slot.card.id}"]`,
+      );
+      const targetRect = targetEl?.getBoundingClientRect();
+      nextTargets[slot.card.id] = {
+        fromX,
+        fromY,
+        toX: targetRect?.left ?? fromX,
+        toY: targetRect?.top ?? fromY,
+      };
+    }
+
+    setTargets(nextTargets);
+  }, [boardRef, dealKey, dealSlots]);
 
   useEffect(() => {
     completedRef.current = false;
+    finishedCardsRef.current = 0;
+
     const lastDelay =
       (dealSlots.length - 1) * (reducedMotion ? 0 : DURATIONS.dealStagger) +
       (reducedMotion ? DURATIONS.reducedSnap : DURATIONS.dealCard) +
       120;
 
     const id = window.setTimeout(() => {
-      if (!completedRef.current) {
-        completedRef.current = true;
-        onCompleteRef.current();
-      }
+      finishDeal.current();
     }, lastDelay);
 
     return () => window.clearTimeout(id);
   }, [dealKey, dealSlots.length, reducedMotion]);
 
-  const stockRect = boardRef.current
-    ?.querySelector('[data-pile-id="stock"]')
-    ?.getBoundingClientRect();
-
   return (
     <div className="deal-animation" aria-hidden>
       {dealSlots.map((slot) => {
-        const targetEl = boardRef.current?.querySelector(
-          `[data-pile-id="${slot.pileId}"] [data-card-id="${slot.card.id}"]`,
-        );
-        const targetRect = targetEl?.getBoundingClientRect();
-        const fromX = stockRect?.left ?? 0;
-        const fromY = stockRect?.top ?? 0;
-        const toX = targetRect?.left ?? fromX;
-        const toY = targetRect?.top ?? fromY;
+        const target = targets[slot.card.id];
+        if (!target) return null;
 
         return (
           <motion.div
@@ -106,14 +146,14 @@ export function DealAnimation({
               zIndex: 1200,
             }}
             initial={{
-              left: fromX,
-              top: fromY,
+              left: target.fromX,
+              top: target.fromY,
               opacity: reducedMotion ? 0 : 1,
               scale: reducedMotion ? 0.96 : 1,
             }}
             animate={{
-              left: toX,
-              top: toY,
+              left: target.toX,
+              top: target.toY,
               opacity: 1,
               scale: 1,
             }}
@@ -124,6 +164,11 @@ export function DealAnimation({
             onAnimationComplete={() => {
               if (slot.card.faceUp) playSound('flip');
               else playSound('deal');
+
+              finishedCardsRef.current += 1;
+              if (finishedCardsRef.current >= dealSlots.length) {
+                finishDeal.current();
+              }
             }}
           >
             {slot.card.faceUp ? (

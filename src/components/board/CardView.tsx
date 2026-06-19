@@ -112,7 +112,7 @@ export function CardView({
 
   return (
     <motion.div
-      layout={layout && !reducedMotion}
+      layout={layout && !reducedMotion && !hiddenForDeal && !dragSource}
       layoutId={layout && !reducedMotion ? card.id : undefined}
       className={classNames}
       style={{
