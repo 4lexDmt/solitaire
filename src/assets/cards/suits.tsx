@@ -53,3 +53,51 @@ export function SuitGlyph({
 }
 
 export const SUIT_ORDER: Suit[] = ["hearts", "diamonds", "clubs", "spades"];
+
+type PlacedSuitGlyphProps = {
+  suit: Suit;
+  color: string;
+  cx: number;
+  cy: number;
+  size: number;
+  invert?: boolean;
+};
+
+/** Place a suit glyph at a card-face coordinate (viewBox 250×350). */
+export function PlacedSuitGlyph({
+  suit,
+  color,
+  cx,
+  cy,
+  size,
+  invert,
+}: PlacedSuitGlyphProps) {
+  const scale = size / 100;
+  const x = cx - size / 2;
+  const y = cy - size / 2;
+  const transform = `translate(${x} ${y}) scale(${scale})${
+    invert ? ' rotate(180 50 50)' : ''
+  }`;
+
+  return (
+    <g transform={transform} fill={color} aria-hidden>
+      {suit === 'spades' && (
+        <path d="M50 14 C46 31 21 43 21 61 C21 74 33 82 43 76 C42 84 38 89 30 92 L70 92 C62 89 58 84 57 76 C67 82 79 74 79 61 C79 43 54 31 50 14 Z" />
+      )}
+      {suit === 'hearts' && (
+        <path d="M50 87 C29 71 17 59 17 40 C17 27 26 18 37 18 C45 18 49 24 50 31 C51 24 55 18 63 18 C74 18 83 27 83 40 C83 59 71 71 50 87 Z" />
+      )}
+      {suit === 'diamonds' && (
+        <path d="M50 11 L81 50 L50 89 L19 50 Z" />
+      )}
+      {suit === 'clubs' && (
+        <>
+          <circle cx="50" cy="31" r="15" />
+          <circle cx="32" cy="55" r="15" />
+          <circle cx="68" cy="55" r="15" />
+          <path d="M44 55 C44 70 40 82 32 91 L68 91 C60 82 56 70 56 55 Z" />
+        </>
+      )}
+    </g>
+  );
+}

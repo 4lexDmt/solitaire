@@ -89,11 +89,12 @@ export function HomeScreen({
         >
           <CalendarIcon size={19} className="shrink-0 text-accent" />
           <div className="min-w-0 flex-1">
+            <div className="home-screen__daily-label">Daily Challenge</div>
             <div className="font-ui text-[12.5px] font-semibold text-ui-text">
-              Daily Challenge
+              {label}
             </div>
             <div className="font-ui text-[11px] text-ui-text-muted">
-              {label} · {dailyStreakMessage(dailyStreak).toLowerCase()}
+              {dailyStreakMessage(dailyStreak).toLowerCase()}
             </div>
           </div>
           <div className="flex shrink-0 items-center gap-1 font-ui text-[13px] font-semibold text-accent">

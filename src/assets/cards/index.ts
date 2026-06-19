@@ -8,4 +8,4 @@ export {
   pipToViewBox,
   type PipPoint,
 } from './pips';
-export { SUIT_ORDER, SuitGlyph } from './suits';
+export { SUIT_ORDER, SuitGlyph, PlacedSuitGlyph } from './suits';

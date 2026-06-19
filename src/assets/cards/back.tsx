@@ -1,65 +1,93 @@
-/** Original geometric card back — guilloché-inspired pattern (SPEC §11.2). */
+'use client';
+
+import { useId } from 'react';
+import { PlacedSuitGlyph } from './suits';
+
+/** Original lattice card back — one pattern per theme via CSS tokens (design system Contract H). */
 export function CardBackPattern() {
+  const patternId = useId().replace(/:/g, '');
+
   return (
     <svg viewBox="0 0 250 350" aria-hidden className="h-full w-full">
+      <defs>
+        <pattern
+          id={patternId}
+          width="30"
+          height="30"
+          patternUnits="userSpaceOnUse"
+          patternTransform="rotate(45)"
+        >
+          <rect width="30" height="30" fill="var(--card-back-base)" />
+          <path
+            d="M0 0H30M0 15H30"
+            stroke="var(--card-back-accent)"
+            strokeWidth="1.4"
+            opacity="0.3"
+          />
+          <circle
+            cx="15"
+            cy="15"
+            r="2.3"
+            fill="var(--card-back-accent)"
+            opacity="0.5"
+          />
+        </pattern>
+      </defs>
       <rect width="250" height="350" fill="var(--card-back-base)" />
       <rect
         x="14"
         y="14"
         width="222"
         height="322"
-        rx="12"
+        rx="11"
+        fill={`url(#${patternId})`}
+      />
+      <rect
+        x="14"
+        y="14"
+        width="222"
+        height="322"
+        rx="11"
         fill="none"
         stroke="var(--card-back-accent)"
         strokeWidth="3"
-        opacity="0.85"
+        opacity="0.9"
       />
       <rect
-        x="24"
-        y="24"
-        width="202"
-        height="302"
-        rx="8"
-        fill="var(--card-back-accent)"
-        opacity="0.12"
+        x="23"
+        y="23"
+        width="204"
+        height="304"
+        rx="7"
+        fill="none"
+        stroke="var(--card-back-accent)"
+        strokeWidth="1"
+        opacity="0.55"
       />
-      {Array.from({ length: 8 }, (_, i) => {
-        const y = 40 + i * 36;
-        return (
-          <path
-            key={i}
-            d={`M36 ${y} Q125 ${y + (i % 2 === 0 ? 18 : -18)} 214 ${y}`}
-            fill="none"
-            stroke="var(--card-back-accent)"
-            strokeWidth="2"
-            opacity="0.35"
-          />
-        );
-      })}
-      {Array.from({ length: 6 }, (_, i) => {
-        const x = 50 + i * 30;
-        return (
-          <circle
-            key={`c-${i}`}
-            cx={x}
-            cy={175}
-            r={8 + (i % 3) * 4}
-            fill="none"
-            stroke="var(--card-back-accent)"
-            strokeWidth="1.5"
-            opacity="0.28"
-          />
-        );
-      })}
-      <path
-        d="M125 70 L155 130 L125 190 L95 130 Z"
-        fill="var(--card-back-accent)"
-        opacity="0.22"
+      <circle
+        cx="125"
+        cy="175"
+        r="47"
+        fill="var(--card-back-base)"
+        stroke="var(--card-back-accent)"
+        strokeWidth="2"
+        opacity="0.95"
       />
-      <path
-        d="M125 160 L155 220 L125 280 L95 220 Z"
-        fill="var(--card-back-accent)"
-        opacity="0.18"
+      <circle
+        cx="125"
+        cy="175"
+        r="39"
+        fill="none"
+        stroke="var(--card-back-accent)"
+        strokeWidth="1"
+        opacity="0.6"
+      />
+      <PlacedSuitGlyph
+        suit="spades"
+        color="var(--card-back-accent)"
+        cx={125}
+        cy={175}
+        size={42}
       />
     </svg>
   );

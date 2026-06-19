@@ -1,10 +1,9 @@
 'use client';
 
-import { Button } from '@/components/ui/Button';
-import { CalendarIcon } from '@/components/ui/icons';
-import { dailyDateKey, formatDailyLabel } from '@/lib/daily';
-import { dailyStreakMessage } from '@/lib/stats-copy';
 import { DailyLeaderboard } from '@/components/auth/DailyLeaderboard';
+import { Button } from '@/components/ui/Button';
+import { CalendarIcon, FlameIcon } from '@/components/ui/icons';
+import { dailyDateKey, formatDailyLabel } from '@/lib/daily';
 import { useStatsStore } from '@/state/stats';
 
 interface DailyChallengeBannerProps {
@@ -16,28 +15,31 @@ export function DailyChallengeBanner({ onPlay }: DailyChallengeBannerProps) {
   const label = formatDailyLabel();
 
   return (
-    <div className="surface-panel p-5">
-      <div className="flex items-start gap-3">
-        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-accent text-accent-text">
-          <CalendarIcon size={18} />
-        </div>
-        <div className="flex-1">
-          <h2 className="font-ui text-hud font-semibold text-ui-text">Daily Challenge</h2>
-          <p className="mt-1 font-ui text-sm text-ui-text-muted">{label} (UTC)</p>
-          <p className="mt-1 font-ui text-sm text-ui-text-muted">
-            {dailyStreakMessage(dailyStreak)}
-          </p>
-          <p className="mt-1 font-ui text-xs text-accent">
-            Verified winnable deal from the offline pool
-          </p>
+    <div className="daily-banner">
+      <div className="daily-banner__icon" aria-hidden>
+        <CalendarIcon size={18} />
+      </div>
+
+      <div className="daily-banner__content min-w-0 flex-1">
+        <div className="daily-banner__label">Daily Challenge</div>
+        <div className="daily-banner__date">{label}</div>
+        <div className="daily-banner__subtitle">
+          A solvable deal, the same for everyone today.
         </div>
       </div>
 
-      <Button fullWidth className="mt-4" onClick={onPlay}>
-        Play today&apos;s deal
+      <div className="daily-banner__streak" aria-label={`${dailyStreak} day streak`}>
+        <FlameIcon size={14} />
+        <span>{dailyStreak}</span>
+      </div>
+
+      <Button className="daily-banner__play shrink-0" onClick={onPlay}>
+        Play
       </Button>
 
-      <DailyLeaderboard date={dailyDateKey()} />
+      <div className="w-full basis-full">
+        <DailyLeaderboard date={dailyDateKey()} />
+      </div>
     </div>
   );
 }

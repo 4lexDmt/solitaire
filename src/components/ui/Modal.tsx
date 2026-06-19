@@ -58,6 +58,12 @@ export function Modal({
           className,
         )}
       >
+        {celebration ? (
+          <div
+            className="mx-auto mb-2 h-1.5 w-1.5 rounded-full bg-accent"
+            aria-hidden
+          />
+        ) : null}
         {!celebration ? (
           <div className="mb-4 flex items-start justify-between gap-3 text-left">
             <h2 id={titleId} className="modal-title">
