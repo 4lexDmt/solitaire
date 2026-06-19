@@ -76,7 +76,7 @@ export function CourtArt({ rank, suit, ink }: CourtProps) {
       <PlacedSuitGlyph suit={suit} color={ink} cx={174} cy={175} size={15} />
       <text
         x="125"
-        y="175"
+        y="183"
         textAnchor="middle"
         dominantBaseline="middle"
         fill={ink}
