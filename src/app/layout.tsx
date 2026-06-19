@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from 'next';
 import { Inter } from 'next/font/google';
 import { SerwistProviderClient } from '@/components/SerwistProviderClient';
+import { BRAND } from '@/config/brand';
 import './globals.css';
 
 const inter = Inter({
@@ -9,22 +10,18 @@ const inter = Inter({
   display: 'swap',
 });
 
-const APP_NAME = 'Solitaire';
-const APP_DESCRIPTION =
-  'Premium Klondike solitaire — calm, ad-free, offline-first.';
-
 export const metadata: Metadata = {
-  applicationName: APP_NAME,
+  applicationName: BRAND.name,
   title: {
-    default: APP_NAME,
-    template: `%s · ${APP_NAME}`,
+    default: BRAND.title,
+    template: `%s · ${BRAND.name}`,
   },
-  description: APP_DESCRIPTION,
+  description: BRAND.description,
   manifest: '/manifest.webmanifest',
   appleWebApp: {
     capable: true,
     statusBarStyle: 'default',
-    title: APP_NAME,
+    title: BRAND.name,
   },
   formatDetection: {
     telephone: false,
