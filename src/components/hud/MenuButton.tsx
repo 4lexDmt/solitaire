@@ -9,8 +9,8 @@ interface MenuButtonProps {
 
 export function MenuButton({ onClick }: MenuButtonProps) {
   return (
-    <IconButton label="Open menu" onClick={onClick}>
-      <MenuIcon size={20} />
+    <IconButton label="Open menu" tone="hud" onClick={onClick}>
+      <MenuIcon size={21} />
     </IconButton>
   );
 }

@@ -52,12 +52,12 @@ export function Sheet({
         className={cn(
           'absolute bg-ui-surface shadow-modal',
           side === 'bottom'
-            ? 'inset-x-0 bottom-0 max-h-[85vh] overflow-y-auto rounded-t-ui p-6'
-            : 'inset-y-0 right-0 w-full max-w-md overflow-y-auto p-6',
+            ? 'sheet-panel inset-x-0 bottom-0 max-h-[85vh] overflow-y-auto p-5'
+            : 'inset-y-0 right-0 w-full max-w-md overflow-y-auto p-5',
         )}
       >
         <div className="mb-4 flex items-start justify-between gap-3">
-          <h2 id={titleId} className="font-ui text-title font-semibold text-ui-text">
+          <h2 id={titleId} className="sheet-title">
             {title}
           </h2>
           <IconButton label="Close" onClick={onClose}>

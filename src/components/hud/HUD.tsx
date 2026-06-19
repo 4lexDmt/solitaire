@@ -32,13 +32,12 @@ export function HUD({
   const scoreMode = useSettingsStore((s) => s.scoreMode);
 
   return (
-    <header className="game-screen__hud">
-      <div className="flex items-center gap-2">
+    <header className="hud-bar">
+      <div className="hud-bar__group">
         <MenuButton onClick={onMenu} />
-        <RestartButton onClick={onRestart} />
       </div>
 
-      <div className="game-screen__stats">
+      <div className="hud-bar__stats">
         <TimerDisplay elapsedMs={game.elapsedMs} visible={showTimer} />
         <MoveCounter moves={game.moves} />
         <ScoreDisplay
@@ -48,10 +47,11 @@ export function HUD({
         />
       </div>
 
-      <div className="flex items-center gap-2">
+      <div className="hud-bar__group">
         <UndoButton onClick={onUndo} disabled={game.history.length === 0} />
         <RedoButton onClick={onRedo} disabled={game.future.length === 0} />
         <HintButton onClick={onHint} disabled={game.status !== 'playing'} />
+        <RestartButton onClick={onRestart} />
       </div>
     </header>
   );

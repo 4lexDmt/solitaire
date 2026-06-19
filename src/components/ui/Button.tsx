@@ -12,11 +12,11 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 
 const variantClasses: Record<ButtonVariant, string> = {
   primary:
-    'bg-accent text-accent-text shadow-card-resting hover:brightness-105 active:scale-[0.97]',
+    'bg-accent text-accent-text shadow-[0_1px_2px_rgba(0,0,0,0.18)] hover:brightness-105 active:scale-[0.97]',
   secondary:
-    'bg-ui-surface text-ui-text shadow-card-resting hover:bg-ui-surface-2 active:scale-[0.97]',
+    'bg-ui-surface-2 text-ui-text shadow-[0_1px_2px_rgba(0,0,0,0.12)] hover:bg-ui-surface active:scale-[0.97]',
   ghost:
-    'bg-transparent text-ui-text hover:bg-ui-surface/80 active:scale-[0.97]',
+    'bg-transparent text-ui-text border border-[color-mix(in_srgb,var(--ui-text)_14%,transparent)] hover:bg-ui-surface/50 active:scale-[0.97] [data-theme=midnight]:border-[rgba(255,255,255,0.16)]',
 };
 
 export function Button({
@@ -31,7 +31,7 @@ export function Button({
     <button
       type={type}
       className={cn(
-        'inline-flex min-h-11 items-center justify-center gap-2 rounded-ui px-4 py-2 font-ui text-button transition duration-press ease-standard',
+        'inline-flex min-h-[44px] items-center justify-center gap-2 rounded-[11px] px-[18px] py-3 font-ui text-[14px] font-semibold transition duration-press ease-standard hover:-translate-y-px',
         'focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent',
         'disabled:pointer-events-none disabled:opacity-50',
         variantClasses[variant],

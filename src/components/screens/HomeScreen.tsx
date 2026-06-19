@@ -1,13 +1,13 @@
 'use client';
 
 import { Button } from '@/components/ui/Button';
-import { CalendarIcon, PlayIcon, StatsIcon, SettingsIcon } from '@/components/ui/icons';
-import { DailyChallengeBanner } from '@/components/screens/DailyChallengeBanner';
-import { ThemePicker } from '@/components/screens/ThemePicker';
-import { PwaInstallPrompt } from '@/components/PwaInstallPrompt';
+import { SegmentedControl } from '@/components/ui/SegmentedControl';
+import { CalendarIcon, FlameIcon, StatsIcon, SettingsIcon } from '@/components/ui/icons';
+import { SuitGlyph } from '@/assets/cards/suits';
 import { BRAND } from '@/config/brand';
-import { useStatsStore, winRate } from '@/state/stats';
-import { winRateMessage } from '@/lib/stats-copy';
+import { formatDailyLabel } from '@/lib/daily';
+import { dailyStreakMessage } from '@/lib/stats-copy';
+import { useStatsStore } from '@/state/stats';
 
 interface HomeScreenProps {
   onNewGame: () => void;
@@ -26,59 +26,82 @@ export function HomeScreen({
   onOpenStats,
   onOpenSettings,
 }: HomeScreenProps) {
-  const stats = useStatsStore();
+  const dailyStreak = useStatsStore((s) => s.dailyCurrentStreak);
+  const label = formatDailyLabel();
 
   return (
-    <div className="flex min-h-full flex-1 flex-col">
-      <header className="flex items-center justify-between px-board-pad py-4">
-        <div>
-          <h1 className="on-baize-title font-ui text-title font-semibold">
-            {BRAND.name}
-          </h1>
-          <p className="mt-0.5 font-ui text-sm text-baize-text-muted">
-            {BRAND.product}
-          </p>
-        </div>
-        <div className="flex gap-2">
-          <Button variant="ghost" onClick={onOpenStats} aria-label="Statistics">
-            <StatsIcon size={18} />
-          </Button>
-          <Button variant="ghost" onClick={onOpenSettings} aria-label="Settings">
-            <SettingsIcon size={18} />
-          </Button>
-        </div>
+    <div className="home-screen">
+      <header className="home-screen__toolbar">
+        <button
+          type="button"
+          className="home-screen__toolbar-btn"
+          onClick={onOpenStats}
+          aria-label="Statistics"
+        >
+          <StatsIcon size={28} />
+        </button>
+        <button
+          type="button"
+          className="home-screen__toolbar-btn"
+          onClick={onOpenSettings}
+          aria-label="Settings"
+        >
+          <SettingsIcon size={28} />
+        </button>
       </header>
 
-      <main className="flex flex-1 flex-col items-center gap-6 px-board-pad pb-10">
-        <div className="w-full max-w-md space-y-4">
-          <PwaInstallPrompt />
-          <DailyChallengeBanner onPlay={onDailyChallenge} />
+      <div className="home-screen__hero">
+        <div
+          className="mb-1"
+          style={{ filter: 'drop-shadow(0 4px 10px rgba(0,0,0,0.35))' }}
+        >
+          <SuitGlyph suit="spades" size={62} className="text-[#FBF8F1]" />
+        </div>
+        <h1 className="home-screen__wordmark">{BRAND.gameName}</h1>
+        <p className="home-screen__tagline">{BRAND.tagline}</p>
+      </div>
 
-          <div className="surface-panel p-5">
-            <p className="font-ui text-hud text-ui-text-muted">
-              {winRateMessage(winRate(stats.gamesWon, stats.gamesPlayed), stats.gamesPlayed)}
-            </p>
+      <div className="panel-card home-screen__actions">
+        <Button fullWidth onClick={onNewGame}>
+          New Game
+        </Button>
+        {hasSavedGame && onResume ? (
+          <Button fullWidth variant="ghost" onClick={onResume}>
+            Resume
+          </Button>
+        ) : null}
 
-            <div className="mt-5 flex flex-col gap-3">
-              <Button fullWidth onClick={onNewGame}>
-                <PlayIcon size={18} />
-                New Game
-              </Button>
-              {hasSavedGame && onResume ? (
-                <Button fullWidth variant="secondary" onClick={onResume}>
-                  Resume Game
-                </Button>
-              ) : null}
-              <Button fullWidth variant="secondary" onClick={onDailyChallenge}>
-                <CalendarIcon size={18} />
-                Daily Challenge
-              </Button>
+        <SegmentedControl
+          label="Game variant"
+          value="klondike"
+          onChange={() => {}}
+          options={[
+            { value: 'klondike', label: 'Klondike' },
+            { value: 'freecell', label: 'FreeCell', disabled: true },
+            { value: 'spider', label: 'Spider', disabled: true },
+          ]}
+        />
+
+        <button
+          type="button"
+          className="home-screen__daily-row w-full text-left"
+          onClick={onDailyChallenge}
+        >
+          <CalendarIcon size={19} className="shrink-0 text-accent" />
+          <div className="min-w-0 flex-1">
+            <div className="font-ui text-[12.5px] font-semibold text-ui-text">
+              Daily Challenge
+            </div>
+            <div className="font-ui text-[11px] text-ui-text-muted">
+              {label} · {dailyStreakMessage(dailyStreak).toLowerCase()}
             </div>
           </div>
-
-          <ThemePicker compact />
-        </div>
-      </main>
+          <div className="flex shrink-0 items-center gap-1 font-ui text-[13px] font-semibold text-accent">
+            <FlameIcon size={14} />
+            {dailyStreak}
+          </div>
+        </button>
+      </div>
     </div>
   );
 }

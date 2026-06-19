@@ -51,16 +51,17 @@ export function GameScreen({
 
   return (
     <div className="game-screen flex min-h-full flex-1 flex-col">
-      <HUD
-        game={game}
-        onMenu={onMenu}
-        onUndo={onUndo}
-        onRedo={onRedo}
-        onHint={onHint}
-        onRestart={onRestart}
-      />
-
       <main className="game-screen__table relative flex flex-1 flex-col overflow-x-auto">
+        <div className="game-screen__hud-wrap">
+          <HUD
+            game={game}
+            onMenu={onMenu}
+            onUndo={onUndo}
+            onRedo={onRedo}
+            onHint={onHint}
+            onRestart={onRestart}
+          />
+        </div>
         <Board game={game} />
       </main>
 
@@ -82,11 +83,12 @@ export function GameScreen({
 
       <PausedScreen
         open={paused}
+        elapsedMs={game.elapsedMs}
+        moves={game.moves}
         onResume={onResume}
         onRestart={onRestart}
         onHome={onHome}
         onOpenSettings={onOpenSettings}
-        onOpenStats={onOpenStats}
       />
 
       <WinScreen
@@ -94,6 +96,7 @@ export function GameScreen({
         game={game}
         isDaily={isDaily}
         onNewGame={onNewGame}
+        onReplayDeal={onRestart}
         onHome={onHome}
       />
     </div>

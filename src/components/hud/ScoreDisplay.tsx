@@ -31,13 +31,11 @@ export function ScoreDisplay({
 
   return (
     <div
-      className={cn(
-        'font-ui text-hud font-medium tabular-nums text-ui-text',
-        className,
-      )}
+      className={cn('hud-stat', className)}
       aria-label={`${label} ${score}`}
     >
-      {formatScore(score, scoreMode)}
+      <div className="hud-stat__value">{formatScore(score, scoreMode)}</div>
+      <div className="hud-stat__label">{label}</div>
     </div>
   );
 }

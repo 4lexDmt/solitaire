@@ -11,10 +11,19 @@ interface ModalProps {
   title: string;
   children: ReactNode;
   className?: string;
+  variant?: 'default' | 'celebration';
 }
 
-export function Modal({ open, onClose, title, children, className }: ModalProps) {
+export function Modal({
+  open,
+  onClose,
+  title,
+  children,
+  className,
+  variant = 'default',
+}: ModalProps) {
   const titleId = useId();
+  const celebration = variant === 'celebration';
 
   useEffect(() => {
     if (!open) return;
@@ -35,7 +44,7 @@ export function Modal({ open, onClose, title, children, className }: ModalProps)
       <button
         type="button"
         aria-label="Close dialog"
-        className="absolute inset-0"
+        className="absolute inset-0 backdrop-blur-[2px]"
         style={{ background: 'var(--ui-scrim)' }}
         onClick={onClose}
       />
@@ -44,18 +53,28 @@ export function Modal({ open, onClose, title, children, className }: ModalProps)
         aria-modal="true"
         aria-labelledby={titleId}
         className={cn(
-          'relative z-10 w-full max-w-md rounded-ui bg-ui-surface p-6 shadow-modal',
+          'modal-card relative z-10 w-full max-w-[248px] px-[22px] py-6 text-center',
+          celebration && 'pt-[26px]',
           className,
         )}
       >
-        <div className="mb-4 flex items-start justify-between gap-3">
-          <h2 id={titleId} className="font-ui text-title font-semibold text-ui-text">
+        {!celebration ? (
+          <div className="mb-4 flex items-start justify-between gap-3 text-left">
+            <h2 id={titleId} className="modal-title">
+              {title}
+            </h2>
+            <IconButton label="Close" tone="ghost" onClick={onClose}>
+              <CloseIcon size={20} />
+            </IconButton>
+          </div>
+        ) : (
+          <h2
+            id={titleId}
+            className="modal-title modal-title--win mb-1 text-center"
+          >
             {title}
           </h2>
-          <IconButton label="Close" onClick={onClose}>
-            <CloseIcon size={20} />
-          </IconButton>
-        </div>
+        )}
         {children}
       </div>
     </div>

@@ -10,8 +10,8 @@ interface UndoButtonProps {
 
 export function UndoButton({ onClick, disabled }: UndoButtonProps) {
   return (
-    <IconButton label="Undo" onClick={onClick} disabled={disabled}>
-      <UndoIcon size={20} />
+    <IconButton label="Undo" tone="hud" onClick={onClick} disabled={disabled}>
+      <UndoIcon size={21} />
     </IconButton>
   );
 }

@@ -10,8 +10,8 @@ interface HintButtonProps {
 
 export function HintButton({ onClick, disabled }: HintButtonProps) {
   return (
-    <IconButton label="Hint" onClick={onClick} disabled={disabled}>
-      <HintIcon size={20} />
+    <IconButton label="Hint" tone="hud" onClick={onClick} disabled={disabled}>
+      <HintIcon size={21} />
     </IconButton>
   );
 }

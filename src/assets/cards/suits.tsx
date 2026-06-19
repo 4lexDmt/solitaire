@@ -5,7 +5,7 @@ type SuitGlyphProps = {
   size?: number;
 };
 
-/** Original vector suit glyphs — viewBox 0 0 100 100, currentColor-driven (SPEC §11.3). */
+/** Original vector suit glyphs — viewBox 0 0 100 100 (design system Contract H). */
 export function SuitGlyph({
   suit,
   className,
@@ -19,38 +19,32 @@ export function SuitGlyph({
       className={className}
       aria-hidden
     >
+      {suit === "spades" && (
+        <path
+          fill="currentColor"
+          d="M50 14 C46 31 21 43 21 61 C21 74 33 82 43 76 C42 84 38 89 30 92 L70 92 C62 89 58 84 57 76 C67 82 79 74 79 61 C79 43 54 31 50 14 Z"
+        />
+      )}
       {suit === "hearts" && (
         <path
           fill="currentColor"
-          d="M50 88 C20 62 8 44 8 28 C8 14 18 6 30 6 C38 6 45 11 50 20 C55 11 62 6 70 6 C82 6 92 14 92 28 C92 44 80 62 50 88 Z"
+          d="M50 87 C29 71 17 59 17 40 C17 27 26 18 37 18 C45 18 49 24 50 31 C51 24 55 18 63 18 C74 18 83 27 83 40 C83 59 71 71 50 87 Z"
         />
       )}
       {suit === "diamonds" && (
         <path
           fill="currentColor"
-          d="M50 6 L94 50 L50 94 L6 50 Z M50 18 L82 50 L50 82 L18 50 Z"
+          d="M50 11 L81 50 L50 89 L19 50 Z"
         />
       )}
       {suit === "clubs" && (
         <>
-          <circle cx="50" cy="28" r="18" fill="currentColor" />
-          <circle cx="28" cy="52" r="18" fill="currentColor" />
-          <circle cx="72" cy="52" r="18" fill="currentColor" />
+          <circle cx="50" cy="31" r="15" fill="currentColor" />
+          <circle cx="32" cy="55" r="15" fill="currentColor" />
+          <circle cx="68" cy="55" r="15" fill="currentColor" />
           <path
             fill="currentColor"
-            d="M42 58 Q50 68 58 58 L62 92 L38 92 Z"
-          />
-        </>
-      )}
-      {suit === "spades" && (
-        <>
-          <path
-            fill="currentColor"
-            d="M50 8 C28 8 12 24 12 42 C12 58 28 68 50 82 C72 68 88 58 88 42 C88 24 72 8 50 8 Z"
-          />
-          <path
-            fill="currentColor"
-            d="M42 62 Q50 72 58 62 L62 92 L38 92 Z"
+            d="M44 55 C44 70 40 82 32 91 L68 91 C60 82 56 70 56 55 Z"
           />
         </>
       )}

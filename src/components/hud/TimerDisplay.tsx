@@ -14,13 +14,11 @@ export function TimerDisplay({ elapsedMs, visible = true, className }: TimerDisp
 
   return (
     <div
-      className={cn(
-        'font-ui text-hud font-medium tabular-nums text-ui-text',
-        className,
-      )}
+      className={cn('hud-stat', className)}
       aria-label={`Elapsed time ${formatDuration(elapsedMs)}`}
     >
-      {formatDuration(elapsedMs)}
+      <div className="hud-stat__value">{formatDuration(elapsedMs)}</div>
+      <div className="hud-stat__label">Time</div>
     </div>
   );
 }

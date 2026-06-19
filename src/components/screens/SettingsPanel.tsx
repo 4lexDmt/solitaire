@@ -122,8 +122,8 @@ export function SettingsPanel({
         </section>
 
         <section>
-          <h3 className="mb-3 font-ui text-hud font-semibold text-ui-text">Theme</h3>
-          <ThemePicker />
+          <h3 className="sheet-title mb-4">Theme</h3>
+          <ThemePicker layout="list" />
         </section>
 
         <section>

@@ -20,12 +20,12 @@ export function Toggle({
   return (
     <label
       className={cn(
-        'flex cursor-pointer items-start justify-between gap-4 rounded-ui px-1 py-2',
+        'flex cursor-pointer items-center justify-between gap-4 py-[13px]',
         disabled && 'cursor-not-allowed opacity-50',
       )}
     >
       <span className="flex flex-col gap-0.5">
-        <span className="font-ui text-hud text-ui-text">{label}</span>
+        <span className="font-ui text-sm font-medium text-ui-text">{label}</span>
         {description ? (
           <span className="font-ui text-sm text-ui-text-muted">{description}</span>
         ) : null}
@@ -38,15 +38,15 @@ export function Toggle({
         disabled={disabled}
         onClick={() => onChange(!checked)}
         className={cn(
-          'relative mt-0.5 h-7 w-12 shrink-0 rounded-full transition-colors duration-press',
-          checked ? 'bg-accent' : 'bg-ui-surface-2',
+          'relative h-[25px] w-[42px] shrink-0 rounded-full transition-colors duration-press',
+          checked ? 'bg-accent' : 'bg-[color-mix(in_srgb,var(--ui-text)_16%,transparent)]',
           'focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent',
         )}
       >
         <span
           className={cn(
-            'absolute top-0.5 left-0.5 h-6 w-6 rounded-full bg-white shadow-card-resting transition-transform duration-press',
-            checked && 'translate-x-5',
+            'absolute top-[2.5px] left-[2.5px] h-5 w-5 rounded-full bg-white shadow-[0_1px_3px_rgba(0,0,0,0.3)] transition-transform duration-press',
+            checked && 'translate-x-[17px]',
           )}
         />
       </button>

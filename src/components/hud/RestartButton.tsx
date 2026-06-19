@@ -1,7 +1,7 @@
 'use client';
 
 import { IconButton } from '@/components/ui/IconButton';
-import { RestartIcon } from '@/components/ui/icons';
+import { NewGameIcon } from '@/components/ui/icons';
 
 interface RestartButtonProps {
   onClick: () => void;
@@ -9,8 +9,8 @@ interface RestartButtonProps {
 
 export function RestartButton({ onClick }: RestartButtonProps) {
   return (
-    <IconButton label="Restart game" onClick={onClick}>
-      <RestartIcon size={20} />
+    <IconButton label="Restart game" tone="hud" onClick={onClick}>
+      <NewGameIcon size={21} />
     </IconButton>
   );
 }

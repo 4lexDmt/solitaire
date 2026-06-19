@@ -16,6 +16,7 @@ interface WinScreenProps {
   game: GameState;
   isDaily?: boolean;
   onNewGame: () => void;
+  onReplayDeal: () => void;
   onHome: () => void;
 }
 
@@ -24,6 +25,7 @@ export function WinScreen({
   game,
   isDaily,
   onNewGame,
+  onReplayDeal,
   onHome,
 }: WinScreenProps) {
   const dailyStreak = useStatsStore((s) => s.dailyCurrentStreak);
@@ -50,36 +52,38 @@ export function WinScreen({
   }
 
   return (
-    <Modal open={open} onClose={onHome} title={isDaily ? 'Daily complete' : 'You won'}>
-      <div className="flex flex-col items-center gap-4 text-center">
-        <div className="flex h-16 w-16 items-center justify-center rounded-full bg-accent text-accent-text">
-          <TrophyIcon size={32} />
+    <Modal open={open} onClose={onHome} title="You won." variant="celebration">
+      <div className="flex flex-col items-center gap-0 text-center">
+        <div className="mb-2.5 flex h-[46px] w-[46px] items-center justify-center text-accent">
+          <TrophyIcon size={46} />
         </div>
-        <p className="font-ui text-hud text-ui-text-muted">
+        <p className="modal-subtitle mb-[18px]">
           {isDaily
-            ? 'Nice work on today\'s verified winnable deal.'
-            : 'Every win counts — however long it took.'}
+            ? 'Daily challenge complete. Well played.'
+            : 'A tidy game. Well played.'}
         </p>
 
-        <div className="grid w-full grid-cols-2 gap-3">
+        <div className="mb-[18px] grid w-full grid-cols-3 gap-2">
           <StatTile label="Time" value={formatDuration(game.elapsedMs)} />
           <StatTile label="Moves" value={formatNumber(game.moves)} />
           {game.scoreMode !== 'none' ? (
-            <StatTile label="Score" value={formatNumber(game.score)} className="col-span-2" />
-          ) : null}
+            <StatTile label="Score" value={formatNumber(game.score)} />
+          ) : (
+            <StatTile label="Score" value="—" />
+          )}
         </div>
 
-        <div className="flex w-full flex-col gap-2 pt-2">
+        <div className="flex w-full flex-col gap-2">
           {isDaily ? (
-            <Button fullWidth variant="secondary" onClick={() => void handleShare()}>
+            <Button fullWidth variant="ghost" onClick={() => void handleShare()}>
               {copied ? 'Copied!' : 'Share result'}
             </Button>
           ) : null}
           <Button fullWidth onClick={onNewGame}>
-            Play Again
+            New Game
           </Button>
-          <Button fullWidth variant="secondary" onClick={onHome}>
-            Home
+          <Button fullWidth variant="ghost" onClick={onReplayDeal}>
+            Replay this deal
           </Button>
         </div>
 

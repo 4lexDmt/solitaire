@@ -7,9 +7,7 @@ import { StatTile } from '@/components/ui/StatTile';
 import { formatDuration, formatNumber, formatPercent } from '@/lib/format';
 import {
   dailyStreakMessage,
-  emptyStatHint,
   streakMessage,
-  winRateMessage,
 } from '@/lib/stats-copy';
 import { ACHIEVEMENTS, useAchievementsStore } from '@/state/achievements';
 import { useSettingsStore } from '@/state/settings';
@@ -31,11 +29,7 @@ export function StatsPanel({ open, onClose }: StatsPanelProps) {
 
   return (
     <Sheet open={open} onClose={onClose} title="Statistics">
-      <p className="mb-4 font-ui text-hud text-ui-text-muted">
-        {stats.gamesPlayed === 0 ? emptyStatHint() : winRateMessage(overallRate, stats.gamesPlayed)}
-      </p>
-
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid grid-cols-2 gap-2">
         <StatTile label="Games played" value={formatNumber(stats.gamesPlayed)} />
         <StatTile label="Games won" value={formatNumber(stats.gamesWon)} />
         <StatTile label="Win rate" value={formatPercent(overallRate)} />
@@ -60,16 +54,17 @@ export function StatsPanel({ open, onClose }: StatsPanelProps) {
         ) : null}
       </div>
 
-      <h3 className="mt-6 mb-3 font-ui text-hud font-semibold text-ui-text">
+      <h3 className="section-label mb-3 mt-6">
         Achievements
       </h3>
-      <div className="space-y-3">
+      <div className="flex gap-2.5">
         {ACHIEVEMENTS.map((achievement) => (
           <AchievementBadge
             key={achievement.id}
             achievement={achievement}
             unlocked={achievements.unlocked.includes(achievement.id)}
             unlockedAt={achievements.unlockedAt[achievement.id]}
+            compact
           />
         ))}
       </div>

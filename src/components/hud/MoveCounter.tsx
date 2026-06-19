@@ -10,14 +10,9 @@ interface MoveCounterProps {
 
 export function MoveCounter({ moves, className }: MoveCounterProps) {
   return (
-    <div
-      className={cn(
-        'font-ui text-hud font-medium tabular-nums text-ui-text',
-        className,
-      )}
-      aria-label={`${moves} moves`}
-    >
-      {formatNumber(moves)} moves
+    <div className={cn('hud-stat', className)} aria-label={`${moves} moves`}>
+      <div className="hud-stat__value">{formatNumber(moves)}</div>
+      <div className="hud-stat__label">Moves</div>
     </div>
   );
 }

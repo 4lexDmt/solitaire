@@ -10,8 +10,8 @@ interface RedoButtonProps {
 
 export function RedoButton({ onClick, disabled }: RedoButtonProps) {
   return (
-    <IconButton label="Redo" onClick={onClick} disabled={disabled}>
-      <RedoIcon size={20} />
+    <IconButton label="Redo" tone="hud" onClick={onClick} disabled={disabled}>
+      <RedoIcon size={21} />
     </IconButton>
   );
 }

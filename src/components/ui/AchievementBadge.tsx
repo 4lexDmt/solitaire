@@ -8,6 +8,7 @@ interface AchievementBadgeProps {
   achievement: AchievementDef;
   unlocked: boolean;
   unlockedAt?: number;
+  compact?: boolean;
 }
 
 const iconMap = {
@@ -20,8 +21,32 @@ export function AchievementBadge({
   achievement,
   unlocked,
   unlockedAt,
+  compact,
 }: AchievementBadgeProps) {
   const Icon = iconMap[achievement.icon];
+
+  if (compact) {
+    return (
+      <div
+        className={cn(
+          'flex flex-1 flex-col items-center gap-1.5 rounded-ui bg-ui-surface-2 px-1.5 py-3 text-center',
+          !unlocked && 'opacity-45',
+        )}
+      >
+        <div
+          className={cn(
+            'text-[26px]',
+            unlocked ? 'text-accent' : 'text-ui-text-muted',
+          )}
+        >
+          <Icon size={26} />
+        </div>
+        <div className="font-ui text-[10px] font-medium text-ui-text">
+          {achievement.title}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div
