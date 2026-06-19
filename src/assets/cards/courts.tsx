@@ -24,45 +24,6 @@ export function CourtArt({ rank, suit, ink }: CourtProps) {
         strokeWidth="2.4"
         opacity="0.9"
       />
-      <rect
-        x="62"
-        y="82"
-        width="126"
-        height="186"
-        rx="7"
-        fill="none"
-        stroke={ink}
-        strokeWidth="1"
-        opacity="0.45"
-      />
-      <path
-        d="M62 96 V82 H76"
-        fill="none"
-        stroke={ink}
-        strokeWidth="1.6"
-        opacity="0.6"
-      />
-      <path
-        d="M174 82 H188 V96"
-        fill="none"
-        stroke={ink}
-        strokeWidth="1.6"
-        opacity="0.6"
-      />
-      <path
-        d="M62 254 V268 H76"
-        fill="none"
-        stroke={ink}
-        strokeWidth="1.6"
-        opacity="0.6"
-      />
-      <path
-        d="M174 268 H188 V254"
-        fill="none"
-        stroke={ink}
-        strokeWidth="1.6"
-        opacity="0.6"
-      />
       <PlacedSuitGlyph suit={suit} color={ink} cx={125} cy={108} size={30} />
       <PlacedSuitGlyph
         suit={suit}
