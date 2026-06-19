@@ -125,7 +125,7 @@ html[data-four-color='true'] .card-view__inner:not(.card-view__inner--four-color
 }
 
 .card-view--drag-source {
-  opacity: 0.35;
+  visibility: hidden;
 }
 
 .card-view--focused,

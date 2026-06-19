@@ -53,7 +53,20 @@ export function useCardDrag({
   const [dropTarget, setDropTarget] = useState<string | null>(null);
   const [isDragging, setIsDragging] = useState(false);
 
+  const gameRef = useRef(game);
+  gameRef.current = game;
+
+  const onMoveRef = useRef(onMove);
+  onMoveRef.current = onMove;
+
+  const onInvalidDropRef = useRef(onInvalidDrop);
+  onInvalidDropRef.current = onInvalidDrop;
+
+  const onDragEndRef = useRef(onDragEnd);
+  onDragEndRef.current = onDragEnd;
+
   const pointerIdRef = useRef<number | null>(null);
+  const captureElementRef = useRef<HTMLElement | null>(null);
   const dragRef = useRef<ActiveDrag | null>(null);
   const draggingRef = useRef(false);
   const pendingRef = useRef<{
@@ -70,135 +83,166 @@ export function useCardDrag({
     setReject(null);
   }, []);
 
-  const finishActiveDrag = useCallback(
+  const resetDragState = useCallback(() => {
+    pendingRef.current = null;
+    pointerIdRef.current = null;
+    dragRef.current = null;
+    draggingRef.current = false;
+    setDrag(null);
+    setDropTarget(null);
+    setIsDragging(false);
+  }, []);
+
+  const finishActiveDragRef = useRef(
     (clientX: number, clientY: number, active: ActiveDrag) => {
-      const board = boardRef.current;
-      if (!board) {
-        setDrag(null);
-        setDropTarget(null);
-        setIsDragging(false);
-        onDragEnd?.();
-        return;
-      }
+      void clientX;
+      void clientY;
+      void active;
+    },
+  );
 
-      const target = resolvePointerTarget(board, clientX, clientY);
-      const toPile = target?.pileId ?? null;
+  finishActiveDragRef.current = (clientX: number, clientY: number, active: ActiveDrag) => {
+    const board = boardRef.current;
+    const currentGame = gameRef.current;
 
-      if (toPile && klondike.canDrop(game, active.cardIds, active.from, toPile)) {
-        onMove(active.from, toPile, active.cardIds);
-        dragRef.current = null;
-        setDrag(null);
-        setDropTarget(null);
-        draggingRef.current = false;
-        setIsDragging(false);
-        onDragEnd?.();
-        return;
-      }
+    if (!board) {
+      resetDragState();
+      onDragEndRef.current?.();
+      return;
+    }
 
-      onInvalidDrop?.(active.cardIds[0]);
-      setReject({
-        cards: active.cards,
-        fromX: active.x,
-        fromY: active.y,
-        toX: active.originX,
-        toY: active.originY,
+    const target = resolvePointerTarget(board, clientX, clientY);
+    const toPile = target?.pileId ?? null;
+
+    if (
+      toPile &&
+      klondike.canDrop(currentGame, active.cardIds, active.from, toPile)
+    ) {
+      onMoveRef.current(active.from, toPile, active.cardIds);
+      resetDragState();
+      onDragEndRef.current?.();
+      return;
+    }
+
+    onInvalidDropRef.current?.(active.cardIds[0]);
+    setReject({
+      cards: active.cards,
+      fromX: active.x,
+      fromY: active.y,
+      toX: active.originX,
+      toY: active.originY,
+    });
+    resetDragState();
+    onDragEndRef.current?.();
+  };
+
+  const releasePointerCapture = useCallback(() => {
+    const element = captureElementRef.current;
+    const pointerId = pointerIdRef.current;
+    if (element && pointerId !== null && element.hasPointerCapture(pointerId)) {
+      element.releasePointerCapture(pointerId);
+    }
+    captureElementRef.current = null;
+  }, []);
+
+  const handlePointerMoveRef = useRef((event: PointerEvent) => {
+    void event;
+  });
+
+  handlePointerMoveRef.current = (event: PointerEvent) => {
+    const pending = pendingRef.current;
+    if (!pending || pointerIdRef.current !== event.pointerId) return;
+
+    const dx = event.clientX - pending.startX;
+    const dy = event.clientY - pending.startY;
+
+    if (!draggingRef.current && Math.hypot(dx, dy) < DRAG_THRESHOLD_PX) return;
+
+    if (!draggingRef.current) {
+      draggingRef.current = true;
+      setIsDragging(true);
+      const nextDrag: ActiveDrag = {
+        from: pending.pileId,
+        cardIds: pending.cardIds,
+        cards: pending.cards,
+        grabOffsetX: pending.startX - pending.originRect.left,
+        grabOffsetY: pending.startY - pending.originRect.top,
+        originX: pending.originRect.left,
+        originY: pending.originRect.top,
+        x: event.clientX - (pending.startX - pending.originRect.left),
+        y: event.clientY - (pending.startY - pending.originRect.top),
+      };
+      dragRef.current = nextDrag;
+      setDrag(nextDrag);
+    } else {
+      setDrag((prev) => {
+        if (!prev) return prev;
+        const next = {
+          ...prev,
+          x: event.clientX - prev.grabOffsetX,
+          y: event.clientY - prev.grabOffsetY,
+        };
+        dragRef.current = next;
+        return next;
       });
-      dragRef.current = null;
-      setDrag(null);
-      setDropTarget(null);
+    }
+
+    const board = boardRef.current;
+    if (board) {
+      const target = resolvePointerTarget(board, event.clientX, event.clientY);
+      const pileId = target?.pileId ?? null;
+      if (
+        pileId &&
+        pileId !== pending.pileId &&
+        klondike.canDrop(gameRef.current, pending.cardIds, pending.pileId, pileId)
+      ) {
+        setDropTarget(pileId);
+      } else {
+        setDropTarget(null);
+      }
+    }
+  };
+
+  const handlePointerUpRef = useRef((event: PointerEvent) => {
+    void event;
+  });
+
+  handlePointerUpRef.current = (event: PointerEvent) => {
+    if (pointerIdRef.current !== event.pointerId) return;
+
+    window.removeEventListener('pointermove', onPointerMove);
+    window.removeEventListener('pointerup', onPointerUp);
+    window.removeEventListener('pointercancel', onPointerUp);
+    releasePointerCapture();
+
+    const active = dragRef.current;
+    pendingRef.current = null;
+    pointerIdRef.current = null;
+
+    if (active) {
+      finishActiveDragRef.current(event.clientX, event.clientY, active);
+    } else {
       draggingRef.current = false;
       setIsDragging(false);
-      onDragEnd?.();
-    },
-    [boardRef, game, onDragEnd, onInvalidDrop, onMove],
-  );
+    }
+  };
 
-  const onPointerMove = useCallback(
-    (event: PointerEvent) => {
-      const pending = pendingRef.current;
-      if (!pending || pointerIdRef.current !== event.pointerId) return;
+  const onPointerMove = useCallback((event: PointerEvent) => {
+    handlePointerMoveRef.current(event);
+  }, []);
 
-      const dx = event.clientX - pending.startX;
-      const dy = event.clientY - pending.startY;
-
-      if (!draggingRef.current && Math.hypot(dx, dy) < DRAG_THRESHOLD_PX) return;
-
-      if (!draggingRef.current) {
-        draggingRef.current = true;
-        setIsDragging(true);
-        const nextDrag: ActiveDrag = {
-          from: pending.pileId,
-          cardIds: pending.cardIds,
-          cards: pending.cards,
-          grabOffsetX: pending.startX - pending.originRect.left,
-          grabOffsetY: pending.startY - pending.originRect.top,
-          originX: pending.originRect.left,
-          originY: pending.originRect.top,
-          x: event.clientX - (pending.startX - pending.originRect.left),
-          y: event.clientY - (pending.startY - pending.originRect.top),
-        };
-        dragRef.current = nextDrag;
-        setDrag(nextDrag);
-      } else {
-        setDrag((prev) => {
-          if (!prev) return prev;
-          const next = {
-            ...prev,
-            x: event.clientX - prev.grabOffsetX,
-            y: event.clientY - prev.grabOffsetY,
-          };
-          dragRef.current = next;
-          return next;
-        });
-      }
-
-      const board = boardRef.current;
-      if (board) {
-        const target = resolvePointerTarget(board, event.clientX, event.clientY);
-        const pileId = target?.pileId ?? null;
-        if (
-          pileId &&
-          pileId !== pending.pileId &&
-          klondike.canDrop(game, pending.cardIds, pending.pileId, pileId)
-        ) {
-          setDropTarget(pileId);
-        } else {
-          setDropTarget(null);
-        }
-      }
-    },
-    [boardRef, game],
-  );
-
-  const onPointerUp = useCallback(
-    (event: PointerEvent) => {
-      if (pointerIdRef.current !== event.pointerId) return;
-
-      window.removeEventListener('pointermove', onPointerMove);
-      window.removeEventListener('pointerup', onPointerUp);
-      window.removeEventListener('pointercancel', onPointerUp);
-
-      const active = dragRef.current;
-      pendingRef.current = null;
-      pointerIdRef.current = null;
-
-      if (active) {
-        finishActiveDrag(event.clientX, event.clientY, active);
-      } else {
-        draggingRef.current = false;
-        setIsDragging(false);
-      }
-    },
-    [finishActiveDrag, onPointerMove],
-  );
+  const onPointerUp = useCallback((event: PointerEvent) => {
+    handlePointerUpRef.current(event);
+  }, [releasePointerCapture]);
 
   useEffect(() => {
     return () => {
       window.removeEventListener('pointermove', onPointerMove);
       window.removeEventListener('pointerup', onPointerUp);
       window.removeEventListener('pointercancel', onPointerUp);
+      releasePointerCapture();
     };
-  }, [onPointerMove, onPointerUp]);
+  }, [onPointerMove, onPointerUp, releasePointerCapture]);
 
   const beginDrag = useCallback(
     (
@@ -209,12 +253,12 @@ export function useCardDrag({
       clientY: number,
       pointerId: number,
     ) => {
-      if (game.status !== 'playing') return;
+      if (gameRef.current.status !== 'playing') return;
 
-      const cardIds = getMovableCardIds(game, pileId, cardId);
+      const cardIds = getMovableCardIds(gameRef.current, pileId, cardId);
       if (!cardIds) return;
 
-      const pile = game.piles[pileId];
+      const pile = gameRef.current.piles[pileId];
       const startIdx = pile.cards.findIndex((c) => c.id === cardIds[0]);
       const cards = pile.cards.slice(startIdx);
       const originRect = element.getBoundingClientRect();
@@ -229,12 +273,19 @@ export function useCardDrag({
         originRect,
       };
       pointerIdRef.current = pointerId;
+      captureElementRef.current = element;
+
+      try {
+        element.setPointerCapture(pointerId);
+      } catch {
+        // Some browsers reject capture on non-primary pointers.
+      }
 
       window.addEventListener('pointermove', onPointerMove);
       window.addEventListener('pointerup', onPointerUp);
       window.addEventListener('pointercancel', onPointerUp);
     },
-    [game, onPointerMove, onPointerUp],
+    [onPointerMove, onPointerUp],
   );
 
   return {

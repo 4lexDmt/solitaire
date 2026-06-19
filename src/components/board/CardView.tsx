@@ -130,7 +130,7 @@ export function CardView({
       onPointerDown={onPointerDown}
       onDoubleClick={onDoubleClick}
       whileHover={
-        reducedMotion || !onPointerDown
+        reducedMotion || !onPointerDown || dragSource
           ? undefined
           : {
               y: CASCADE.hoverLiftPx,
@@ -141,7 +141,7 @@ export function CardView({
             }
       }
       whileTap={
-        reducedMotion || !onPointerDown
+        reducedMotion || !onPointerDown || dragSource
           ? undefined
           : {
               scale: CASCADE.pressScale,
