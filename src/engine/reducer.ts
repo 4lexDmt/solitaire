@@ -96,11 +96,7 @@ function executeCardMove(
   next.score += fullMove.scoreDelta;
   next.selection = null;
 
-  if (variant.isWon(next)) {
-    next.status = 'won';
-  }
-
-  return { state: next, move: fullMove };
+  return { state: finalizeStatus(next, variant), move: fullMove };
 }
 
 function executeDraw(state: GameState, ts: number, variant: Variant): { state: GameState; move: Move } | null {
@@ -126,7 +122,22 @@ function executeDraw(state: GameState, ts: number, variant: Variant): { state: G
   next.score += move.scoreDelta;
   next.selection = null;
 
-  return { state: next, move };
+  return { state: finalizeStatus(next, variant), move };
+}
+
+function finalizeStatus(state: GameState, variant: Variant): GameState {
+  if (variant.isWon(state)) {
+    return { ...state, status: 'won' };
+  }
+  if (state.status === 'playing' && variant.getLegalMoves(state).length === 0) {
+    return { ...state, status: 'lost' };
+  }
+  return state;
+}
+
+/** Re-evaluate won/lost status (used after moves and in tests). */
+export function resolveGameStatus(state: GameState, variant: Variant = klondike): GameState {
+  return finalizeStatus(state, variant);
 }
 
 export function canRecycle(state: GameState): boolean {
@@ -164,7 +175,7 @@ function executeRecycle(state: GameState, ts: number, variant: Variant): { state
   next.selection = null;
   next.stockRecycles += 1;
 
-  return { state: next, move };
+  return { state: finalizeStatus(next, variant), move };
 }
 
 export function applyMove(
@@ -265,6 +276,7 @@ function reverseRecycle(state: GameState, move: Move): GameState {
 
 export function undo(state: GameState): GameState {
   if (state.history.length === 0) return state;
+  if (state.status === 'won') return state;
 
   const move = state.history[state.history.length - 1];
   let next: GameState;

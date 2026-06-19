@@ -18,7 +18,7 @@ import {
 } from '@/persistence/db';
 import { pullCloudStats, syncActiveSave, syncOnGameEnd } from '@/lib/supabase/sync';
 import { HAPTIC, vibrate } from '@/lib/haptics';
-import { useAchievementsStore } from '@/state/achievements';
+import { useAchievementsStore, type AchievementId } from '@/state/achievements';
 import { type UserSettings, useSettingsStore } from '@/state/settings';
 import { useStatsStore } from '@/state/stats';
 import { useGameStore } from '@/state/store';
@@ -58,6 +58,7 @@ export function AppShell() {
   const [paused, setPaused] = useState(false);
   const [showWin, setShowWin] = useState(false);
   const [winCelebrationActive, setWinCelebrationActive] = useState(false);
+  const [winAchievements, setWinAchievements] = useState<AchievementId[]>([]);
   const [statsOpen, setStatsOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [hasSavedGame, setHasSavedGame] = useState(false);
@@ -198,7 +199,7 @@ export function AppShell() {
     });
 
     const stats = useStatsStore.getState();
-    checkAchievements({
+    const newlyUnlocked = checkAchievements({
       won: true,
       drawCount: game.drawCount,
       elapsedMs: game.elapsedMs,
@@ -207,6 +208,7 @@ export function AppShell() {
       dailyStreak: stats.dailyCurrentStreak,
       previouslyUnlocked: unlocked,
     });
+    setWinAchievements(newlyUnlocked);
 
     await syncOnGameEnd({ game, stats, isDaily, dailyDate });
     await clearSavedGame();
@@ -229,6 +231,12 @@ export function AppShell() {
     setWinCelebrationActive(true);
   }, [game.status, game.seed, game.moves, game.elapsedMs, finalizeWin, hapticsEnabled]);
 
+  useEffect(() => {
+    if (game.status !== 'lost') return;
+    void clearSavedGame();
+    setHasSavedGame(false);
+  }, [game.status]);
+
   const handleWinCelebrationComplete = useCallback(() => {
     setWinCelebrationActive(false);
     setShowWin(true);
@@ -241,6 +249,7 @@ export function AppShell() {
       processedWinRef.current = null;
       setShowWin(false);
       setWinCelebrationActive(false);
+      setWinAchievements([]);
       setPaused(false);
       setIsDaily(Boolean(options?.daily));
 
@@ -285,6 +294,7 @@ export function AppShell() {
     setIsDaily(saved.isDaily);
     useGameStore.setState({ game: saved.game, theme });
     setShowWin(false);
+    setWinAchievements([]);
     setPaused(false);
     setScreen('game');
   }
@@ -311,6 +321,7 @@ export function AppShell() {
           paused={paused}
           showWin={showWin}
           winCelebrationActive={winCelebrationActive}
+          newAchievements={winAchievements}
           onWinCelebrationComplete={handleWinCelebrationComplete}
           isDaily={isDaily || isDailySeed(game.seed)}
           onMenu={() => setPaused(true)}
@@ -324,6 +335,7 @@ export function AppShell() {
             setPaused(false);
             setShowWin(false);
             setWinCelebrationActive(false);
+            setWinAchievements([]);
             setScreen('home');
           }}
           onOpenSettings={() => {

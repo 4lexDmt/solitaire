@@ -4,7 +4,9 @@ import { Z } from '@/config/tokens';
 import { formatDuration, formatNumber } from '@/lib/format';
 import type { GameState } from '@/engine/types';
 import { TrophyIcon } from '@/components/ui/icons';
+import { playWinFanfare } from '@/lib/sound';
 import { motion } from 'motion/react';
+import { useEffect } from 'react';
 
 interface ReducedMotionWinOverlayProps {
   active: boolean;
@@ -18,6 +20,11 @@ export function ReducedMotionWinOverlay({
   game,
   onDismiss,
 }: ReducedMotionWinOverlayProps) {
+  useEffect(() => {
+    if (!active) return;
+    playWinFanfare();
+  }, [active]);
+
   if (!active) return null;
 
   return (

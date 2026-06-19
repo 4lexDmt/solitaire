@@ -15,15 +15,37 @@ interface DailyLeaderboardProps {
   date: string;
 }
 
+function playerLabel(
+  entry: LeaderboardEntry,
+  currentUserId: string | null,
+  currentUserEmail: string | null,
+): string {
+  if (currentUserId && entry.user_id === currentUserId) {
+    if (currentUserEmail) {
+      const prefix = currentUserEmail.split('@')[0];
+      return prefix ? `You (${prefix})` : 'You';
+    }
+    return 'You';
+  }
+  return 'Player';
+}
+
 export function DailyLeaderboard({ date }: DailyLeaderboardProps) {
   const [entries, setEntries] = useState<LeaderboardEntry[]>([]);
   const [loading, setLoading] = useState(false);
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+  const [currentUserEmail, setCurrentUserEmail] = useState<string | null>(null);
 
   useEffect(() => {
     if (!isSupabaseConfigured()) return;
 
     const supabase = createClient();
     if (!supabase) return;
+
+    void supabase.auth.getUser().then(({ data }) => {
+      setCurrentUserId(data.user?.id ?? null);
+      setCurrentUserEmail(data.user?.email ?? null);
+    });
 
     setLoading(true);
     void supabase
@@ -59,7 +81,7 @@ export function DailyLeaderboard({ date }: DailyLeaderboardProps) {
               className="flex items-center justify-between font-ui text-sm text-ui-text"
             >
               <span>
-                #{index + 1} · {entry.user_id.slice(0, 8)}
+                #{index + 1} · {playerLabel(entry, currentUserId, currentUserEmail)}
               </span>
               <span className="tabular-nums text-ui-text-muted">
                 {formatDuration(entry.elapsed_ms)} · {entry.moves} moves

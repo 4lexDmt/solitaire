@@ -1,12 +1,15 @@
 'use client';
 
+import { LiveRegion } from '@/components/a11y/LiveRegion';
 import { Board } from '@/components/board/Board';
 import { ReducedMotionWinOverlay } from '@/components/board/ReducedMotionWinOverlay';
 import { WinCascadeCanvas } from '@/components/board/WinCascadeCanvas';
 import { HUD } from '@/components/hud/HUD';
 import { useReducedMotion } from '@/hooks/useReducedMotion';
+import { LostScreen } from '@/components/screens/LostScreen';
 import { PausedScreen } from '@/components/screens/PausedScreen';
 import { WinScreen } from '@/components/screens/WinScreen';
+import type { AchievementId } from '@/state/achievements';
 import type { GameState } from '@/engine/types';
 import '@/components/board/board.css';
 
@@ -27,6 +30,7 @@ interface GameScreenProps {
   onOpenSettings: () => void;
   onOpenStats: () => void;
   isDaily?: boolean;
+  newAchievements?: AchievementId[];
 }
 
 export function GameScreen({
@@ -46,19 +50,29 @@ export function GameScreen({
   onOpenSettings,
   onOpenStats,
   isDaily,
+  newAchievements = [],
 }: GameScreenProps) {
   const { reducedMotion } = useReducedMotion();
+  const hudLocked = winCelebrationActive || showWin || game.status === 'won';
 
   return (
     <div className="game-screen flex min-h-full flex-1 flex-col">
+      <LiveRegion
+        message={game.status === 'won' ? 'Game won' : game.status === 'lost' ? 'No moves left' : ''}
+        politeness="assertive"
+      />
       <main className="game-screen__table relative flex flex-1 flex-col overflow-x-auto">
-        <div className="game-screen__hud-wrap">
+        <div
+          className="game-screen__hud-wrap"
+          style={hudLocked ? { pointerEvents: 'none' } : undefined}
+        >
           <HUD
             game={game}
             onMenu={onMenu}
             onUndo={onUndo}
             onRedo={onRedo}
             onHint={onHint}
+            disabled={hudLocked}
           />
         </div>
         <Board game={game} />
@@ -94,8 +108,18 @@ export function GameScreen({
         open={showWin}
         game={game}
         isDaily={isDaily}
+        newAchievements={newAchievements}
         onNewGame={onNewGame}
         onReplayDeal={onRestart}
+        onHome={onHome}
+      />
+
+      <LostScreen
+        open={game.status === 'lost'}
+        elapsedMs={game.elapsedMs}
+        moves={game.moves}
+        onRestart={onRestart}
+        onNewGame={onNewGame}
         onHome={onHome}
       />
     </div>

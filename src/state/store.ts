@@ -71,6 +71,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
 
   move: (from, to, cardIds) => {
     const { game } = get();
+    if (game.status !== "playing") return false;
     if (!klondike.canDrop(game, cardIds, from, to)) return false;
     set({
       game: applyMove(game, from, to, cardIds, Date.now()),
@@ -110,26 +111,31 @@ export const useGameStore = create<GameStore>((set, get) => ({
 
   draw: () => {
     const { game } = get();
+    if (game.status !== "playing") return;
     set({ game: engineDraw(game, Date.now()) });
   },
 
   recycle: () => {
     const { game } = get();
+    if (game.status !== "playing") return;
     set({ game: engineRecycle(game, Date.now()) });
   },
 
   undo: () => {
     const { game } = get();
+    if (game.status === "won") return;
     set({ game: engineUndo(game) });
   },
 
   redo: () => {
     const { game } = get();
+    if (game.status === "won") return;
     set({ game: engineRedo(game) });
   },
 
   hint: () => {
     const { game } = get();
+    if (game.status !== "playing") return;
     const hintCardIds = getHintCardIds(game);
     set({ game: { ...game, hintCardIds: hintCardIds.length > 0 ? hintCardIds : undefined } });
   },

@@ -8,8 +8,10 @@ import {
   newGame,
   recycle,
   redo,
+  resolveGameStatus,
   undo,
 } from '../reducer';
+import { klondike } from '../variants/klondike';
 import type { GameState, Pile } from '../types';
 
 function pile(id: string, type: Pile['type'], cards: ReturnType<typeof createCard>[]): Pile {
@@ -141,5 +143,49 @@ describe('reducer', () => {
 
   it('newGame applies vegas buy-in', () => {
     expect(newGame({ seed: 'x', scoreMode: 'vegas' }).score).toBe(-52);
+  });
+
+  it('marks game lost when no legal moves remain', () => {
+    let state = scriptedState();
+    state.piles.stock = pile('stock', 'stock', []);
+    state.piles.waste = pile('waste', 'waste', []);
+    for (let i = 0; i < 4; i++) {
+      state.piles[`foundation-${i}`].cards = [];
+    }
+    state.piles['tableau-0'] = pile('tableau-0', 'tableau', [createCard('hearts', 13, true)]);
+    state.piles['tableau-1'] = pile('tableau-1', 'tableau', [createCard('diamonds', 13, true)]);
+    state.piles['tableau-2'] = pile('tableau-2', 'tableau', [createCard('clubs', 13, true)]);
+    state.piles['tableau-3'] = pile('tableau-3', 'tableau', [createCard('spades', 13, true)]);
+    state.piles['tableau-4'] = pile('tableau-4', 'tableau', [
+      createCard('hearts', 12, false),
+      createCard('spades', 13, true),
+    ]);
+    state.piles['tableau-5'] = pile('tableau-5', 'tableau', [
+      createCard('diamonds', 12, false),
+      createCard('clubs', 13, true),
+    ]);
+    state.piles['tableau-6'] = pile('tableau-6', 'tableau', [
+      createCard('clubs', 12, false),
+      createCard('diamonds', 13, true),
+    ]);
+    expect(klondike.getLegalMoves(state)).toHaveLength(0);
+    state = resolveGameStatus(state);
+    expect(state.status).toBe('lost');
+  });
+
+  it('blocks undo after win', () => {
+    let state = scriptedState();
+    state.status = 'won';
+    state.history = [
+      {
+        from: 'tableau-0',
+        to: 'foundation-0',
+        cardIds: ['HA'],
+        scoreDelta: 10,
+        ts: 1,
+      },
+    ];
+    const undone = undo(state);
+    expect(undone).toBe(state);
   });
 });

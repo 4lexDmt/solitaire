@@ -16,6 +16,7 @@ interface HUDProps {
   onUndo: () => void;
   onRedo: () => void;
   onHint: () => void;
+  disabled?: boolean;
 }
 
 export function HUD({
@@ -24,14 +25,17 @@ export function HUD({
   onUndo,
   onRedo,
   onHint,
+  disabled = false,
 }: HUDProps) {
   const showTimer = useSettingsStore((s) => s.showTimer);
   const scoreMode = useSettingsStore((s) => s.scoreMode);
+  const controlsLocked =
+    disabled || game.status === 'won' || game.status === 'lost';
 
   return (
-    <header className="hud-bar">
+    <header className="hud-bar" aria-hidden={controlsLocked || undefined}>
       <div className="hud-bar__group">
-        <MenuButton onClick={onMenu} />
+        <MenuButton onClick={onMenu} disabled={controlsLocked} />
       </div>
 
       <div className="hud-bar__stats">
@@ -45,9 +49,15 @@ export function HUD({
       </div>
 
       <div className="hud-bar__group">
-        <UndoButton onClick={onUndo} disabled={game.history.length === 0} />
-        <RedoButton onClick={onRedo} disabled={game.future.length === 0} />
-        <HintButton onClick={onHint} disabled={game.status !== 'playing'} />
+        <UndoButton
+          onClick={onUndo}
+          disabled={controlsLocked || game.history.length === 0}
+        />
+        <RedoButton
+          onClick={onRedo}
+          disabled={controlsLocked || game.future.length === 0}
+        />
+        <HintButton onClick={onHint} disabled={controlsLocked || game.status !== 'playing'} />
       </div>
     </header>
   );

@@ -5,11 +5,12 @@ import { MenuIcon } from '@/components/ui/icons';
 
 interface MenuButtonProps {
   onClick: () => void;
+  disabled?: boolean;
 }
 
-export function MenuButton({ onClick }: MenuButtonProps) {
+export function MenuButton({ onClick, disabled }: MenuButtonProps) {
   return (
-    <IconButton label="Open menu" tone="hud" onClick={onClick}>
+    <IconButton label="Open menu" tone="hud" onClick={onClick} disabled={disabled}>
       <MenuIcon size={21} />
     </IconButton>
   );
