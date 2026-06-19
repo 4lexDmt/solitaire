@@ -33,9 +33,9 @@ function IndexBlock({
     <g transform={transform}>
       <text
         x="30"
-        y="60"
+        y="14"
         textAnchor="middle"
-        dominantBaseline="middle"
+        dominantBaseline="hanging"
         fill={ink}
         fontFamily="var(--font-index, Inter, system-ui, sans-serif)"
         fontWeight="800"
@@ -47,7 +47,7 @@ function IndexBlock({
       >
         {rank}
       </text>
-      <PlacedSuitGlyph suit={card.suit} color={ink} cx={30} cy={86} size={28} />
+      <PlacedSuitGlyph suit={card.suit} color={ink} cx={30} cy={79} size={30} />
     </g>
   );
 }
