@@ -59,7 +59,6 @@ export function GameScreen({
             onUndo={onUndo}
             onRedo={onRedo}
             onHint={onHint}
-            onRestart={onRestart}
           />
         </div>
         <Board game={game} />

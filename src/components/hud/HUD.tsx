@@ -4,7 +4,6 @@ import { HintButton } from '@/components/hud/HintButton';
 import { MenuButton } from '@/components/hud/MenuButton';
 import { MoveCounter } from '@/components/hud/MoveCounter';
 import { RedoButton } from '@/components/hud/RedoButton';
-import { RestartButton } from '@/components/hud/RestartButton';
 import { ScoreDisplay } from '@/components/hud/ScoreDisplay';
 import { TimerDisplay } from '@/components/hud/TimerDisplay';
 import { UndoButton } from '@/components/hud/UndoButton';
@@ -17,7 +16,6 @@ interface HUDProps {
   onUndo: () => void;
   onRedo: () => void;
   onHint: () => void;
-  onRestart: () => void;
 }
 
 export function HUD({
@@ -26,7 +24,6 @@ export function HUD({
   onUndo,
   onRedo,
   onHint,
-  onRestart,
 }: HUDProps) {
   const showTimer = useSettingsStore((s) => s.showTimer);
   const scoreMode = useSettingsStore((s) => s.scoreMode);
@@ -51,7 +48,6 @@ export function HUD({
         <UndoButton onClick={onUndo} disabled={game.history.length === 0} />
         <RedoButton onClick={onRedo} disabled={game.future.length === 0} />
         <HintButton onClick={onHint} disabled={game.status !== 'playing'} />
-        <RestartButton onClick={onRestart} />
       </div>
     </header>
   );
