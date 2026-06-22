@@ -3,7 +3,7 @@
 import { DailyLeaderboard } from '@/components/auth/DailyLeaderboard';
 import { Button } from '@/components/ui/Button';
 import { CalendarIcon, FlameIcon } from '@/components/ui/icons';
-import { dailyDateKey, formatDailyLabel } from '@/lib/daily';
+import { useClientDailyDateKey, useClientDailyLabel } from '@/hooks/useClientDailyDate';
 import { useStatsStore } from '@/state/stats';
 
 interface DailyChallengeBannerProps {
@@ -12,7 +12,8 @@ interface DailyChallengeBannerProps {
 
 export function DailyChallengeBanner({ onPlay }: DailyChallengeBannerProps) {
   const dailyStreak = useStatsStore((s) => s.dailyCurrentStreak);
-  const label = formatDailyLabel();
+  const label = useClientDailyLabel();
+  const dateKey = useClientDailyDateKey();
 
   return (
     <div className="daily-banner">
@@ -38,7 +39,7 @@ export function DailyChallengeBanner({ onPlay }: DailyChallengeBannerProps) {
       </Button>
 
       <div className="w-full basis-full">
-        <DailyLeaderboard date={dailyDateKey()} />
+        {dateKey ? <DailyLeaderboard date={dateKey} /> : null}
       </div>
     </div>
   );

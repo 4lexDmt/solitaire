@@ -5,7 +5,7 @@ import { SegmentedControl } from '@/components/ui/SegmentedControl';
 import { CalendarIcon, FlameIcon, StatsIcon, SettingsIcon } from '@/components/ui/icons';
 import { SuitGlyph } from '@/assets/cards/suits';
 import { BRAND } from '@/config/brand';
-import { formatDailyLabel } from '@/lib/daily';
+import { useClientDailyLabel } from '@/hooks/useClientDailyDate';
 import { dailyStreakMessage } from '@/lib/stats-copy';
 import { useStatsStore } from '@/state/stats';
 
@@ -27,7 +27,7 @@ export function HomeScreen({
   onOpenSettings,
 }: HomeScreenProps) {
   const dailyStreak = useStatsStore((s) => s.dailyCurrentStreak);
-  const label = formatDailyLabel();
+  const label = useClientDailyLabel();
 
   return (
     <div className="home-screen">
