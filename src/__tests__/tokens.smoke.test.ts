@@ -40,13 +40,13 @@ describe("token exports (SPEC §5–§8 smoke)", () => {
   });
 
   it("exports cascade physics from spec §8.6", () => {
-    expect(CASCADE.gravity).toBe(2400);
-    expect(CASCADE.vxMin).toBe(-480);
-    expect(CASCADE.vxMax).toBe(480);
-    expect(CASCADE.vyMin).toBe(-440);
-    expect(CASCADE.vyMax).toBe(-160);
-    expect(CASCADE.floorRestitution).toBe(0.86);
-    expect(CASCADE.wallRestitution).toBe(0.72);
+    expect(CASCADE.gravity).toBe(2100);
+    expect(CASCADE.vxMin).toBe(-560);
+    expect(CASCADE.vxMax).toBe(560);
+    expect(CASCADE.vyMin).toBe(-580);
+    expect(CASCADE.vyMax).toBe(-200);
+    expect(CASCADE.floorRestitution).toBe(0.93);
+    expect(CASCADE.wallRestitution).toBe(0.85);
   });
 
   it("exports z-index layers from spec §7", () => {

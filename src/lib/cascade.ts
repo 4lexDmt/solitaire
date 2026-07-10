@@ -51,7 +51,7 @@ const DEFAULTS = {
   gravity: CASCADE.gravity,
   floorRestitution: CASCADE.floorRestitution,
   wallRestitution: CASCADE.wallRestitution,
-  energyThreshold: 35,
+  energyThreshold: 18,
   maxActive: 52,
 };
 
@@ -102,7 +102,7 @@ export class CascadeEngine {
       vy: launch.vy,
       width: cardWidth,
       height: cardHeight,
-      rotation: (Math.random() - 0.5) * 0.4,
+      rotation: (Math.random() - 0.5) * 0.8,
       active: true,
       launchedAt: now,
     });
@@ -148,13 +148,15 @@ export class CascadeEngine {
       sprite.vy += this.opts.gravity * dt;
       sprite.x += sprite.vx * dt;
       sprite.y += sprite.vy * dt;
-      sprite.rotation += sprite.vx * 0.0004;
+      sprite.rotation += sprite.vx * 0.0008;
 
       if (sprite.y + sprite.height >= floor) {
         sprite.y = floor - sprite.height;
-        if (Math.abs(sprite.vy) > 8) {
-          sprite.vy = -sprite.vy * this.opts.floorRestitution;
-          sprite.vx *= 0.96;
+        if (Math.abs(sprite.vy) > 6) {
+          sprite.vy = -Math.abs(sprite.vy) * this.opts.floorRestitution;
+          sprite.vx *= 0.985;
+          sprite.vx += (Math.random() - 0.5) * 90;
+          sprite.rotation += (Math.random() - 0.5) * 0.6;
         } else {
           sprite.vy = 0;
         }
@@ -163,9 +165,13 @@ export class CascadeEngine {
       if (sprite.x <= 0) {
         sprite.x = 0;
         sprite.vx = Math.abs(sprite.vx) * this.opts.wallRestitution;
+        sprite.vy -= Math.abs(sprite.vy) * 0.15;
+        sprite.rotation += (Math.random() - 0.5) * 0.4;
       } else if (sprite.x + sprite.width >= width) {
         sprite.x = width - sprite.width;
         sprite.vx = -Math.abs(sprite.vx) * this.opts.wallRestitution;
+        sprite.vy -= Math.abs(sprite.vy) * 0.15;
+        sprite.rotation += (Math.random() - 0.5) * 0.4;
       }
 
       const energy = Math.hypot(sprite.vx, sprite.vy);
@@ -205,8 +211,8 @@ export function randomLaunchVelocity(
   const center = canvasWidth / 2;
   const bias = originX < center ? 1 : -1;
   const vx =
-    bias * (160 + Math.random() * (CASCADE.vxMax - 160)) +
-    (Math.random() - 0.5) * 100;
+    bias * (220 + Math.random() * (CASCADE.vxMax - 220)) +
+    (Math.random() - 0.5) * 140;
   const vy =
     CASCADE.vyMin + Math.random() * (CASCADE.vyMax - CASCADE.vyMin);
   return { vx, vy };

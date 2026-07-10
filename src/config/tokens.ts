@@ -50,13 +50,13 @@ export const GEOMETRY = {
 } as const;
 
 export const CASCADE = {
-  gravity: 2400,
-  vxMin: -480,
-  vxMax: 480,
-  vyMin: -440,
-  vyMax: -160,
-  floorRestitution: 0.86,
-  wallRestitution: 0.72,
+  gravity: 2100,
+  vxMin: -560,
+  vxMax: 560,
+  vyMin: -580,
+  vyMax: -200,
+  floorRestitution: 0.93,
+  wallRestitution: 0.85,
   invalidShakePx: 6,
   invalidShakeOscillations: 3,
   dragScale: 1.04,
