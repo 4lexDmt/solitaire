@@ -131,6 +131,19 @@ describe('klondike rules', () => {
     expect(klondike.autoMoveToFoundation(state, 'waste', 'HA')).toBe('foundation-0');
   });
 
+  it('autoMoveToFoundation can place an ace on any empty foundation', () => {
+    const state = stateWith({
+      'tableau-0': pile('tableau-0', 'tableau', [createCard('clubs', 1, true)]),
+      'foundation-0': pile('foundation-0', 'foundation', [createCard('hearts', 1, true)]),
+      'foundation-1': pile('foundation-1', 'foundation', []),
+      'foundation-2': pile('foundation-2', 'foundation', []),
+      'foundation-3': pile('foundation-3', 'foundation', []),
+      waste: pile('waste', 'waste', []),
+      stock: pile('stock', 'stock', []),
+    });
+    expect(klondike.autoMoveToFoundation(state, 'tableau-0', 'CA')).toBe('foundation-2');
+  });
+
   it('autoMoveToFoundation rejects multi-card runs and illegal builds', () => {
     const state = stateWith({
       'tableau-0': pile('tableau-0', 'tableau', [

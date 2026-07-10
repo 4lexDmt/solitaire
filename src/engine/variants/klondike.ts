@@ -263,9 +263,16 @@ export const klondike: Variant = {
     const card = run[0];
     if (!card.faceUp) return null;
 
-    const foundationId = foundationForSuit(card.suit);
-    if (klondike.canDrop(state, [cardId], pileId, foundationId)) {
-      return foundationId;
+    const preferred = foundationForSuit(card.suit);
+    if (klondike.canDrop(state, [cardId], pileId, preferred)) {
+      return preferred;
+    }
+
+    for (const fid of FOUNDATION_IDS) {
+      if (fid === preferred) continue;
+      if (klondike.canDrop(state, [cardId], pileId, fid)) {
+        return fid;
+      }
     }
 
     return null;

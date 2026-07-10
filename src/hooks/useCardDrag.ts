@@ -242,25 +242,6 @@ export function useCardDrag({
     } else if (pending) {
       draggingRef.current = false;
       setIsDragging(false);
-
-      const now = Date.now();
-      const last = lastTapRef.current;
-      const isDoubleTap =
-        last &&
-        last.target.pileId === pending.pileId &&
-        last.target.cardId === pending.cardId &&
-        now - last.time < DOUBLE_TAP_MS;
-
-      if (isDoubleTap) {
-        lastTapRef.current = null;
-        onSuppressClickRef.current?.();
-        onDoubleTapRef.current?.(pending.pileId, pending.cardId);
-      } else {
-        lastTapRef.current = {
-          target: { pileId: pending.pileId, cardId: pending.cardId },
-          time: now,
-        };
-      }
     } else {
       draggingRef.current = false;
       setIsDragging(false);
@@ -297,6 +278,26 @@ export function useCardDrag({
 
       const cardIds = getMovableCardIds(gameRef.current, pileId, cardId);
       if (!cardIds) return;
+
+      const now = Date.now();
+      const last = lastTapRef.current;
+      const isDoubleTap =
+        last &&
+        last.target.pileId === pileId &&
+        last.target.cardId === cardId &&
+        now - last.time < DOUBLE_TAP_MS;
+
+      if (isDoubleTap) {
+        lastTapRef.current = null;
+        onSuppressClickRef.current?.();
+        onDoubleTapRef.current?.(pileId, cardId);
+        return;
+      }
+
+      lastTapRef.current = {
+        target: { pileId, cardId },
+        time: now,
+      };
 
       const pile = gameRef.current.piles[pileId];
       const startIdx = pile.cards.findIndex((c) => c.id === cardIds[0]);
