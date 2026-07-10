@@ -249,8 +249,35 @@ function scoreMove(state: GameState, move: Move): number {
   return 30;
 }
 
+/**
+ * Prune symmetric/no-op moves. Since any card may move to an empty column,
+ * all empty columns are interchangeable: only target the lowest-index one,
+ * and never move a whole tableau pile there (a pure column permutation).
+ */
+function pruneMoves(moves: Move[], state: GameState): Move[] {
+  let firstEmptyTableau: string | null = null;
+  for (let i = 0; i < 7; i++) {
+    const id = `tableau-${i}`;
+    if (state.piles[id].cards.length === 0) {
+      firstEmptyTableau = id;
+      break;
+    }
+  }
+
+  return moves.filter((move) => {
+    if (!move.to.startsWith('tableau-')) return true;
+    if (state.piles[move.to].cards.length !== 0) return true;
+    if (move.to !== firstEmptyTableau) return false;
+    if (move.from.startsWith('tableau-')) {
+      const fromPile = state.piles[move.from];
+      if (fromPile.cards.length === move.cardIds.length) return false;
+    }
+    return true;
+  });
+}
+
 function orderMoves(moves: Move[], state: GameState): Move[] {
-  return [...moves].sort((a, b) => {
+  return [...pruneMoves(moves, state)].sort((a, b) => {
     const depA = shouldDeprioritizeWorryBack(state, a);
     const depB = shouldDeprioritizeWorryBack(state, b);
     if (depA !== depB) return depA ? 1 : -1;

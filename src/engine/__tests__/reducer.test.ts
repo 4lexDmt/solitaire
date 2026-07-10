@@ -137,7 +137,8 @@ describe('reducer', () => {
 
   it('rejects illegal moves without mutation', () => {
     const state = scriptedState();
-    const next = applyMove(state, 'tableau-1', 'tableau-2', ['S3'], 1);
+    // S3 onto HA is illegal (rank must be one lower than destination top)
+    const next = applyMove(state, 'tableau-1', 'tableau-0', ['S3'], 1);
     expect(next).toEqual(state);
   });
 

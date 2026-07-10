@@ -41,9 +41,9 @@ describe('klondike rules', () => {
     expect(canPlaceOnTableau(createCard('hearts', 6, true), pile('tableau-0', 'tableau', [createCard('clubs', 5, true)]))).toBe(false);
   });
 
-  it('empty tableau accepts only kings', () => {
+  it('empty tableau accepts any card', () => {
     expect(canPlaceOnTableau(createCard('spades', 13, true), pile('tableau-0', 'tableau', []))).toBe(true);
-    expect(canPlaceOnTableau(createCard('hearts', 6, true), pile('tableau-0', 'tableau', []))).toBe(false);
+    expect(canPlaceOnTableau(createCard('hearts', 6, true), pile('tableau-0', 'tableau', []))).toBe(true);
   });
 
   it('foundation build-up by suit from ace', () => {

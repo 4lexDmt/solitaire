@@ -52,7 +52,7 @@ function isDescendingAlternating(run: Card[]): boolean {
 
 function canPlaceOnTableau(card: Card, target: Pile): boolean {
   if (target.cards.length === 0) {
-    return card.rank === 13;
+    return true;
   }
   const dest = topCard(target)!;
   return dest.color !== card.color && dest.rank === card.rank + 1;
