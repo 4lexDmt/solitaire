@@ -46,6 +46,7 @@ export interface GameStore {
   setSelection: (selection: Selection | null) => void;
   clearSelection: () => void;
   autoMoveCard: (pileId: string, cardId: string) => boolean;
+  autoMoveToFoundation: (pileId: string, cardId: string) => boolean;
   undo: () => void;
   redo: () => void;
   hint: () => void;
@@ -97,6 +98,15 @@ export const useGameStore = create<GameStore>((set, get) => ({
     const cardIds = getMovableCardIds(game, pileId, cardId);
     if (!cardIds || !klondike.canDrop(game, cardIds, pileId, target)) return false;
     set({ game: applyMove(game, pileId, target, cardIds, Date.now()) });
+    return true;
+  },
+
+  autoMoveToFoundation: (pileId, cardId) => {
+    const { game } = get();
+    if (game.status !== 'playing') return false;
+    const target = klondike.autoMoveToFoundation(game, pileId, cardId);
+    if (!target) return false;
+    set({ game: applyMove(game, pileId, target, [cardId], Date.now()) });
     return true;
   },
 

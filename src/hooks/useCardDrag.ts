@@ -10,6 +10,12 @@ import {
 } from '@/lib/hitTest';
 
 const DRAG_THRESHOLD_PX = 5;
+const DOUBLE_TAP_MS = 400;
+
+export interface TapTarget {
+  pileId: string;
+  cardId: string;
+}
 
 export interface ActiveDrag {
   from: string;
@@ -36,8 +42,10 @@ interface UseCardDragOptions {
   game: GameState;
   motionEnabled: boolean;
   onMove: (from: string, to: string, cardIds: string[]) => boolean;
+  onDoubleTap?: (pileId: string, cardId: string) => void;
   onInvalidDrop?: (cardId: string) => void;
   onDragEnd?: () => void;
+  onSuppressClick?: () => void;
 }
 
 export function useCardDrag({
@@ -45,8 +53,10 @@ export function useCardDrag({
   game,
   motionEnabled,
   onMove,
+  onDoubleTap,
   onInvalidDrop,
   onDragEnd,
+  onSuppressClick,
 }: UseCardDragOptions) {
   const [drag, setDrag] = useState<ActiveDrag | null>(null);
   const [reject, setReject] = useState<RejectDrag | null>(null);
@@ -65,6 +75,12 @@ export function useCardDrag({
   const onDragEndRef = useRef(onDragEnd);
   onDragEndRef.current = onDragEnd;
 
+  const onDoubleTapRef = useRef(onDoubleTap);
+  onDoubleTapRef.current = onDoubleTap;
+
+  const onSuppressClickRef = useRef(onSuppressClick);
+  onSuppressClickRef.current = onSuppressClick;
+
   const pointerIdRef = useRef<number | null>(null);
   const captureElementRef = useRef<HTMLElement | null>(null);
   const dragRef = useRef<ActiveDrag | null>(null);
@@ -78,6 +94,7 @@ export function useCardDrag({
     startY: number;
     originRect: DOMRect;
   } | null>(null);
+  const lastTapRef = useRef<{ target: TapTarget; time: number } | null>(null);
 
   const clearReject = useCallback(() => {
     setReject(null);
@@ -216,11 +233,34 @@ export function useCardDrag({
     releasePointerCapture();
 
     const active = dragRef.current;
+    const pending = pendingRef.current;
     pendingRef.current = null;
     pointerIdRef.current = null;
 
     if (active) {
       finishActiveDragRef.current(event.clientX, event.clientY, active);
+    } else if (pending) {
+      draggingRef.current = false;
+      setIsDragging(false);
+
+      const now = Date.now();
+      const last = lastTapRef.current;
+      const isDoubleTap =
+        last &&
+        last.target.pileId === pending.pileId &&
+        last.target.cardId === pending.cardId &&
+        now - last.time < DOUBLE_TAP_MS;
+
+      if (isDoubleTap) {
+        lastTapRef.current = null;
+        onSuppressClickRef.current?.();
+        onDoubleTapRef.current?.(pending.pileId, pending.cardId);
+      } else {
+        lastTapRef.current = {
+          target: { pileId: pending.pileId, cardId: pending.cardId },
+          time: now,
+        };
+      }
     } else {
       draggingRef.current = false;
       setIsDragging(false);

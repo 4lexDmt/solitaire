@@ -13,6 +13,7 @@ export interface Variant {
   getLegalMoves(state: GameState, options?: { skipScoring?: boolean }): Move[]; // used by hints & input validation
   canDrop(state: GameState, cardIds: string[], from: string, to: string): boolean;
   isWon(state: GameState): boolean;
-  autoMoveTarget(state: GameState, cardId: string): string | null; // double-click destination
+  autoMoveTarget(state: GameState, cardId: string): string | null;
+  autoMoveToFoundation(state: GameState, pileId: string, cardId: string): string | null;
   score(move: Move, mode: ScoreMode): number;
 }

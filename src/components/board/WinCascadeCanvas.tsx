@@ -80,36 +80,46 @@ export function WinCascadeCanvas({ active, game, onComplete }: WinCascadeCanvasP
     );
     const queue = buildFoundationLaunchQueue(foundationCards);
 
-    const boardEl = document.querySelector('.board');
     const pileEls = [0, 1, 2, 3].map((i) =>
       document.querySelector(`[data-pile-id="foundation-${i}"]`),
     );
 
-    let launchedCount = 0;
+    const launchCard = (index: number) => {
+      const { card, pileIndex } = queue[index];
+      const pileRect = pileEls[pileIndex]?.getBoundingClientRect();
+      const originX = pileRect?.left ?? width / 2 - cardWidth / 2;
+      const originY = pileRect?.top ?? 80;
+      const { vx, vy } = randomLaunchVelocity(originX + cardWidth / 2, width);
+      engine.launch(
+        { card, x: originX, y: originY, vx, vy },
+        cardWidth,
+        cardHeight,
+        performance.now(),
+      );
+    };
 
-    queue.forEach(({ card, pileIndex }, index) => {
-      const timer = window.setTimeout(() => {
-        const pileEl = pileEls[pileIndex];
-        const pileRect = pileEl?.getBoundingClientRect();
-        const boardRect = boardEl?.getBoundingClientRect();
-        const originX = pileRect?.left ?? width / 2;
-        const originY = pileRect?.top ?? (boardRect?.top ?? 80);
-        const { vx, vy } = randomLaunchVelocity(originX, width);
-        engine.launch(
-          { card, x: originX, y: originY, vx, vy },
-          cardWidth,
-          cardHeight,
-          performance.now(),
-        );
-        launchedCount += 1;
-      }, index * CASCADE_LAUNCH_STAGGER_MS);
+    const scheduleLaunch = (index: number) => {
+      const attempt = () => {
+        if (!engine.canAcceptLaunch) {
+          requestAnimationFrame(attempt);
+          return;
+        }
+        launchCard(index);
+      };
+      attempt();
+    };
+
+    queue.forEach((_, index) => {
+      const timer = window.setTimeout(
+        () => scheduleLaunch(index),
+        index * CASCADE_LAUNCH_STAGGER_MS,
+      );
       launchTimersRef.current.push(timer);
     });
 
     engine.start(ctx, drawCascadeCardSprite, () => {
-      if (launchedCount < queue.length) return;
-      if (engine.allSettled) {
-        window.setTimeout(finish, 600);
+      if (engine.launchedCount >= queue.length && engine.allSettled) {
+        window.setTimeout(finish, 500);
       }
     });
 

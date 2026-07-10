@@ -253,6 +253,24 @@ export const klondike: Variant = {
     });
   },
 
+  autoMoveToFoundation(state, pileId, cardId) {
+    const fromPile = state.piles[pileId];
+    if (!fromPile) return null;
+
+    const run = runFromCard(fromPile, cardId);
+    if (run.length !== 1) return null;
+
+    const card = run[0];
+    if (!card.faceUp) return null;
+
+    const foundationId = foundationForSuit(card.suit);
+    if (klondike.canDrop(state, [cardId], pileId, foundationId)) {
+      return foundationId;
+    }
+
+    return null;
+  },
+
   autoMoveTarget(state, cardId) {
     let sourcePile: string | null = null;
     let card: Card | undefined;

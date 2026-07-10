@@ -121,6 +121,30 @@ describe('klondike rules', () => {
     expect(klondike.autoMoveTarget(state, 'HA')).toBe('foundation-0');
   });
 
+  it('autoMoveToFoundation only targets the matching foundation pile', () => {
+    const state = stateWith({
+      waste: pile('waste', 'waste', [createCard('hearts', 1, true)]),
+      'foundation-0': pile('foundation-0', 'foundation', []),
+      'tableau-0': pile('tableau-0', 'tableau', []),
+      stock: pile('stock', 'stock', []),
+    });
+    expect(klondike.autoMoveToFoundation(state, 'waste', 'HA')).toBe('foundation-0');
+  });
+
+  it('autoMoveToFoundation rejects multi-card runs and illegal builds', () => {
+    const state = stateWith({
+      'tableau-0': pile('tableau-0', 'tableau', [
+        createCard('spades', 7, true),
+        createCard('hearts', 6, true),
+      ]),
+      'tableau-1': pile('tableau-1', 'tableau', [createCard('hearts', 6, true)]),
+      waste: pile('waste', 'waste', []),
+      stock: pile('stock', 'stock', []),
+    });
+    expect(klondike.autoMoveToFoundation(state, 'tableau-0', 'H6')).toBe(null);
+    expect(klondike.autoMoveToFoundation(state, 'tableau-1', 'H6')).toBe(null);
+  });
+
   it('autoMoveTarget falls back to tableau when foundation unavailable', () => {
     const state = stateWith({
       'tableau-0': pile('tableau-0', 'tableau', [createCard('spades', 7, true)]),

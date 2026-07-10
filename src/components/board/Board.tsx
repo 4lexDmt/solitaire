@@ -44,7 +44,7 @@ export function Board({ game }: BoardProps) {
   const drawOrRecycle = useGameStore((s) => s.drawOrRecycle);
   const setSelection = useGameStore((s) => s.setSelection);
   const clearSelection = useGameStore((s) => s.clearSelection);
-  const autoMoveCard = useGameStore((s) => s.autoMoveCard);
+  const autoMoveToFoundation = useGameStore((s) => s.autoMoveToFoundation);
 
   const soundEnabled = useSettingsStore((s) => s.soundEnabled);
   const hapticsEnabled = useSettingsStore((s) => s.hapticsEnabled);
@@ -111,18 +111,33 @@ export function Board({ game }: BoardProps) {
     setLastInvalidCardId(cardId);
   }, []);
 
+  const suppressNextClick = useCallback(() => {
+    suppressClickRef.current = true;
+    window.setTimeout(() => {
+      suppressClickRef.current = false;
+    }, 0);
+  }, []);
+
+  const handleFoundationAutoMove = useCallback(
+    (pileId: string, cardId: string) => {
+      if (game.status !== 'playing') return;
+      clearSelection();
+      if (!autoMoveToFoundation(pileId, cardId)) {
+        handleInvalidDrop(cardId);
+      }
+    },
+    [autoMoveToFoundation, clearSelection, game.status, handleInvalidDrop],
+  );
+
   const { drag, reject, dropTarget, beginDrag, isDragging, clearReject } = useCardDrag({
     boardRef,
     game,
     motionEnabled,
     onMove: move,
+    onDoubleTap: handleFoundationAutoMove,
     onInvalidDrop: handleInvalidDrop,
-    onDragEnd: () => {
-      suppressClickRef.current = true;
-      window.setTimeout(() => {
-        suppressClickRef.current = false;
-      }, 0);
-    },
+    onSuppressClick: suppressNextClick,
+    onDragEnd: suppressNextClick,
   });
 
   const { handleKeyDown, getFocusProps, isFocused } = useKeyboardPlay({
@@ -215,11 +230,10 @@ export function Board({ game }: BoardProps) {
   const handleCardDoubleClick = useCallback(
     (pileId: string, cardId: string, event: React.MouseEvent) => {
       event.stopPropagation();
-      if (game.status !== 'playing') return;
-      clearSelection();
-      autoMoveCard(pileId, cardId);
+      suppressNextClick();
+      handleFoundationAutoMove(pileId, cardId);
     },
-    [autoMoveCard, clearSelection, game.status],
+    [handleFoundationAutoMove, suppressNextClick],
   );
 
   const handleAutoComplete = useCallback(() => {

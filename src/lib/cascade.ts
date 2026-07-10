@@ -51,8 +51,8 @@ const DEFAULTS = {
   gravity: CASCADE.gravity,
   floorRestitution: CASCADE.floorRestitution,
   wallRestitution: CASCADE.wallRestitution,
-  energyThreshold: 40,
-  maxActive: 24,
+  energyThreshold: 35,
+  maxActive: 52,
 };
 
 /** RAF physics loop — canvas is NOT cleared each frame (trail smear). SPEC §8.6 */
@@ -76,6 +76,14 @@ export class CascadeEngine {
 
   get activeCount(): number {
     return this.sprites.filter((s) => s.active).length;
+  }
+
+  get canAcceptLaunch(): boolean {
+    return this.activeCount < this.opts.maxActive;
+  }
+
+  get launchedCount(): number {
+    return this.sprites.length;
   }
 
   get allSettled(): boolean {
@@ -197,8 +205,8 @@ export function randomLaunchVelocity(
   const center = canvasWidth / 2;
   const bias = originX < center ? 1 : -1;
   const vx =
-    bias * (120 + Math.random() * (CASCADE.vxMax - 120)) +
-    (Math.random() - 0.5) * 80;
+    bias * (160 + Math.random() * (CASCADE.vxMax - 160)) +
+    (Math.random() - 0.5) * 100;
   const vy =
     CASCADE.vyMin + Math.random() * (CASCADE.vyMax - CASCADE.vyMin);
   return { vx, vy };
