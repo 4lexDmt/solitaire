@@ -2,8 +2,13 @@ import { GEOMETRY, Z } from "@/config/tokens";
 import type { Card } from "@/engine/types";
 
 /** Resolved card width from viewport — SPEC §6 formula. */
-export function resolveCardWidth(viewportWidth: number): number {
-  const raw = viewportWidth / GEOMETRY.cardWidthDivisor;
+export function resolveCardWidth(
+  viewportWidth: number,
+  variantId = "klondike",
+): number {
+  const divisor =
+    GEOMETRY.cardWidthDivisors[variantId] ?? GEOMETRY.cardWidthDivisor;
+  const raw = viewportWidth / divisor;
   return Math.min(
     GEOMETRY.cardWidthMax,
     Math.max(GEOMETRY.cardWidthMin, raw),

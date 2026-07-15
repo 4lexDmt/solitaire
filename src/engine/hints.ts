@@ -1,5 +1,5 @@
 import type { Card, GameState, Move } from './types';
-import { klondike } from './variants/klondike';
+import { getVariant } from './variants';
 
 function findCard(state: GameState, cardId: string): { pileId: string; card: Card } | null {
   for (const [pileId, pile] of Object.entries(state.piles)) {
@@ -9,10 +9,8 @@ function findCard(state: GameState, cardId: string): { pileId: string; card: Car
   return null;
 }
 
-function topTableauCard(state: GameState, pileId: string): Card | undefined {
-  const pile = state.piles[pileId];
-  if (!pile || pile.cards.length === 0) return undefined;
-  return pile.cards[pile.cards.length - 1];
+function tableauPiles(state: GameState) {
+  return Object.values(state.piles).filter((p) => p.type === 'tableau');
 }
 
 /** True if moving this card to foundation would block a visible tableau build. */
@@ -21,8 +19,8 @@ function foundationWouldStrand(state: GameState, cardId: string): boolean {
   if (!found || found.card.rank <= 2) return false;
 
   const { card } = found;
-  for (let i = 0; i < 7; i++) {
-    const top = topTableauCard(state, `tableau-${i}`);
+  for (const pile of tableauPiles(state)) {
+    const top = pile.cards[pile.cards.length - 1];
     if (!top || !top.faceUp) continue;
     if (top.color !== card.color && top.rank === card.rank + 1) {
       return true;
@@ -76,6 +74,16 @@ function scoreMoveHeuristic(state: GameState, move: Move): number {
     if (emptiesColumn(state, move)) {
       score += 28;
     }
+    // Same-suit joins keep Spider runs completable (no-op for alternating-color variants).
+    const destTop = state.piles[move.to].cards[state.piles[move.to].cards.length - 1];
+    const moving = findCard(state, move.cardIds[0]);
+    if (destTop?.faceUp && moving && destTop.suit === moving.card.suit) {
+      score += 10;
+    }
+  }
+
+  if (move.to.startsWith('cell-')) {
+    score -= 18; // parking a card in a free cell costs flexibility
   }
 
   if (move.from.startsWith('foundation-') && move.to.startsWith('tableau-')) {
@@ -94,7 +102,7 @@ function scoreMoveHeuristic(state: GameState, move: Move): number {
 
 /** Rank legal moves best-first using lightweight heuristics. */
 export function rankMoves(state: GameState): Move[] {
-  const moves = klondike.getLegalMoves(state);
+  const moves = getVariant(state.variantId).getLegalMoves(state);
   return [...moves].sort((a, b) => scoreMoveHeuristic(state, b) - scoreMoveHeuristic(state, a));
 }
 

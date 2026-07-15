@@ -1,7 +1,6 @@
-import { buildDeck } from './deck';
 import { vegasBuyIn } from './scoring';
 import type { Card, GameState, Move, ScoreMode, StockPassLimit } from './types';
-import type { Variant } from './variant';
+import type { SpiderSuits, Variant } from './variant';
 import { klondike } from './variants/klondike';
 
 export interface NewGameOptions {
@@ -11,6 +10,7 @@ export interface NewGameOptions {
   stockPassLimit?: StockPassLimit;
   startingScore?: number;
   variant?: Variant;
+  spiderSuits?: SpiderSuits;
 }
 
 function cloneCard(card: Card): Card {
@@ -75,9 +75,11 @@ function executeCardMove(
   const moving = fromPile.cards.splice(startIdx);
   appendCards(toPile, moving);
 
-  if (toPile.type === 'foundation' && toPile.cards.length === 1) {
+  if (toPile.type === 'foundation' && toPile.cards.length === moving.length) {
     toPile.suit = moving[0].suit;
   }
+
+  const completed = variant.settleCompletions?.(next.piles);
 
   let flipped: Move['flipped'];
   if (fromPile.type === 'tableau') {
@@ -87,6 +89,7 @@ function executeCardMove(
   const fullMove: Move = {
     ...move,
     flipped,
+    completed: completed && completed.length > 0 ? completed : undefined,
     scoreDelta: 0,
     ts,
   };
@@ -100,8 +103,12 @@ function executeCardMove(
 }
 
 function executeDraw(state: GameState, ts: number, variant: Variant): { state: GameState; move: Move } | null {
+  if (variant.dealsToTableau) {
+    return executeTableauDeal(state, ts, variant);
+  }
+
   const stock = state.piles.stock;
-  if (stock.cards.length === 0) return null;
+  if (!stock || stock.cards.length === 0) return null;
 
   const next = cloneState(state);
   const drew = Math.min(state.drawCount, stock.cards.length);
@@ -113,6 +120,51 @@ function executeDraw(state: GameState, ts: number, variant: Variant): { state: G
     to: 'waste',
     cardIds: drawn.map((c) => c.id),
     drew,
+    scoreDelta: 0,
+    ts,
+  };
+  move.scoreDelta = variant.score(move, next.scoreMode);
+
+  next.moves += 1;
+  next.score += move.scoreDelta;
+  next.selection = null;
+
+  return { state: finalizeStatus(next, variant), move };
+}
+
+/** Spider-style stock deal: one face-up card onto every tableau column. */
+function executeTableauDeal(
+  state: GameState,
+  ts: number,
+  variant: Variant,
+): { state: GameState; move: Move } | null {
+  const stock = state.piles.stock;
+  if (!stock || stock.cards.length === 0) return null;
+
+  const tableauIds = Object.values(state.piles)
+    .filter((p) => p.type === 'tableau')
+    .map((p) => p.id);
+  if (tableauIds.some((id) => state.piles[id].cards.length === 0)) return null;
+
+  const next = cloneState(state);
+  const drew = Math.min(tableauIds.length, stock.cards.length);
+  const drawn = removeCards(next.piles.stock, drew).reverse();
+
+  const cardIds: string[] = [];
+  drawn.forEach((card, i) => {
+    const dealt = { ...card, faceUp: true };
+    next.piles[tableauIds[i]].cards.push(dealt);
+    cardIds.push(dealt.id);
+  });
+
+  const completed = variant.settleCompletions?.(next.piles);
+
+  const move: Move = {
+    from: 'stock',
+    to: 'tableau',
+    cardIds,
+    drew,
+    completed: completed && completed.length > 0 ? completed : undefined,
     scoreDelta: 0,
     ts,
   };
@@ -143,6 +195,7 @@ export function resolveGameStatus(state: GameState, variant: Variant = klondike)
 export function canRecycle(state: GameState): boolean {
   const waste = state.piles.waste;
   const stock = state.piles.stock;
+  if (!waste || !stock) return false;
   if (waste.cards.length === 0 || stock.cards.length > 0) return false;
   if (state.stockPassLimit === 'unlimited') return true;
   return state.stockRecycles < state.stockPassLimit;
@@ -151,6 +204,7 @@ export function canRecycle(state: GameState): boolean {
 function executeRecycle(state: GameState, ts: number, variant: Variant): { state: GameState; move: Move } | null {
   const waste = state.piles.waste;
   const stock = state.piles.stock;
+  if (!waste || !stock) return null;
   if (waste.cards.length === 0 || stock.cards.length > 0) return null;
   if (!canRecycle(state)) return null;
 
@@ -216,16 +270,40 @@ export function recycle(state: GameState, ts: number, variant: Variant = klondik
   return next;
 }
 
+/** Undo any run completions attached to a move (Spider): foundation → tableau. */
+function reverseCompletions(piles: GameState['piles'], move: Move): void {
+  for (const run of [...(move.completed ?? [])].reverse()) {
+    if (run.flipped) {
+      const pile = piles[run.flipped.pileId];
+      const card = pile.cards.find((c) => c.id === run.flipped!.cardId);
+      if (card) card.faceUp = false;
+    }
+
+    const foundation = piles[run.to];
+    const moved = foundation.cards.splice(
+      foundation.cards.length - run.cardIds.length,
+      run.cardIds.length,
+    );
+    piles[run.from].cards.push(...moved);
+    if (foundation.cards.length === 0) {
+      delete foundation.suit;
+    }
+  }
+}
+
 function reverseCardMove(state: GameState, move: Move): GameState {
   const next = cloneState(state);
-  const fromPile = next.piles[move.to];
-  const toPile = next.piles[move.from];
 
   if (move.flipped) {
     const pile = next.piles[move.flipped.pileId];
     const card = pile.cards.find((c) => c.id === move.flipped!.cardId);
     if (card) card.faceUp = false;
   }
+
+  reverseCompletions(next.piles, move);
+
+  const fromPile = next.piles[move.to];
+  const toPile = next.piles[move.from];
 
   const startIdx = fromPile.cards.findIndex((c) => c.id === move.cardIds[0]);
   const moving = fromPile.cards.splice(startIdx);
@@ -249,9 +327,24 @@ function reverseCardMove(state: GameState, move: Move): GameState {
 
 function reverseDraw(state: GameState, move: Move): GameState {
   const next = cloneState(state);
-  const drew = move.drew ?? move.cardIds.length;
-  const drawn = removeCards(next.piles.waste, drew).map((c) => ({ ...c, faceUp: false }));
-  appendCards(next.piles.stock, drawn);
+
+  if (move.to === 'tableau') {
+    // Spider deal: pull each dealt card back off its column (reverse order),
+    // restoring the original stock order (cardIds[0] ends back on top).
+    reverseCompletions(next.piles, move);
+    for (const cardId of [...move.cardIds].reverse()) {
+      const pile = Object.values(next.piles).find(
+        (p) => p.type === 'tableau' && p.cards[p.cards.length - 1]?.id === cardId,
+      );
+      if (!pile) continue;
+      const card = pile.cards.pop()!;
+      next.piles.stock.cards.push({ ...card, faceUp: false });
+    }
+  } else {
+    const drew = move.drew ?? move.cardIds.length;
+    const drawn = removeCards(next.piles.waste, drew).map((c) => ({ ...c, faceUp: false }));
+    appendCards(next.piles.stock, drawn);
+  }
 
   next.moves -= 1;
   next.score -= move.scoreDelta;
@@ -321,7 +414,7 @@ export function newGame(options: NewGameOptions): GameState {
   const drawCount = options.drawCount ?? 3;
   const scoreMode = options.scoreMode ?? 'standard';
   const stockPassLimit = options.stockPassLimit ?? 'unlimited';
-  const deck = buildDeck();
+  const deck = variant.createDeck({ spiderSuits: options.spiderSuits });
   const piles = variant.deal(deck, options.seed);
   const baseScore =
     options.startingScore !== undefined
@@ -332,6 +425,7 @@ export function newGame(options: NewGameOptions): GameState {
     variantId: variant.id,
     seed: options.seed,
     drawCount,
+    spiderSuits: variant.id === 'spider' ? (options.spiderSuits ?? 1) : undefined,
     scoreMode,
     stockPassLimit,
     stockRecycles: 0,

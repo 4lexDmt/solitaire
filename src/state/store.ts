@@ -12,7 +12,8 @@ import {
 } from "@/engine/reducer";
 import type { GameState, ScoreMode, Selection, StockPassLimit } from "@/engine/types";
 import { getHintCardIds } from "@/engine/hints";
-import { klondike } from "@/engine/variants/klondike";
+import type { SpiderSuits } from "@/engine/variant";
+import { getVariant, type VariantId } from "@/engine/variants";
 import { getMovableCardIds } from "@/lib/hitTest";
 import { create } from "zustand";
 
@@ -34,10 +35,12 @@ export interface GameStore {
   game: GameState;
   newGame: (options?: {
     seed?: string;
+    variantId?: VariantId;
     drawCount?: 1 | 3;
     scoreMode?: ScoreMode;
     stockPassLimit?: StockPassLimit;
     startingScore?: number;
+    spiderSuits?: SpiderSuits;
   }) => void;
   move: (from: string, to: string, cardIds: string[]) => boolean;
   draw: () => void;
@@ -62,10 +65,12 @@ export const useGameStore = create<GameStore>((set, get) => ({
     set({
       game: engineNewGame({
         seed: options?.seed ?? randomSeed(),
+        variant: getVariant(options?.variantId ?? 'klondike'),
         drawCount: options?.drawCount ?? 3,
         scoreMode: options?.scoreMode ?? 'standard',
         stockPassLimit: options?.stockPassLimit ?? 'unlimited',
         startingScore: options?.startingScore,
+        spiderSuits: options?.spiderSuits,
       }),
     });
   },
@@ -73,9 +78,10 @@ export const useGameStore = create<GameStore>((set, get) => ({
   move: (from, to, cardIds) => {
     const { game } = get();
     if (game.status !== "playing") return false;
-    if (!klondike.canDrop(game, cardIds, from, to)) return false;
+    const variant = getVariant(game.variantId);
+    if (!variant.canDrop(game, cardIds, from, to)) return false;
     set({
-      game: applyMove(game, from, to, cardIds, Date.now()),
+      game: applyMove(game, from, to, cardIds, Date.now(), variant),
     });
     return true;
   },
@@ -93,28 +99,36 @@ export const useGameStore = create<GameStore>((set, get) => ({
 
   autoMoveCard: (pileId, cardId) => {
     const { game } = get();
-    const target = klondike.autoMoveTarget(game, cardId);
+    const variant = getVariant(game.variantId);
+    const target = variant.autoMoveTarget(game, cardId);
     if (!target) return false;
     const cardIds = getMovableCardIds(game, pileId, cardId);
-    if (!cardIds || !klondike.canDrop(game, cardIds, pileId, target)) return false;
-    set({ game: applyMove(game, pileId, target, cardIds, Date.now()) });
+    if (!cardIds || !variant.canDrop(game, cardIds, pileId, target)) return false;
+    set({ game: applyMove(game, pileId, target, cardIds, Date.now(), variant) });
     return true;
   },
 
   autoMoveToFoundation: (pileId, cardId) => {
     const { game } = get();
     if (game.status !== 'playing') return false;
-    const target = klondike.autoMoveToFoundation(game, pileId, cardId);
-    if (!target) return false;
-    set({ game: applyMove(game, pileId, target, [cardId], Date.now()) });
-    return true;
+    const variant = getVariant(game.variantId);
+    const target = variant.autoMoveToFoundation(game, pileId, cardId);
+    if (target) {
+      set({ game: applyMove(game, pileId, target, [cardId], Date.now(), variant) });
+      return true;
+    }
+    // Variants without playable foundations (Spider) fall back to the best tableau move.
+    if (variant.foundationsLocked) {
+      return get().autoMoveCard(pileId, cardId);
+    }
+    return false;
   },
 
   drawOrRecycle: () => {
     const { game, draw, recycle } = get();
-    if (game.piles.stock.cards.length > 0) {
+    if ((game.piles.stock?.cards.length ?? 0) > 0) {
       draw();
-    } else if (game.piles.waste.cards.length > 0 && canRecycle(game)) {
+    } else if ((game.piles.waste?.cards.length ?? 0) > 0 && canRecycle(game)) {
       recycle();
     }
   },
@@ -122,13 +136,13 @@ export const useGameStore = create<GameStore>((set, get) => ({
   draw: () => {
     const { game } = get();
     if (game.status !== "playing") return;
-    set({ game: engineDraw(game, Date.now()) });
+    set({ game: engineDraw(game, Date.now(), getVariant(game.variantId)) });
   },
 
   recycle: () => {
     const { game } = get();
     if (game.status !== "playing") return;
-    set({ game: engineRecycle(game, Date.now()) });
+    set({ game: engineRecycle(game, Date.now(), getVariant(game.variantId)) });
   },
 
   undo: () => {
@@ -140,7 +154,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
   redo: () => {
     const { game } = get();
     if (game.status === "won") return;
-    set({ game: engineRedo(game) });
+    set({ game: engineRedo(game, getVariant(game.variantId)) });
   },
 
   hint: () => {

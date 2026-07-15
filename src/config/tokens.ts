@@ -35,7 +35,12 @@ export const GEOMETRY = {
   heightMultiplier: 1.4,
   cardWidthMax: 104,
   cardWidthMin: 40,
-  cardWidthDivisor: 8.52,
+  cardWidthDivisor: 8.52, // klondike (7 columns); see cardWidthDivisors for other variants
+  cardWidthDivisors: {
+    klondike: 8.52, // 7 + 6*0.18 + 2*0.22
+    freecell: 9.7, // 8 + 7*0.18 + 2*0.22
+    spider: 12.06, // 10 + 9*0.18 + 2*0.22
+  } as Record<string, number>,
   gapRatio: 0.18,
   overlapFaceupRatio: 0.24,
   overlapFacedownRatio: 0.11,

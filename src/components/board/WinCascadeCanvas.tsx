@@ -69,19 +69,20 @@ export function WinCascadeCanvas({ active, game, onComplete }: WinCascadeCanvasP
     if (!ctx) return;
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 
-    const cardWidth = resolveCardWidth(width);
+    const cardWidth = resolveCardWidth(width, game.variantId);
     const cardHeight = resolveCardHeight(cardWidth);
 
     const engine = new CascadeEngine({ bounds: { width, height } });
     engineRef.current = engine;
 
-    const foundationCards = [0, 1, 2, 3].map(
-      (i) => game.piles[`foundation-${i}`]?.cards ?? [],
-    );
+    const foundationIds = Object.keys(game.piles)
+      .filter((id) => id.startsWith('foundation-'))
+      .sort((a, b) => Number(a.split('-')[1]) - Number(b.split('-')[1]));
+    const foundationCards = foundationIds.map((id) => game.piles[id]?.cards ?? []);
     const queue = buildFoundationLaunchQueue(foundationCards);
 
-    const pileEls = [0, 1, 2, 3].map((i) =>
-      document.querySelector(`[data-pile-id="foundation-${i}"]`),
+    const pileEls = foundationIds.map((id) =>
+      document.querySelector(`[data-pile-id="${id}"]`),
     );
 
     const launchCard = (index: number) => {
@@ -131,7 +132,7 @@ export function WinCascadeCanvas({ active, game, onComplete }: WinCascadeCanvasP
       launchTimersRef.current.forEach((id) => window.clearTimeout(id));
       launchTimersRef.current = [];
     };
-  }, [active, finish, game.piles]);
+  }, [active, finish, game.piles, game.variantId]);
 
   if (!active) return null;
 

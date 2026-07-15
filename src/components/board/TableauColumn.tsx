@@ -8,6 +8,8 @@ import { PilePlaceholder } from './PilePlaceholder';
 
 interface TableauColumnProps {
   pile: Pile;
+  /** Variant-aware pickup check; defaults to any face-up run (Klondike). */
+  isMovable?: (pileId: string, cardId: string) => boolean;
   hintCardIds?: string[];
   dropHighlight?: boolean;
   selection?: Selection | null;
@@ -39,6 +41,7 @@ function isMovableCard(pile: Pile, card: Card): boolean {
 
 export function TableauColumn({
   pile,
+  isMovable,
   hintCardIds = [],
   dropHighlight = false,
   isSelected,
@@ -63,7 +66,9 @@ export function TableauColumn({
     >
       {pile.cards.length === 0 && <PilePlaceholder variant="tableau" />}
       {pile.cards.map((card: Card, index: number) => {
-        const movable = isMovableCard(pile, card);
+        const movable = isMovable
+          ? isMovable(pile.id, card.id)
+          : isMovableCard(pile, card);
         const focusTarget: FocusTarget = { kind: 'card', pileId: pile.id, cardId: card.id };
         const focus = getFocusProps(focusTarget);
 

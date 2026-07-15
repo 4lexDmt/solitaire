@@ -5,8 +5,11 @@ import { SegmentedControl } from '@/components/ui/SegmentedControl';
 import { CalendarIcon, FlameIcon, StatsIcon, SettingsIcon } from '@/components/ui/icons';
 import { SuitGlyph } from '@/assets/cards/suits';
 import { BRAND } from '@/config/brand';
+import type { SpiderSuits } from '@/engine/variant';
+import type { VariantId } from '@/engine/variants';
 import { useClientDailyLabel } from '@/hooks/useClientDailyDate';
 import { dailyStreakMessage } from '@/lib/stats-copy';
+import { useSettingsStore } from '@/state/settings';
 import { useStatsStore } from '@/state/stats';
 
 interface HomeScreenProps {
@@ -28,6 +31,10 @@ export function HomeScreen({
 }: HomeScreenProps) {
   const dailyStreak = useStatsStore((s) => s.dailyCurrentStreak);
   const label = useClientDailyLabel();
+  const variantId = useSettingsStore((s) => s.variantId);
+  const setVariantId = useSettingsStore((s) => s.setVariantId);
+  const spiderSuits = useSettingsStore((s) => s.spiderSuits);
+  const setSpiderSuits = useSettingsStore((s) => s.setSpiderSuits);
 
   return (
     <div className="home-screen">
@@ -71,16 +78,29 @@ export function HomeScreen({
           </Button>
         ) : null}
 
-        <SegmentedControl
+        <SegmentedControl<VariantId>
           label="Game variant"
-          value="klondike"
-          onChange={() => {}}
+          value={variantId}
+          onChange={setVariantId}
           options={[
             { value: 'klondike', label: 'Klondike' },
-            { value: 'freecell', label: 'FreeCell', disabled: true },
-            { value: 'spider', label: 'Spider', disabled: true },
+            { value: 'freecell', label: 'FreeCell' },
+            { value: 'spider', label: 'Spider' },
           ]}
         />
+
+        {variantId === 'spider' ? (
+          <SegmentedControl<SpiderSuits>
+            label="Spider suits"
+            value={spiderSuits}
+            onChange={setSpiderSuits}
+            options={[
+              { value: 1, label: '1 Suit' },
+              { value: 2, label: '2 Suits' },
+              { value: 4, label: '4 Suits' },
+            ]}
+          />
+        ) : null}
 
         <button
           type="button"

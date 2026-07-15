@@ -18,6 +18,8 @@ export interface PlayerStats {
   totalTimeMs: number;
   draw1: ModeStats;
   draw3: ModeStats;
+  freecell: ModeStats;
+  spider: ModeStats;
   dailyCompleted: number;
   dailyCurrentStreak: number;
   dailyBestStreak: number;
@@ -40,6 +42,8 @@ export const DEFAULT_STATS: PlayerStats = {
   totalTimeMs: 0,
   draw1: { ...EMPTY_MODE_STATS },
   draw3: { ...EMPTY_MODE_STATS },
+  freecell: { ...EMPTY_MODE_STATS },
+  spider: { ...EMPTY_MODE_STATS },
   dailyCompleted: 0,
   dailyCurrentStreak: 0,
   dailyBestStreak: 0,
@@ -49,6 +53,7 @@ export const DEFAULT_STATS: PlayerStats = {
 
 export interface GameResult {
   won: boolean;
+  variantId?: string; // 'klondike' (default) | 'freecell' | 'spider'
   drawCount: 1 | 3;
   elapsedMs: number;
   moves: number;
@@ -133,9 +138,16 @@ export const useStatsStore = create<StatsStore>((set) => ({
 
   recordGame: (result) => {
     set((stats) => {
-      const modeKey = result.drawCount === 1 ? 'draw1' : 'draw3';
+      const modeKey: 'draw1' | 'draw3' | 'freecell' | 'spider' =
+        result.variantId === 'freecell'
+          ? 'freecell'
+          : result.variantId === 'spider'
+            ? 'spider'
+            : result.drawCount === 1
+              ? 'draw1'
+              : 'draw3';
       const modeStats = updateModeStats(
-        stats[modeKey],
+        stats[modeKey] ?? { ...EMPTY_MODE_STATS },
         result.won,
         result.elapsedMs,
         result.moves,

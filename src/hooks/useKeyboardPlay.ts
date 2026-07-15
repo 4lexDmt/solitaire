@@ -2,7 +2,7 @@
 
 import { useCallback, useMemo, useState } from 'react';
 import type { GameState } from '@/engine/types';
-import { klondike } from '@/engine/variants/klondike';
+import { getVariant } from '@/engine/variants';
 import { cardAriaLabel } from '@/lib/layout';
 import { getMovableCardIds } from '@/lib/hitTest';
 
@@ -10,21 +10,26 @@ export type FocusTarget =
   | { kind: 'pile'; pileId: string }
   | { kind: 'card'; pileId: string; cardId: string };
 
-const PILE_ORDER = [
-  'stock',
-  'waste',
-  'foundation-0',
-  'foundation-1',
-  'foundation-2',
-  'foundation-3',
-  'tableau-0',
-  'tableau-1',
-  'tableau-2',
-  'tableau-3',
-  'tableau-4',
-  'tableau-5',
-  'tableau-6',
-] as const;
+function pileIndex(id: string): number {
+  return Number(id.split('-')[1] ?? 0);
+}
+
+/** Left-to-right, top-row-then-tableau pile order for arrow-key navigation. */
+function buildPileOrder(game: GameState): string[] {
+  const byType = (type: string) =>
+    Object.values(game.piles)
+      .filter((p) => p.type === type)
+      .map((p) => p.id)
+      .sort((a, b) => pileIndex(a) - pileIndex(b));
+
+  return [
+    ...(game.piles.stock ? ['stock'] : []),
+    ...(game.piles.waste ? ['waste'] : []),
+    ...byType('cell'),
+    ...byType('foundation'),
+    ...byType('tableau'),
+  ];
+}
 
 function targetKey(target: FocusTarget): string {
   return target.kind === 'pile'
@@ -33,42 +38,45 @@ function targetKey(target: FocusTarget): string {
 }
 
 function buildFocusables(game: GameState): FocusTarget[] {
-  const items: FocusTarget[] = [{ kind: 'pile', pileId: 'stock' }];
+  const items: FocusTarget[] = [];
+  const order = buildPileOrder(game);
 
-  const wasteTop = game.piles.waste.cards[game.piles.waste.cards.length - 1];
-  if (wasteTop?.faceUp) {
-    items.push({ kind: 'card', pileId: 'waste', cardId: wasteTop.id });
-  } else if (game.piles.waste.cards.length === 0) {
-    items.push({ kind: 'pile', pileId: 'waste' });
-  }
+  for (const pileId of order) {
+    const pile = game.piles[pileId];
 
-  for (const fid of ['foundation-0', 'foundation-1', 'foundation-2', 'foundation-3']) {
-    const pile = game.piles[fid];
-    const top = pile.cards[pile.cards.length - 1];
-    if (top?.faceUp) {
-      items.push({ kind: 'card', pileId: fid, cardId: top.id });
-    } else {
-      items.push({ kind: 'pile', pileId: fid });
+    if (pile.type === 'stock') {
+      items.push({ kind: 'pile', pileId });
+      continue;
     }
-  }
 
-  for (const tid of [
-    'tableau-0',
-    'tableau-1',
-    'tableau-2',
-    'tableau-3',
-    'tableau-4',
-    'tableau-5',
-    'tableau-6',
-  ]) {
-    const pile = game.piles[tid];
+    if (pile.type === 'waste') {
+      const top = pile.cards[pile.cards.length - 1];
+      if (top?.faceUp) {
+        items.push({ kind: 'card', pileId, cardId: top.id });
+      } else if (pile.cards.length === 0) {
+        items.push({ kind: 'pile', pileId });
+      }
+      continue;
+    }
+
+    if (pile.type === 'cell' || pile.type === 'foundation') {
+      const top = pile.cards[pile.cards.length - 1];
+      if (top?.faceUp) {
+        items.push({ kind: 'card', pileId, cardId: top.id });
+      } else {
+        items.push({ kind: 'pile', pileId });
+      }
+      continue;
+    }
+
+    // Tableau
     if (pile.cards.length === 0) {
-      items.push({ kind: 'pile', pileId: tid });
+      items.push({ kind: 'pile', pileId });
       continue;
     }
     for (const card of pile.cards) {
       if (card.faceUp) {
-        items.push({ kind: 'card', pileId: tid, cardId: card.id });
+        items.push({ kind: 'card', pileId, cardId: card.id });
       }
     }
   }
@@ -94,13 +102,16 @@ export function useKeyboardPlay({
   onAnnounce,
 }: UseKeyboardPlayOptions) {
   const focusables = useMemo(() => buildFocusables(game), [game]);
-  const [focusedKey, setFocusedKey] = useState(() => targetKey({ kind: 'pile', pileId: 'stock' }));
+  const pileOrder = useMemo(() => buildPileOrder(game), [game]);
+  const [focusedKey, setFocusedKey] = useState(() =>
+    targetKey({ kind: 'pile', pileId: 'stock' }),
+  );
   const selection = game.selection;
 
   const focused =
     focusables.find((f) => targetKey(f) === focusedKey) ??
     focusables[0] ??
-    ({ kind: 'pile', pileId: 'stock' } as FocusTarget);
+    ({ kind: 'pile', pileId: pileOrder[0] ?? 'stock' } as FocusTarget);
 
   const moveFocus = useCallback(
     (delta: number) => {
@@ -114,13 +125,12 @@ export function useKeyboardPlay({
   const moveFocusDirection = useCallback(
     (direction: 'left' | 'right' | 'up' | 'down') => {
       if (direction === 'left' || direction === 'right') {
-        const pileId =
-          focused.kind === 'card' ? focused.pileId : focused.pileId;
-        const pileIdx = PILE_ORDER.indexOf(pileId as (typeof PILE_ORDER)[number]);
+        const pileId = focused.pileId;
+        const pileIdx = pileOrder.indexOf(pileId);
         if (pileIdx < 0) return;
 
         const delta = direction === 'right' ? 1 : -1;
-        const nextPile = PILE_ORDER[pileIdx + delta];
+        const nextPile = pileOrder[pileIdx + delta];
         if (!nextPile) return;
 
         const pile = game.piles[nextPile];
@@ -148,7 +158,7 @@ export function useKeyboardPlay({
         }
       }
     },
-    [focused, game.piles],
+    [focused, game.piles, pileOrder],
   );
 
   const activateFocused = useCallback(() => {
@@ -166,7 +176,7 @@ export function useKeyboardPlay({
         const cardIds = getMovableCardIds(game, selection.pileId, selection.cardId);
         if (
           cardIds &&
-          klondike.canDrop(game, cardIds, selection.pileId, focused.pileId)
+          getVariant(game.variantId).canDrop(game, cardIds, selection.pileId, focused.pileId)
         ) {
           if (onMove(selection.pileId, focused.pileId, cardIds)) {
             const card = game.piles[selection.pileId].cards.find(
@@ -195,7 +205,7 @@ export function useKeyboardPlay({
     }
 
     const cardIds = getMovableCardIds(game, selection.pileId, selection.cardId);
-    if (cardIds && klondike.canDrop(game, cardIds, selection.pileId, pileId)) {
+    if (cardIds && getVariant(game.variantId).canDrop(game, cardIds, selection.pileId, pileId)) {
       if (onMove(selection.pileId, pileId, cardIds)) {
         const card = game.piles[selection.pileId].cards.find((c) => c.id === selection.cardId);
         if (card) onAnnounce?.(`Moved ${cardAriaLabel(card)}`);

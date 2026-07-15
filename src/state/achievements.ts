@@ -58,6 +58,7 @@ export const ACHIEVEMENTS: AchievementDef[] = [
 
 export interface AchievementUnlockContext {
   won: boolean;
+  variantId?: string; // draw-count achievements only apply to klondike
   drawCount: 1 | 3;
   elapsedMs: number;
   usedUndo: boolean;
@@ -91,7 +92,11 @@ function evaluateUnlocks(ctx: AchievementUnlockContext): AchievementId[] {
   if (ctx.dailyStreak >= 7 && !ctx.previouslyUnlocked.includes('daily_streak_7')) {
     candidates.push('daily_streak_7');
   }
-  if (ctx.drawCount === 3 && !ctx.previouslyUnlocked.includes('draw3_win')) {
+  if (
+    ctx.drawCount === 3 &&
+    (ctx.variantId ?? 'klondike') === 'klondike' &&
+    !ctx.previouslyUnlocked.includes('draw3_win')
+  ) {
     candidates.push('draw3_win');
   }
   if (ctx.worryBack && !ctx.previouslyUnlocked.includes('comeback')) {

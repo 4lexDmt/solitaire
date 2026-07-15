@@ -28,7 +28,7 @@ export function HUD({
   disabled = false,
 }: HUDProps) {
   const showTimer = useSettingsStore((s) => s.showTimer);
-  const scoreMode = useSettingsStore((s) => s.scoreMode);
+  const scoreMode = game.scoreMode;
   const controlsLocked =
     disabled || game.status === 'won' || game.status === 'lost';
 

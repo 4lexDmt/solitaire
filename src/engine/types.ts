@@ -10,10 +10,10 @@ export interface Card {
   faceUp: boolean;
 }
 
-export type PileType = 'stock' | 'waste' | 'foundation' | 'tableau';
+export type PileType = 'stock' | 'waste' | 'foundation' | 'tableau' | 'cell';
 
 export interface Pile {
-  id: string; // 'stock' | 'waste' | 'foundation-0'..'foundation-3' | 'tableau-0'..'tableau-6'
+  id: string; // e.g. 'stock' | 'waste' | 'foundation-0'.. | 'tableau-0'.. | 'cell-0'.. (per variant layout)
   type: PileType;
   cards: Card[]; // index 0 = bottom of pile
   suit?: Suit; // foundations may be locked to a suit once seeded
@@ -21,13 +21,22 @@ export interface Pile {
 
 export type ScoreMode = 'none' | 'standard' | 'vegas';
 
+/** A full K→A same-suit run removed to a foundation as a side effect (Spider). */
+export interface CompletedRun {
+  from: string; // tableau pile id
+  to: string; // foundation pile id
+  cardIds: string[]; // the 13 cards, bottom→top (K→A)
+  flipped?: { pileId: string; cardId: string }; // card revealed by the removal
+}
+
 export interface Move {
   from: string; // pile id
   to: string; // pile id
   cardIds: string[]; // the moved cards, bottom→top (a run can be >1)
   flipped?: { pileId: string; cardId: string }; // a card revealed/flipped as a result
   recycled?: boolean; // true for waste→stock recycle
-  drew?: number; // for stock→waste draws (1 or 3)
+  drew?: number; // for stock→waste draws (1 or 3) or spider tableau deals (10)
+  completed?: CompletedRun[]; // spider run completions triggered by this move
   scoreDelta: number;
   ts: number; // epoch ms
 }
@@ -42,9 +51,10 @@ export type GameStatus = 'idle' | 'dealing' | 'playing' | 'won' | 'lost';
 export type StockPassLimit = 'unlimited' | 1 | 3;
 
 export interface GameState {
-  variantId: string; // 'klondike'
+  variantId: string; // 'klondike' | 'freecell' | 'spider'
   seed: string; // reproducible deal seed
   drawCount: 1 | 3;
+  spiderSuits?: 1 | 2 | 4; // spider only: number of distinct suits in the 104-card deck
   scoreMode: ScoreMode;
   stockPassLimit: StockPassLimit;
   stockRecycles: number; // waste→stock recycle count this deal

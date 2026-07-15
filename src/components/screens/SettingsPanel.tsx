@@ -16,6 +16,8 @@ import {
 import type { StockPassLimit } from '@/state/settings';
 import { useSettingsStore } from '@/state/settings';
 import type { ScoreMode } from '@/engine/types';
+import type { SpiderSuits } from '@/engine/variant';
+import type { VariantId } from '@/engine/variants';
 import { useRef } from 'react';
 
 interface SettingsPanelProps {
@@ -64,11 +66,41 @@ export function SettingsPanel({
       <div className="space-y-6">
         <section>
           <h3 className="mb-3 font-ui text-hud font-semibold text-ui-text">Game</h3>
-          <VariantPicker
-            onChange={(drawCount) =>
-              applyWithConfirmation(() => settings.setDrawCount(drawCount))
-            }
-          />
+          <div className="space-y-3">
+            <SegmentedControl<VariantId>
+              label="Game variant"
+              value={settings.variantId}
+              onChange={(variantId) =>
+                applyWithConfirmation(() => settings.setVariantId(variantId))
+              }
+              options={[
+                { value: 'klondike', label: 'Klondike' },
+                { value: 'freecell', label: 'FreeCell' },
+                { value: 'spider', label: 'Spider' },
+              ]}
+            />
+            {settings.variantId === 'klondike' ? (
+              <VariantPicker
+                onChange={(drawCount) =>
+                  applyWithConfirmation(() => settings.setDrawCount(drawCount))
+                }
+              />
+            ) : null}
+            {settings.variantId === 'spider' ? (
+              <SegmentedControl<SpiderSuits>
+                label="Spider suits"
+                value={settings.spiderSuits}
+                onChange={(spiderSuits) =>
+                  applyWithConfirmation(() => settings.setSpiderSuits(spiderSuits))
+                }
+                options={[
+                  { value: 1, label: '1 Suit' },
+                  { value: 2, label: '2 Suits' },
+                  { value: 4, label: '4 Suits' },
+                ]}
+              />
+            ) : null}
+          </div>
         </section>
 
         <section>
@@ -82,10 +114,12 @@ export function SettingsPanel({
             options={[
               { value: 'none', label: 'None' },
               { value: 'standard', label: 'Standard' },
-              { value: 'vegas', label: 'Vegas' },
+              ...(settings.variantId === 'klondike'
+                ? [{ value: 'vegas' as ScoreMode, label: 'Vegas' }]
+                : []),
             ]}
           />
-          {settings.scoreMode === 'vegas' ? (
+          {settings.scoreMode === 'vegas' && settings.variantId === 'klondike' ? (
             <div className="mt-3">
               <Toggle
                 label="Vegas cumulative bankroll"
@@ -97,19 +131,21 @@ export function SettingsPanel({
           ) : null}
         </section>
 
-        <section>
-          <h3 className="mb-3 font-ui text-hud font-semibold text-ui-text">Stock passes</h3>
-          <SegmentedControl<StockPassLimit>
-            label="Stock pass limit"
-            value={settings.stockPassLimit}
-            onChange={settings.setStockPassLimit}
-            options={[
-              { value: 'unlimited', label: 'Unlimited' },
-              { value: 1, label: '1' },
-              { value: 3, label: '3' },
-            ]}
-          />
-        </section>
+        {settings.variantId === 'klondike' ? (
+          <section>
+            <h3 className="mb-3 font-ui text-hud font-semibold text-ui-text">Stock passes</h3>
+            <SegmentedControl<StockPassLimit>
+              label="Stock pass limit"
+              value={settings.stockPassLimit}
+              onChange={settings.setStockPassLimit}
+              options={[
+                { value: 'unlimited', label: 'Unlimited' },
+                { value: 1, label: '1' },
+                { value: 3, label: '3' },
+              ]}
+            />
+          </section>
+        ) : null}
 
         <section className="space-y-1">
           <Toggle label="Show timer" checked={settings.showTimer} onChange={settings.setShowTimer} />
@@ -117,7 +153,9 @@ export function SettingsPanel({
           <Toggle label="Motion" checked={settings.motionEnabled} onChange={settings.setMotionEnabled} description="Respects system reduced-motion when off." />
           <Toggle label="Haptics" checked={settings.hapticsEnabled} onChange={settings.setHapticsEnabled} />
           <Toggle label="Left-handed layout" checked={settings.leftHanded} onChange={settings.setLeftHanded} />
-          <Toggle label="Winnable deals only" checked={settings.winnableOnly} onChange={settings.setWinnableOnly} />
+          {settings.variantId === 'klondike' ? (
+            <Toggle label="Winnable deals only" checked={settings.winnableOnly} onChange={settings.setWinnableOnly} />
+          ) : null}
           <Toggle label="Four-color deck" checked={settings.fourColorDeck} onChange={settings.setFourColorDeck} />
         </section>
 

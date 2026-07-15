@@ -3,10 +3,14 @@
 import { create } from 'zustand';
 import type { ThemeId } from '@/config/tokens';
 import type { ScoreMode, StockPassLimit } from '@/engine/types';
+import type { SpiderSuits } from '@/engine/variant';
+import type { VariantId } from '@/engine/variants';
 
 export type { StockPassLimit };
 
 export interface UserSettings {
+  variantId: VariantId;
+  spiderSuits: SpiderSuits;
   drawCount: 1 | 3;
   scoreMode: ScoreMode;
   stockPassLimit: StockPassLimit;
@@ -22,6 +26,8 @@ export interface UserSettings {
 }
 
 export const DEFAULT_SETTINGS: UserSettings = {
+  variantId: 'klondike',
+  spiderSuits: 1,
   drawCount: 3,
   scoreMode: 'standard',
   stockPassLimit: 'unlimited',
@@ -38,6 +44,8 @@ export const DEFAULT_SETTINGS: UserSettings = {
 
 export interface SettingsStore extends UserSettings {
   hydrate: (partial: Partial<UserSettings>) => void;
+  setVariantId: (variantId: VariantId) => void;
+  setSpiderSuits: (spiderSuits: SpiderSuits) => void;
   setDrawCount: (drawCount: 1 | 3) => void;
   setScoreMode: (scoreMode: ScoreMode) => void;
   setStockPassLimit: (limit: StockPassLimit) => void;
@@ -85,6 +93,8 @@ export const useSettingsStore = create<SettingsStore>((set) => ({
     });
   },
 
+  setVariantId: (variantId) => set({ variantId }),
+  setSpiderSuits: (spiderSuits) => set({ spiderSuits }),
   setDrawCount: (drawCount) => set({ drawCount }),
   setScoreMode: (scoreMode) => set({ scoreMode }),
   setStockPassLimit: (stockPassLimit) => set({ stockPassLimit }),

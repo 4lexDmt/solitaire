@@ -15,6 +15,7 @@ import { useGameStore } from '@/state/store';
 import { useSettingsStore } from '@/state/settings';
 import { LayoutGroup } from 'motion/react';
 import { AutoCompleteBar } from './AutoCompleteBar';
+import { CellPile } from './CellPile';
 import { buildDealSlotsFromGame, DealAnimation } from './DealAnimation';
 import { DragLayer } from './DragLayer';
 import { FoundationRow } from './FoundationRow';
@@ -22,6 +23,16 @@ import { StockPile } from './StockPile';
 import { TableauColumn } from './TableauColumn';
 import { WastePile } from './WastePile';
 import './board.css';
+
+function pileIndex(id: string): number {
+  return Number(id.split('-')[1] ?? 0);
+}
+
+function pilesOfType(game: GameState, type: string) {
+  return Object.values(game.piles)
+    .filter((p) => p.type === type)
+    .sort((a, b) => pileIndex(a.id) - pileIndex(b.id));
+}
 
 interface BoardProps {
   game: GameState;
@@ -54,8 +65,11 @@ export function Board({ game }: BoardProps) {
   const motionEnabled = motionSetting && !reducedMotion;
 
   const hintCardIds = game.hintCardIds ?? [];
-  const foundations = [0, 1, 2, 3].map((i) => game.piles[`foundation-${i}`]);
-  const tableaus = [0, 1, 2, 3, 4, 5, 6].map((i) => game.piles[`tableau-${i}`]);
+  const foundations = pilesOfType(game, 'foundation');
+  const tableaus = pilesOfType(game, 'tableau');
+  const cells = pilesOfType(game, 'cell');
+  const stockPile = game.piles.stock;
+  const wastePile = game.piles.waste;
   const selection = game.selection;
   const showAutoComplete = canAutoComplete(game);
   const dealSlots = useMemo(() => buildDealSlotsFromGame(game.piles), [game.piles, dealKey]);
@@ -298,34 +312,54 @@ export function Board({ game }: BoardProps) {
         <div
           ref={boardRef}
           className={`board${dealing ? ' board--dealing' : ''}${leftHanded ? ' board--left-handed' : ''}`}
+          data-variant={game.variantId}
           role="group"
           aria-label="Solitaire board"
           tabIndex={0}
           onKeyDown={handleKeyDown}
           onClick={handleBoardClick}
         >
-        <div className="board__pile board__pile--gap" aria-hidden />
-        <StockPile
-          pile={game.piles.stock}
-          hintCardIds={hintCardIds}
-          dropHighlight={dropTarget === 'stock'}
-          focusProps={stockFocus}
-          onStockActivate={() => handlePileActivate('stock')}
-        />
-        <WastePile
-          pile={game.piles.waste}
-          drawCount={game.drawCount}
-          hintCardIds={hintCardIds}
-          dropHighlight={dropTarget === 'waste'}
-          selection={selection}
-          isSelected={isSelected}
-          isDragSource={isDragSource}
-          isFocused={isFocused}
-          getFocusProps={getFocusProps}
-          cardMotionProps={cardMotionProps}
-          onCardPointerDown={handlePointerDown}
-          onCardDoubleClick={handleCardDoubleClick}
-        />
+        {stockPile ? <div className="board__pile board__pile--gap" aria-hidden /> : null}
+        {stockPile ? (
+          <StockPile
+            pile={stockPile}
+            hintCardIds={hintCardIds}
+            dropHighlight={dropTarget === 'stock'}
+            focusProps={stockFocus}
+            onStockActivate={() => handlePileActivate('stock')}
+          />
+        ) : null}
+        {wastePile ? (
+          <WastePile
+            pile={wastePile}
+            drawCount={game.drawCount}
+            hintCardIds={hintCardIds}
+            dropHighlight={dropTarget === 'waste'}
+            selection={selection}
+            isSelected={isSelected}
+            isDragSource={isDragSource}
+            isFocused={isFocused}
+            getFocusProps={getFocusProps}
+            cardMotionProps={cardMotionProps}
+            onCardPointerDown={handlePointerDown}
+            onCardDoubleClick={handleCardDoubleClick}
+          />
+        ) : null}
+        {cells.map((pile) => (
+          <CellPile
+            key={pile.id}
+            pile={pile}
+            hintCardIds={hintCardIds}
+            dropHighlight={dropTarget === pile.id}
+            isSelected={isSelected}
+            isDragSource={isDragSource}
+            isFocused={isFocused}
+            getFocusProps={getFocusProps}
+            cardMotionProps={cardMotionProps}
+            onCardPointerDown={handlePointerDown}
+            onCardDoubleClick={handleCardDoubleClick}
+          />
+        ))}
         <FoundationRow
           piles={foundations}
           hintCardIds={hintCardIds}
@@ -342,6 +376,9 @@ export function Board({ game }: BoardProps) {
           <TableauColumn
             key={pile.id}
             pile={pile}
+            isMovable={(pileId, cardId) =>
+              getMovableCardIds(game, pileId, cardId) !== null
+            }
             hintCardIds={hintCardIds}
             dropHighlight={dropTarget === pile.id}
             isSelected={isSelected}

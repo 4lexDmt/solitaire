@@ -47,7 +47,7 @@ export function FoundationPile({
   onCardDoubleClick,
 }: FoundationPileProps) {
   const index = Number(pile.id.split('-')[1]);
-  const watermarkSuit = defaultSuit ?? FOUNDATION_SUITS[index] ?? 'hearts';
+  const watermarkSuit = defaultSuit ?? FOUNDATION_SUITS[index % 4] ?? 'hearts';
   const top = pile.cards[pile.cards.length - 1];
   const focusTarget: FocusTarget = top
     ? { kind: 'card', pileId: pile.id, cardId: top.id }
@@ -139,7 +139,7 @@ export function FoundationRow({
           cardMotionProps={cardMotionProps}
           onCardPointerDown={onCardPointerDown}
           onCardDoubleClick={onCardDoubleClick}
-          defaultSuit={FOUNDATION_SUITS[index]}
+          defaultSuit={FOUNDATION_SUITS[index % 4]}
         />
       ))}
     </>

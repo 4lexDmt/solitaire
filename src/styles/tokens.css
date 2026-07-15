@@ -68,20 +68,12 @@
   --waste-fan-ratio: 0.26;
   --board-pad-ratio: 0.22;
   --row-gap-ratio: 0.3;
-  /* Resolved from (100vw - 2*pad - 6*gap) / 7 with pad/gap ∝ card-w → 100vw / 8.52 */
-  --card-w: clamp(
-    var(--card-w-min),
-    calc(100vw / 8.52),
-    var(--card-w-max)
-  );
-  --card-h: calc(var(--card-w) * 1.4);
-  --card-radius: calc(var(--card-w) * var(--card-radius-ratio));
-  --gap-x: calc(var(--card-w) * var(--gap-x-ratio));
-  --overlap-faceup: calc(var(--card-h) * var(--overlap-faceup-ratio));
-  --overlap-facedown: calc(var(--card-h) * var(--overlap-facedown-ratio));
-  --waste-fan: calc(var(--card-w) * var(--waste-fan-ratio));
-  --board-pad: calc(var(--card-w) * var(--board-pad-ratio));
-  --row-gap: calc(var(--card-h) * var(--row-gap-ratio));
+  /*
+   * Card width divisor per variant, from (100vw - 2*pad - (n-1)*gap) / n
+   * with pad/gap ∝ card-w → 100vw / (n + (n-1)*0.18 + 2*0.22):
+   * Klondike n=7 → 8.52, FreeCell n=8 → 9.70, Spider n=10 → 12.06.
+   */
+  --card-w-divisor: 8.52;
 
   /* §7 Z-index layers */
   --z-baize: 0;
@@ -113,6 +105,35 @@
   --dur-reduced-flip: 80ms;
   --dur-reduced-snap: 120ms;
   --cascade-timeout: 12s;
+}
+
+[data-variant='freecell'] {
+  --card-w-divisor: 9.7;
+}
+
+[data-variant='spider'] {
+  --card-w-divisor: 12.06;
+}
+
+/*
+ * Derived geometry re-evaluates wherever the divisor is overridden
+ * (custom properties resolve against the element they're declared on).
+ */
+:root,
+[data-variant] {
+  --card-w: clamp(
+    var(--card-w-min),
+    calc(100vw / var(--card-w-divisor)),
+    var(--card-w-max)
+  );
+  --card-h: calc(var(--card-w) * 1.4);
+  --card-radius: calc(var(--card-w) * var(--card-radius-ratio));
+  --gap-x: calc(var(--card-w) * var(--gap-x-ratio));
+  --overlap-faceup: calc(var(--card-h) * var(--overlap-faceup-ratio));
+  --overlap-facedown: calc(var(--card-h) * var(--overlap-facedown-ratio));
+  --waste-fan: calc(var(--card-w) * var(--waste-fan-ratio));
+  --board-pad: calc(var(--card-w) * var(--board-pad-ratio));
+  --row-gap: calc(var(--card-h) * var(--row-gap-ratio));
 }
 
 [data-four-color='true'] {

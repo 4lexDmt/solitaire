@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { CASCADE, Z } from '@/config/tokens';
 import type { Card, GameState } from '@/engine/types';
-import { klondike } from '@/engine/variants/klondike';
+import { getVariant } from '@/engine/variants';
 import {
   getMovableCardIds,
   resolvePointerTarget,
@@ -133,7 +133,7 @@ export function useCardDrag({
 
     if (
       toPile &&
-      klondike.canDrop(currentGame, active.cardIds, active.from, toPile)
+      getVariant(currentGame.variantId).canDrop(currentGame, active.cardIds, active.from, toPile)
     ) {
       onMoveRef.current(active.from, toPile, active.cardIds);
       resetDragState();
@@ -211,7 +211,12 @@ export function useCardDrag({
       if (
         pileId &&
         pileId !== pending.pileId &&
-        klondike.canDrop(gameRef.current, pending.cardIds, pending.pileId, pileId)
+        getVariant(gameRef.current.variantId).canDrop(
+          gameRef.current,
+          pending.cardIds,
+          pending.pileId,
+          pileId,
+        )
       ) {
         setDropTarget(pileId);
       } else {

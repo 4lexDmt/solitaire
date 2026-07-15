@@ -43,7 +43,7 @@ export function PilePlaceholder({
         </div>
       )}
       {variant === 'stock' && <RecycleIcon />}
-      {variant === 'tableau' && (
+      {(variant === 'tableau' || variant === 'cell') && (
         <div className="pile-placeholder__watermark">
           <div
             style={{

@@ -12,6 +12,22 @@
   row-gap: var(--row-gap);
 }
 
+.board[data-variant='freecell'] {
+  max-width: calc(8 * var(--card-w) + 7 * var(--gap-x) + 2 * var(--board-pad));
+  grid-template-columns: repeat(8, var(--card-w));
+  grid-template-areas:
+    'cell-0 cell-1 cell-2 cell-3 foundation-0 foundation-1 foundation-2 foundation-3'
+    'tableau-0 tableau-1 tableau-2 tableau-3 tableau-4 tableau-5 tableau-6 tableau-7';
+}
+
+.board[data-variant='spider'] {
+  max-width: calc(10 * var(--card-w) + 9 * var(--gap-x) + 2 * var(--board-pad));
+  grid-template-columns: repeat(10, var(--card-w));
+  grid-template-areas:
+    'stock gap foundation-0 foundation-1 foundation-2 foundation-3 foundation-4 foundation-5 foundation-6 foundation-7'
+    'tableau-0 tableau-1 tableau-2 tableau-3 tableau-4 tableau-5 tableau-6 tableau-7 tableau-8 tableau-9';
+}
+
 .board__pile {
   position: relative;
   width: var(--card-w);
@@ -47,6 +63,38 @@
   grid-area: foundation-3;
 }
 
+.board__pile--foundation-4 {
+  grid-area: foundation-4;
+}
+
+.board__pile--foundation-5 {
+  grid-area: foundation-5;
+}
+
+.board__pile--foundation-6 {
+  grid-area: foundation-6;
+}
+
+.board__pile--foundation-7 {
+  grid-area: foundation-7;
+}
+
+.board__pile--cell-0 {
+  grid-area: cell-0;
+}
+
+.board__pile--cell-1 {
+  grid-area: cell-1;
+}
+
+.board__pile--cell-2 {
+  grid-area: cell-2;
+}
+
+.board__pile--cell-3 {
+  grid-area: cell-3;
+}
+
 .board__pile--tableau-0 {
   grid-area: tableau-0;
 }
@@ -73,6 +121,18 @@
 
 .board__pile--tableau-6 {
   grid-area: tableau-6;
+}
+
+.board__pile--tableau-7 {
+  grid-area: tableau-7;
+}
+
+.board__pile--tableau-8 {
+  grid-area: tableau-8;
+}
+
+.board__pile--tableau-9 {
+  grid-area: tableau-9;
 }
 
 .card-view {
@@ -307,6 +367,18 @@ html[data-four-color='true'] .card-view__inner:not(.card-view__inner--four-color
     'tableau-0 tableau-1 tableau-2 tableau-3 tableau-4 tableau-5 tableau-6';
 }
 
+.board--left-handed[data-variant='freecell'] {
+  grid-template-areas:
+    'foundation-0 foundation-1 foundation-2 foundation-3 cell-0 cell-1 cell-2 cell-3'
+    'tableau-0 tableau-1 tableau-2 tableau-3 tableau-4 tableau-5 tableau-6 tableau-7';
+}
+
+.board--left-handed[data-variant='spider'] {
+  grid-template-areas:
+    'foundation-0 foundation-1 foundation-2 foundation-3 foundation-4 foundation-5 foundation-6 foundation-7 gap stock'
+    'tableau-0 tableau-1 tableau-2 tableau-3 tableau-4 tableau-5 tableau-6 tableau-7 tableau-8 tableau-9';
+}
+
 .board--left-handed .board__pile--gap {
   grid-area: gap;
 }
@@ -320,7 +392,7 @@ html[data-four-color='true'] .card-view__inner:not(.card-view__inner--four-color
 }
 
 @media (max-width: 380px) {
-  .board {
+  .board[data-variant='klondike'] {
     grid-template-areas:
       'stock waste gap foundation-0 foundation-1'
       '. . . foundation-2 foundation-3'

@@ -18,6 +18,7 @@ import {
 } from '@/persistence/db';
 import { pullCloudStats, syncActiveSave, syncOnGameEnd } from '@/lib/supabase/sync';
 import { HAPTIC, vibrate } from '@/lib/haptics';
+import type { VariantId } from '@/engine/variants';
 import { useAchievementsStore, type AchievementId } from '@/state/achievements';
 import { type UserSettings, useSettingsStore } from '@/state/settings';
 import { useStatsStore } from '@/state/stats';
@@ -38,6 +39,8 @@ type Screen = 'home' | 'game';
 
 function pickSettings(state: ReturnType<typeof useSettingsStore.getState>): UserSettings {
   return {
+    variantId: state.variantId,
+    spiderSuits: state.spiderSuits,
     drawCount: state.drawCount,
     scoreMode: state.scoreMode,
     stockPassLimit: state.stockPassLimit,
@@ -73,6 +76,8 @@ export function AppShell() {
   const setGameTheme = useGameStore((s) => s.setTheme);
 
   const hydrateSettings = useSettingsStore((s) => s.hydrate);
+  const variantId = useSettingsStore((s) => s.variantId);
+  const spiderSuits = useSettingsStore((s) => s.spiderSuits);
   const drawCount = useSettingsStore((s) => s.drawCount);
   const scoreMode = useSettingsStore((s) => s.scoreMode);
   const theme = useSettingsStore((s) => s.theme);
@@ -180,15 +185,16 @@ export function AppShell() {
   }, []);
 
   useEffect(() => {
-    if (winnableOnly) {
+    if (winnableOnly && variantId === 'klondike') {
       topUpWinnablePool(drawCount);
     }
-  }, [winnableOnly, drawCount]);
+  }, [winnableOnly, drawCount, variantId]);
 
   const finalizeWin = useCallback(async () => {
     const dailyDate = isDaily ? dailyDateKey() : undefined;
     recordGame({
       won: true,
+      variantId: game.variantId,
       drawCount: game.drawCount,
       elapsedMs: game.elapsedMs,
       moves: game.moves,
@@ -201,6 +207,7 @@ export function AppShell() {
     const stats = useStatsStore.getState();
     const newlyUnlocked = checkAchievements({
       won: true,
+      variantId: game.variantId,
       drawCount: game.drawCount,
       elapsedMs: game.elapsedMs,
       usedUndo: usedUndoRef.current,
@@ -242,7 +249,7 @@ export function AppShell() {
     setShowWin(true);
   }, []);
 
-  function startGame(options?: { seed?: string; daily?: boolean }) {
+  function startGame(options?: { seed?: string; daily?: boolean; variantId?: VariantId }) {
     void (async () => {
       usedUndoRef.current = false;
       worryBackRef.current = false;
@@ -253,6 +260,11 @@ export function AppShell() {
       setPaused(false);
       setIsDaily(Boolean(options?.daily));
 
+      // Daily challenge is always the Klondike deal of the day.
+      const gameVariantId = options?.daily
+        ? 'klondike'
+        : (options?.variantId ?? variantId);
+
       let seed = options?.seed;
       if (options?.daily) {
         try {
@@ -262,7 +274,7 @@ export function AppShell() {
         }
       }
 
-      if (!seed && winnableOnly) {
+      if (!seed && winnableOnly && gameVariantId === 'klondike') {
         try {
           seed = await pickWinnableSeed(drawCount);
         } catch {
@@ -270,17 +282,23 @@ export function AppShell() {
         }
       }
 
+      // Vegas scoring is a Klondike mode; other variants use standard scoring.
+      const gameScoreMode =
+        gameVariantId !== 'klondike' && scoreMode === 'vegas' ? 'standard' : scoreMode;
+
       const startingScore =
-        scoreMode === 'vegas' && vegasCumulative
-          ? vegasBankroll + (scoreMode === 'vegas' ? -52 : 0)
+        gameScoreMode === 'vegas' && vegasCumulative
+          ? vegasBankroll - 52
           : undefined;
 
       newGame({
         seed,
+        variantId: gameVariantId,
         drawCount,
-        scoreMode,
+        scoreMode: gameScoreMode,
         stockPassLimit,
         startingScore,
+        spiderSuits,
       });
       setScreen('game');
     })();
@@ -328,7 +346,13 @@ export function AppShell() {
           onUndo={handleUndo}
           onRedo={redo}
           onHint={hint}
-          onRestart={() => startGame({ seed: game.seed, daily: isDaily })}
+          onRestart={() =>
+            startGame({
+              seed: game.seed,
+              daily: isDaily,
+              variantId: game.variantId as VariantId,
+            })
+          }
           onResume={() => setPaused(false)}
           onNewGame={() => startGame()}
           onHome={() => {

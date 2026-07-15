@@ -1,3 +1,4 @@
+import { buildDeck } from '../deck';
 import { createRng, shuffle } from '../rng';
 import { scoreMove } from '../scoring';
 import type { Card, GameState, Move, Pile } from '../types';
@@ -202,8 +203,16 @@ export const klondike: Variant = {
   name: 'Klondike',
   layout: KLONDIKE_LAYOUT,
 
+  createDeck() {
+    return buildDeck();
+  },
+
   deal(deck, seed) {
     return dealKlondike(deck, seed);
+  },
+
+  getMovableRun(_state, pile, cardId) {
+    return runFromCard(pile, cardId);
   },
 
   canDrop(state, cardIds, from, to) {

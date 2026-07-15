@@ -89,11 +89,13 @@ export function DealAnimation({
     const board = boardRef.current;
     if (!board) return;
 
+    // Cards fly from the stock; variants without one (FreeCell) deal from the board's top center.
     const stockRect = board
       .querySelector('[data-pile-id="stock"]')
       ?.getBoundingClientRect();
-    const fromX = stockRect?.left ?? 0;
-    const fromY = stockRect?.top ?? 0;
+    const boardRect = board.getBoundingClientRect();
+    const fromX = stockRect?.left ?? boardRect.left + boardRect.width / 2;
+    const fromY = stockRect?.top ?? boardRect.top;
 
     const nextTargets: Record<string, SlotTarget> = {};
     for (const slot of dealSlots) {
@@ -184,18 +186,20 @@ export function DealAnimation({
 }
 
 export function buildDealSlotsFromGame(
-  piles: Record<string, { cards: Card[] }>,
+  piles: Record<string, { id?: string; type?: string; cards: Card[] }>,
 ): DealSlot[] {
   const slots: DealSlot[] = [];
   let dealIndex = 0;
 
-  for (let col = 0; col < 7; col++) {
-    const pile = piles[`tableau-${col}`];
-    if (!pile) continue;
-    pile.cards.forEach((card, indexInPile) => {
+  const tableauIds = Object.keys(piles)
+    .filter((id) => id.startsWith('tableau-'))
+    .sort((a, b) => Number(a.split('-')[1]) - Number(b.split('-')[1]));
+
+  for (const pileId of tableauIds) {
+    piles[pileId].cards.forEach((card, indexInPile) => {
       slots.push({
         card,
-        pileId: `tableau-${col}`,
+        pileId,
         indexInPile,
         dealIndex: dealIndex++,
       });

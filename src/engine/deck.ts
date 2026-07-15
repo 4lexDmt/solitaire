@@ -52,3 +52,24 @@ export function buildDeck(): Card[] {
   }
   return deck;
 }
+
+/**
+ * Spider deck: 104 cards (two decks' worth) drawn from 1, 2, or 4 suits.
+ * Card ids get a copy suffix ('SA-0'..'SA-7') so every card stays unique.
+ */
+export function buildSpiderDeck(suits: 1 | 2 | 4 = 1): Card[] {
+  const suitSet: Suit[] =
+    suits === 1 ? ['spades'] : suits === 2 ? ['spades', 'hearts'] : SUITS;
+  const copies = 8 / suitSet.length;
+
+  const deck: Card[] = [];
+  for (const suit of suitSet) {
+    for (let copy = 0; copy < copies; copy++) {
+      for (let rank = 1 as Rank; rank <= 13; rank++) {
+        const base = createCard(suit, rank as Rank, false);
+        deck.push({ ...base, id: `${base.id}-${copy}` });
+      }
+    }
+  }
+  return deck;
+}

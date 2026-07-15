@@ -26,6 +26,8 @@ export function StatsPanel({ open, onClose }: StatsPanelProps) {
   const overallRate = winRate(stats.gamesWon, stats.gamesPlayed);
   const draw1Rate = winRate(stats.draw1.won, stats.draw1.played);
   const draw3Rate = winRate(stats.draw3.won, stats.draw3.played);
+  const freecellRate = winRate(stats.freecell?.won ?? 0, stats.freecell?.played ?? 0);
+  const spiderRate = winRate(stats.spider?.won ?? 0, stats.spider?.played ?? 0);
 
   return (
     <Sheet open={open} onClose={onClose} title="Statistics">
@@ -38,6 +40,8 @@ export function StatsPanel({ open, onClose }: StatsPanelProps) {
         <StatTile label="Total time" value={formatDuration(stats.totalTimeMs)} />
         <StatTile label="Draw-1 win rate" value={formatPercent(draw1Rate)} />
         <StatTile label="Draw-3 win rate" value={formatPercent(draw3Rate)} />
+        <StatTile label="FreeCell win rate" value={formatPercent(freecellRate)} />
+        <StatTile label="Spider win rate" value={formatPercent(spiderRate)} />
         <StatTile
           label="Daily streak"
           value={formatNumber(stats.dailyCurrentStreak)}

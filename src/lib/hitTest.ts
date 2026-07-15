@@ -1,6 +1,7 @@
 import type { GameState } from '@/engine/types';
 import type { Variant } from '@/engine/variant';
-import { klondike, runFromCard, topCard } from '@/engine/variants/klondike';
+import { getVariant } from '@/engine/variants';
+import { topCard } from '@/engine/variants/klondike';
 
 export interface PointerTarget {
   pileId: string;
@@ -89,21 +90,15 @@ export function getMovableCardIds(
   state: GameState,
   pileId: string,
   cardId: string | null,
-  variant: Variant = klondike,
+  variant: Variant = getVariant(state.variantId),
 ): string[] | null {
   const pile = state.piles[pileId];
   if (!pile) return null;
 
-  if (pileId === 'stock') return null;
+  if (pile.type === 'stock') return null;
 
-  if (pileId === 'waste') {
-    const top = topCard(pile);
-    if (!top || !top.faceUp) return null;
-    if (cardId && cardId !== top.id) return null;
-    return [top.id];
-  }
-
-  if (pile.type === 'foundation') {
+  if (pile.type === 'waste' || pile.type === 'cell' || pile.type === 'foundation') {
+    if (pile.type === 'foundation' && variant.foundationsLocked) return null;
     const top = topCard(pile);
     if (!top || !top.faceUp) return null;
     if (cardId && cardId !== top.id) return null;
@@ -112,7 +107,7 @@ export function getMovableCardIds(
 
   if (pile.type === 'tableau') {
     if (!cardId) return null;
-    const run = runFromCard(pile, cardId);
+    const run = variant.getMovableRun(state, pile, cardId);
     if (run.length === 0) return null;
     return run.map((c) => c.id);
   }
@@ -125,7 +120,7 @@ export function getValidDropTargets(
   state: GameState,
   from: string,
   cardIds: string[],
-  variant: Variant = klondike,
+  variant: Variant = getVariant(state.variantId),
 ): string[] {
   if (cardIds.length === 0) return [];
 
