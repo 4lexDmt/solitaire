@@ -1,7 +1,7 @@
 'use client';
 
 import { LiveRegion } from '@/components/a11y/LiveRegion';
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import type { GameState } from '@/engine/types';
 import { useCardDrag } from '@/hooks/useCardDrag';
 import { useKeyboardPlay } from '@/hooks/useKeyboardPlay';
@@ -14,9 +14,9 @@ import { playSound, setSoundEnabled, unlockAudio } from '@/lib/sound';
 import { useGameStore } from '@/state/store';
 import { useSettingsStore } from '@/state/settings';
 import { LayoutGroup } from 'motion/react';
+import { flashStatus } from '@/lib/statusFlash';
 import { AutoCompleteBar } from './AutoCompleteBar';
 import { CellPile } from './CellPile';
-import { buildDealSlotsFromGame, DealAnimation } from './DealAnimation';
 import { DragLayer } from './DragLayer';
 import { FoundationRow } from './FoundationRow';
 import { StockPile } from './StockPile';
@@ -42,14 +42,13 @@ export function Board({ game }: BoardProps) {
   const boardRef = useRef<HTMLDivElement>(null);
   const [announcement, setAnnouncement] = useState('');
   const suppressClickRef = useRef(false);
-  const [dealKey, setDealKey] = useState(game.seed);
-  const [dealing, setDealing] = useState(true);
   const [shakeCardId, setShakeCardId] = useState<string | null>(null);
   const [invalidFlashCardId, setInvalidFlashCardId] = useState<string | null>(null);
   const [foundationSparkle, setFoundationSparkle] = useState<string | null>(null);
   const [autoCompleteBusy, setAutoCompleteBusy] = useState(false);
   const [lastInvalidCardId, setLastInvalidCardId] = useState<string | null>(null);
   const prevHistoryLen = useRef(game.history.length);
+  const prevSeedRef = useRef(game.seed);
 
   const move = useGameStore((s) => s.move);
   const drawOrRecycle = useGameStore((s) => s.drawOrRecycle);
@@ -72,15 +71,16 @@ export function Board({ game }: BoardProps) {
   const wastePile = game.piles.waste;
   const selection = game.selection;
   const showAutoComplete = canAutoComplete(game);
-  const dealSlots = useMemo(() => buildDealSlotsFromGame(game.piles), [game.piles, dealKey]);
 
   useEffect(() => {
     setSoundEnabled(soundEnabled);
   }, [soundEnabled]);
 
+  // Instant deal (design file) — play deal sound, no flying cards.
   useEffect(() => {
-    setDealKey(game.seed);
-    setDealing(true);
+    if (prevSeedRef.current === game.seed) return;
+    prevSeedRef.current = game.seed;
+    playSound('deal');
   }, [game.seed]);
 
   useEffect(() => {
@@ -183,8 +183,21 @@ export function Board({ game }: BoardProps) {
 
       if (pileId === 'stock') {
         clearSelection();
+        if (game.variantId === 'spider') {
+          const hasEmpty = Object.values(game.piles).some(
+            (p) => p.type === 'tableau' && p.cards.length === 0,
+          );
+          const stockLen = game.piles.stock?.cards.length ?? 0;
+          if (hasEmpty && stockLen > 0) {
+            playSound('invalid');
+            flashStatus('Fill every empty column before dealing.');
+            return;
+          }
+        }
+        const beforeMoves = game.moves;
         drawOrRecycle();
-        playSound('deal');
+        const after = useGameStore.getState().game;
+        if (after.moves > beforeMoves) playSound('deal');
         return;
       }
 
@@ -297,17 +310,12 @@ export function Board({ game }: BoardProps) {
   const cardMotionProps = useCallback(
     (cardId: string, pileId: string) => ({
       reducedMotion,
-      hiddenForDeal: dealing,
       shake: shakeCardId === cardId,
       invalidFlash: invalidFlashCardId === cardId,
       foundationSparkle: foundationSparkle === pileId,
     }),
-    [dealing, foundationSparkle, invalidFlashCardId, reducedMotion, shakeCardId],
+    [foundationSparkle, invalidFlashCardId, reducedMotion, shakeCardId],
   );
-
-  const handleDealComplete = useCallback(() => {
-    setDealing(false);
-  }, []);
 
   const stockFocus = getFocusProps({ kind: 'pile', pileId: 'stock' });
 
@@ -322,7 +330,7 @@ export function Board({ game }: BoardProps) {
       <LayoutGroup>
         <div
           ref={boardRef}
-          className={`board${dealing ? ' board--dealing' : ''}${leftHanded ? ' board--left-handed' : ''}`}
+          className={`board${leftHanded ? ' board--left-handed' : ''}`}
           data-variant={game.variantId}
           role="group"
           aria-label="Solitaire board"
@@ -403,16 +411,6 @@ export function Board({ game }: BoardProps) {
         ))}
         </div>
       </LayoutGroup>
-
-      {dealing && dealKey ? (
-        <DealAnimation
-          dealKey={dealKey}
-          boardRef={boardRef}
-          slots={dealSlots}
-          reducedMotion={reducedMotion}
-          onComplete={handleDealComplete}
-        />
-      ) : null}
 
       <DragLayer
         drag={drag}

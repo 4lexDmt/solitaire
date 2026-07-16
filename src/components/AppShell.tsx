@@ -19,12 +19,15 @@ import {
 } from '@/persistence/db';
 import { pullCloudStats, syncActiveSave, syncOnGameEnd } from '@/lib/supabase/sync';
 import { HAPTIC, vibrate } from '@/lib/haptics';
+import { playSound } from '@/lib/sound';
+import { flashStatus } from '@/lib/statusFlash';
 import type { VariantId } from '@/engine/variants';
 import { useAchievementsStore, type AchievementId } from '@/state/achievements';
 import { type UserSettings, useSettingsStore } from '@/state/settings';
 import { useStatsStore } from '@/state/stats';
 import { useGameStore } from '@/state/store';
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { useReducedMotion } from '@/hooks/useReducedMotion';
 
 const StatsPanel = dynamic(
   () => import('@/components/screens/StatsPanel').then((m) => m.StatsPanel),
@@ -57,6 +60,13 @@ function pickSettings(state: ReturnType<typeof useSettingsStore.getState>): User
 
 type Dialog = 'help' | 'about' | 'daily' | null;
 
+type ConfirmState = {
+  message: string;
+  onYes: () => void;
+} | null;
+
+const WIN_DIALOG_DELAY_MS = 2800;
+
 export function AppShell() {
   const [booting, setBooting] = useState(true);
   const [bootPct, setBootPct] = useState(0);
@@ -67,9 +77,12 @@ export function AppShell() {
   const [statsOpen, setStatsOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [dialog, setDialog] = useState<Dialog>(null);
+  const [confirm, setConfirm] = useState<ConfirmState>(null);
   const [hasSavedGame, setHasSavedGame] = useState(false);
   const [isDaily, setIsDaily] = useState(false);
   const [hydrated, setHydrated] = useState(false);
+  const { reducedMotion } = useReducedMotion();
+  const motionEnabled = useSettingsStore((s) => s.motionEnabled);
 
   const game = useGameStore((s) => s.game);
   const newGame = useGameStore((s) => s.newGame);
@@ -230,8 +243,25 @@ export function AppShell() {
     processedWinRef.current = key;
     vibrate(HAPTIC.win, hapticsEnabled);
     void finalizeWin();
-    setWinCelebrationActive(true);
-  }, [game.status, game.seed, game.moves, game.elapsedMs, finalizeWin, hapticsEnabled]);
+
+    const animate = motionEnabled && !reducedMotion;
+    if (animate) {
+      setWinCelebrationActive(true);
+      const id = window.setTimeout(() => setShowWin(true), WIN_DIALOG_DELAY_MS);
+      return () => window.clearTimeout(id);
+    }
+    setWinCelebrationActive(false);
+    setShowWin(true);
+  }, [
+    game.status,
+    game.seed,
+    game.moves,
+    game.elapsedMs,
+    finalizeWin,
+    hapticsEnabled,
+    motionEnabled,
+    reducedMotion,
+  ]);
 
   useEffect(() => {
     if (game.status !== 'lost') return;
@@ -281,6 +311,7 @@ export function AppShell() {
         setWinCelebrationActive(false);
         setWinAchievements([]);
         setPaused(false);
+        setConfirm(null);
         setIsDaily(Boolean(options?.daily));
 
         const gameVariantId = options?.daily
@@ -288,13 +319,17 @@ export function AppShell() {
           : (options?.variantId ?? useSettingsStore.getState().variantId);
 
         if (options?.variantId) setVariantId(options.variantId);
-        if (options?.daily) setVariantId('klondike');
+        if (options?.daily) {
+          setVariantId('klondike');
+          useSettingsStore.getState().setDrawCount(1);
+        }
 
         const settings = useSettingsStore.getState();
+        const drawForGame = options?.daily ? 1 : settings.drawCount;
         let seed = options?.seed;
         if (options?.daily) {
           try {
-            seed = await dailyWinnableSeed(settings.drawCount);
+            seed = await dailyWinnableSeed(1);
           } catch {
             seed = options?.seed;
           }
@@ -302,7 +337,7 @@ export function AppShell() {
 
         if (!seed && settings.winnableOnly && gameVariantId === 'klondike') {
           try {
-            seed = await pickWinnableSeed(settings.drawCount);
+            seed = await pickWinnableSeed(drawForGame);
           } catch {
             seed = undefined;
           }
@@ -321,7 +356,7 @@ export function AppShell() {
         newGame({
           seed,
           variantId: gameVariantId,
-          drawCount: settings.drawCount,
+          drawCount: drawForGame,
           scoreMode: gameScoreMode,
           stockPassLimit: settings.stockPassLimit,
           startingScore,
@@ -331,6 +366,138 @@ export function AppShell() {
       })();
     },
     [newGame, setVariantId],
+  );
+
+  const recordCurrentAsLoss = useCallback(() => {
+    if (game.status === 'won' || game.status === 'lost' || game.moves === 0) return;
+    recordGame({
+      won: false,
+      variantId: game.variantId,
+      drawCount: game.drawCount,
+      elapsedMs: game.elapsedMs,
+      moves: game.moves,
+      isDaily,
+      dailyDate: isDaily ? dailyDateKey() : undefined,
+      finalScore: game.score,
+      scoreMode: game.scoreMode,
+    });
+    void clearSavedGame();
+    setHasSavedGame(false);
+  }, [
+    game.drawCount,
+    game.elapsedMs,
+    game.moves,
+    game.score,
+    game.scoreMode,
+    game.status,
+    game.variantId,
+    isDaily,
+    recordGame,
+  ]);
+
+  const requestNewGame = useCallback(
+    (options?: { seed?: string; daily?: boolean; variantId?: VariantId }) => {
+      const switchingVariant =
+        Boolean(options?.variantId) && options?.variantId !== game.variantId;
+      const midGame =
+        game.status === 'playing' &&
+        game.moves > 0 &&
+        !options?.seed &&
+        !options?.daily &&
+        !switchingVariant;
+      if (midGame) {
+        setConfirm({
+          message: 'Start a new game? Your current game will be recorded as a loss.',
+          onYes: () => {
+            recordCurrentAsLoss();
+            startGame(options);
+          },
+        });
+        return;
+      }
+      startGame(options);
+    },
+    [game.moves, game.status, game.variantId, recordCurrentAsLoss, startGame],
+  );
+
+  const requestExit = useCallback(() => {
+    setConfirm({
+      message: 'Exit to desktop? This will restart Aevanor Solitaire.',
+      onYes: () => {
+        setConfirm(null);
+        setPaused(false);
+        setShowWin(false);
+        setWinCelebrationActive(false);
+        setWinAchievements([]);
+        setBooting(true);
+        setBootPct(0);
+        startedRef.current = false;
+      },
+    });
+  }, []);
+
+  const handleHint = useCallback(() => {
+    if (game.status !== 'playing') return;
+    hint();
+    const ids = useGameStore.getState().game.hintCardIds;
+    if (ids && ids.length > 0) {
+      playSound('drop');
+      window.setTimeout(() => {
+        const current = useGameStore.getState().game;
+        if (current.hintCardIds) {
+          useGameStore.setState({ game: { ...current, hintCardIds: undefined } });
+        }
+      }, 1400);
+    } else {
+      playSound('invalid');
+      flashStatus(
+        game.variantId === 'klondike'
+          ? 'No moves — draw from the stock.'
+          : 'No available moves.',
+      );
+    }
+  }, [game.status, game.variantId, hint]);
+
+  const handleAuto = useCallback(() => {
+    if (game.variantId === 'spider') {
+      flashStatus('Auto-complete is available in Klondike & FreeCell.');
+      return;
+    }
+    if (game.status !== 'playing') return;
+
+    const step = () => {
+      const state = useGameStore.getState().game;
+      if (state.status !== 'playing') return;
+
+      const pileOrder = [
+        ...(state.piles.waste ? ['waste'] : []),
+        ...Object.keys(state.piles)
+          .filter((id) => id.startsWith('tableau-') || id.startsWith('cell-'))
+          .sort(),
+      ];
+
+      for (const pileId of pileOrder) {
+        const pile = state.piles[pileId];
+        if (!pile?.cards.length) continue;
+        const top = pile.cards[pile.cards.length - 1];
+        if (!top.faceUp) continue;
+        if (useGameStore.getState().autoMoveToFoundation(pileId, top.id)) {
+          window.setTimeout(step, 110);
+          return;
+        }
+      }
+    };
+
+    step();
+  }, [game.status, game.variantId]);
+
+  const handleDrawCountChange = useCallback(
+    (_n: 1 | 3) => {
+      if (game.variantId === 'klondike') {
+        startGame({ seed: game.seed, daily: isDaily, variantId: 'klondike' });
+      }
+    },
+    [game.seed, game.variantId, isDaily, startGame],
   );
 
   // Auto-start first deal after hydrate (+ optional resume)
@@ -375,16 +542,6 @@ export function AppShell() {
   function handleUndo() {
     usedUndoRef.current = true;
     undo();
-  }
-
-  function goHome() {
-    setPaused(false);
-    setShowWin(false);
-    setWinCelebrationActive(false);
-    setWinAchievements([]);
-    setBooting(true);
-    setBootPct(0);
-    startedRef.current = false;
   }
 
   const helpLines =
@@ -462,7 +619,7 @@ export function AppShell() {
         game={game}
         paused={paused}
         isDaily={isDaily || isDailySeed(game.seed)}
-        onNewGame={() => startGame()}
+        onNewGame={() => requestNewGame()}
         onRestart={() =>
           startGame({
             seed: game.seed,
@@ -472,11 +629,8 @@ export function AppShell() {
         }
         onUndo={handleUndo}
         onRedo={redo}
-        onHint={hint}
-        onAuto={() => {
-          if (game.variantId === 'spider') return;
-          window.dispatchEvent(new CustomEvent('aevanor:auto-complete'));
-        }}
+        onHint={handleHint}
+        onAuto={handleAuto}
         onResume={() => setPaused(false)}
         onPause={() => setPaused(true)}
         onOpenStats={() => setStatsOpen(true)}
@@ -484,8 +638,9 @@ export function AppShell() {
         onOpenHelp={() => setDialog('help')}
         onOpenAbout={() => setDialog('about')}
         onOpenDaily={() => setDialog('daily')}
-        onSelectVariant={(id) => startGame({ variantId: id })}
-        onHome={goHome}
+        onSelectVariant={(id) => requestNewGame({ variantId: id })}
+        onHome={requestExit}
+        onDrawCountChange={handleDrawCountChange}
       >
         <GameScreen
           game={game}
@@ -503,8 +658,8 @@ export function AppShell() {
             })
           }
           onResume={() => setPaused(false)}
-          onNewGame={() => startGame()}
-          onHome={goHome}
+          onNewGame={() => requestNewGame()}
+          onHome={requestExit}
         />
       </DesktopShell>
 
@@ -514,6 +669,32 @@ export function AppShell() {
         onClose={() => setSettingsOpen(false)}
         onConfirmNewDeal={() => startGame({ seed: game.seed, daily: isDaily })}
       />
+
+      {confirm ? (
+        <div className="win95-scrim" onClick={() => setConfirm(null)}>
+          <div onClick={(e) => e.stopPropagation()}>
+            <Win95Dialog title="Aevanor Solitaire" onClose={() => setConfirm(null)} size="sm">
+              <div style={{ display: 'flex', gap: 12, alignItems: 'flex-start', fontSize: 13, lineHeight: 1.4 }}>
+                <span style={{ fontSize: 28 }}>❓</span>
+                <span>{confirm.message}</span>
+              </div>
+              <div style={{ marginTop: 16, display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
+                <Win95Button
+                  className="win95-btn--primary"
+                  onClick={() => {
+                    const yes = confirm.onYes;
+                    setConfirm(null);
+                    yes();
+                  }}
+                >
+                  Yes
+                </Win95Button>
+                <Win95Button onClick={() => setConfirm(null)}>No</Win95Button>
+              </div>
+            </Win95Dialog>
+          </div>
+        </div>
+      ) : null}
 
       {dialog === 'help' ? (
         <div className="win95-scrim" onClick={() => setDialog(null)}>
@@ -587,7 +768,7 @@ export function AppShell() {
                 <div style={{ fontSize: 34, marginBottom: 2 }}>📅</div>
                 <div style={{ fontWeight: 'bold', fontSize: 15 }}>{dailyDateKey()}</div>
                 <div style={{ fontSize: 11, color: '#555', marginBottom: 14 }}>
-                  Klondike (Draw {drawCount})
+                  Deal · Klondike (Draw 1)
                 </div>
                 <div style={{ display: 'flex', gap: 8, justifyContent: 'center', marginBottom: 16 }}>
                   <div className="win95-inset" style={{ flex: 1, padding: 8 }}>

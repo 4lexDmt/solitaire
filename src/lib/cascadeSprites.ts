@@ -8,7 +8,7 @@ const SUIT_GLYPH: Record<Card['suit'], string> = {
   spades: '♠',
 };
 
-/** Lightweight canvas card sprite for the win cascade trail. */
+/** Lightweight canvas card sprite for the win cascade trail — classic Win9x look. */
 export function drawCascadeCardSprite(
   ctx: CanvasRenderingContext2D,
   card: Card,
@@ -22,26 +22,26 @@ export function drawCascadeCardSprite(
   ctx.translate(x + width / 2, y + height / 2);
   ctx.rotate(rotation);
 
-  const radius = width * 0.06;
-  ctx.fillStyle = '#fbf8f1';
-  ctx.strokeStyle = 'rgba(0,0,0,0.18)';
+  const radius = Math.max(4, width * 0.08);
+  ctx.fillStyle = '#fdfdfb';
+  ctx.strokeStyle = '#5a5a5a';
   ctx.lineWidth = 1;
 
   roundRect(ctx, -width / 2, -height / 2, width, height, radius);
   ctx.fill();
   ctx.stroke();
 
-  const ink = card.color === 'red' ? '#c0362c' : '#23262e';
+  const ink = card.color === 'red' ? '#c22222' : '#1a1a1a';
   ctx.fillStyle = ink;
-  ctx.font = `800 ${Math.max(12, width * 0.22)}px Inter, system-ui, sans-serif`;
+  ctx.font = `bold ${Math.max(12, width * 0.2)}px Tahoma, Verdana, sans-serif`;
   ctx.textAlign = 'left';
   ctx.textBaseline = 'top';
-  ctx.fillText(rankLabel(card.rank), -width / 2 + width * 0.08, -height / 2 + height * 0.06);
+  ctx.fillText(rankLabel(card.rank), -width / 2 + width * 0.08, -height / 2 + height * 0.05);
 
-  ctx.font = `${Math.max(14, width * 0.34)}px Inter, system-ui, sans-serif`;
+  ctx.font = `${Math.max(16, width * 0.38)}px serif`;
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
-  ctx.fillText(SUIT_GLYPH[card.suit], 0, height * 0.06);
+  ctx.fillText(SUIT_GLYPH[card.suit], 0, height * 0.04);
 
   ctx.restore();
 }

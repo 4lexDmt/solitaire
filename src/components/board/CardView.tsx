@@ -1,9 +1,9 @@
 'use client';
 
-import { CASCADE, DURATIONS } from '@/config/tokens';
+import { CASCADE } from '@/config/tokens';
 import type { Card } from '@/engine/types';
 import { cardAriaLabel, cardZIndex } from '@/lib/layout';
-import { flipTransition, invalidShakeTransition } from '@/lib/motionPresets';
+import { invalidShakeTransition } from '@/lib/motionPresets';
 import { motion } from 'motion/react';
 import { CardBack } from './CardBack';
 import { CardFace } from './CardFace';
@@ -30,50 +30,9 @@ interface CardViewProps {
   onDoubleClick?: (event: React.MouseEvent<HTMLElement>) => void;
 }
 
-function CardFlipInner({
-  card,
-  reducedMotion,
-}: {
-  card: Card;
-  reducedMotion: boolean;
-}) {
-  const duration = flipTransition(reducedMotion);
-
-  return (
-    <motion.div
-      className="card-view__flip"
-      style={{
-        width: '100%',
-        height: '100%',
-        transformStyle: 'preserve-3d',
-        position: 'relative',
-      }}
-      initial={false}
-      animate={{
-        rotateY: card.faceUp ? 180 : 0,
-        scale: reducedMotion ? 1 : card.faceUp ? [1, 1.04, 1] : 1,
-      }}
-      transition={duration}
-    >
-      <div
-        className="card-view__face card-view__face--back"
-        style={{ backfaceVisibility: 'hidden' }}
-      >
-        <CardBack />
-      </div>
-      <div
-        className="card-view__face card-view__face--front"
-        style={{
-          backfaceVisibility: 'hidden',
-          transform: 'rotateY(180deg)',
-          position: 'absolute',
-          inset: 0,
-        }}
-      >
-        <CardFace card={card} />
-      </div>
-    </motion.div>
-  );
+/** Instant face/back swap — matches Aevanor Solitaire.dc.html (no 3D flip). */
+function CardFlipInner({ card }: { card: Card; reducedMotion: boolean }) {
+  return card.faceUp ? <CardFace card={card} /> : <CardBack />;
 }
 
 export function CardView({
@@ -92,7 +51,6 @@ export function CardView({
   invalidFlash = false,
   foundationSparkle = false,
   hiddenForDeal = false,
-  layout = true,
   onFocus,
   onPointerDown,
   onDoubleClick,
@@ -112,52 +70,38 @@ export function CardView({
 
   return (
     <motion.div
-      layout={layout && !reducedMotion && !hiddenForDeal && !dragSource}
-      layoutId={layout && !reducedMotion ? card.id : undefined}
+      layout={false}
       className={classNames}
       style={{
         top: topOffsetStyle,
         left: leftOffsetStyle,
         zIndex: cardZIndex(depthIndex),
       }}
-      aria-label={cardAriaLabel(card)}
       role="button"
-      draggable={false}
+      tabIndex={tabIndex}
+      aria-label={cardAriaLabel(card)}
       data-card-id={card.id}
       data-pile-id={pileId}
-      tabIndex={tabIndex}
+      data-focused={focused || undefined}
+      animate={
+        shake
+          ? {
+              x: [
+                0,
+                -CASCADE.invalidShakePx,
+                CASCADE.invalidShakePx,
+                -CASCADE.invalidShakePx,
+                CASCADE.invalidShakePx,
+                0,
+              ],
+            }
+          : { x: 0 }
+      }
+      transition={shake ? invalidShakeTransition(reducedMotion) : undefined}
       onFocus={onFocus}
       onPointerDown={onPointerDown}
       onDoubleClick={onDoubleClick}
-      whileHover={
-        reducedMotion || !onPointerDown || dragSource
-          ? undefined
-          : {
-              y: CASCADE.hoverLiftPx,
-              boxShadow: 'var(--elev-card-lifted)',
-              transition: {
-                duration: DURATIONS.hoverLift / 1000,
-              },
-            }
-      }
-      whileTap={
-        reducedMotion || !onPointerDown || dragSource
-          ? undefined
-          : {
-              scale: CASCADE.pressScale,
-              transition: { duration: DURATIONS.press / 1000 },
-            }
-      }
-      animate={
-        shake && !reducedMotion
-          ? {
-              x: [0, -CASCADE.invalidShakePx, CASCADE.invalidShakePx, -CASCADE.invalidShakePx, CASCADE.invalidShakePx, 0],
-            }
-          : invalidFlash && reducedMotion
-            ? { boxShadow: '0 0 0 2px var(--highlight-invalid)' }
-            : undefined
-      }
-      transition={shake ? invalidShakeTransition(reducedMotion) : undefined}
+      draggable={false}
     >
       <CardFlipInner card={card} reducedMotion={reducedMotion} />
     </motion.div>

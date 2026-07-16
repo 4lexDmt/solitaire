@@ -4,6 +4,7 @@ import { Win95Button, Win95Dialog } from '@/components/win95/primitives';
 import type { SpiderSuits } from '@/engine/variant';
 import type { VariantId } from '@/engine/variants';
 import { useSettingsStore } from '@/state/settings';
+import { useEffect, useState } from 'react';
 
 interface SettingsPanelProps {
   open: boolean;
@@ -21,8 +22,36 @@ const FELTS = [
 export type FeltId = (typeof FELTS)[number]['id'];
 export type CardBackId = (typeof BACKS)[number];
 
+function readStoredBack(): CardBackId {
+  try {
+    const v = localStorage.getItem('aevanor.cardBack');
+    if (v && (BACKS as readonly string[]).includes(v)) return v as CardBackId;
+  } catch {
+    /* ignore */
+  }
+  return 'weave';
+}
+
+function readStoredFelt(): FeltId {
+  try {
+    const v = localStorage.getItem('aevanor.felt');
+    if (v && FELTS.some((f) => f.id === v)) return v as FeltId;
+  } catch {
+    /* ignore */
+  }
+  return 'green';
+}
+
 export function SettingsPanel({ open, onClose, onConfirmNewDeal }: SettingsPanelProps) {
   const settings = useSettingsStore();
+  const [cardBack, setCardBack] = useState<CardBackId>('weave');
+  const [felt, setFelt] = useState<FeltId>('green');
+
+  useEffect(() => {
+    if (!open) return;
+    setCardBack(readStoredBack());
+    setFelt(readStoredFelt());
+  }, [open]);
 
   if (!open) return null;
 
@@ -34,6 +63,26 @@ export function SettingsPanel({ open, onClose, onConfirmNewDeal }: SettingsPanel
     onConfirmNewDeal?.();
   }
 
+  function selectBack(id: CardBackId) {
+    setCardBack(id);
+    document.documentElement.setAttribute('data-card-back', id);
+    try {
+      localStorage.setItem('aevanor.cardBack', id);
+    } catch {
+      /* ignore */
+    }
+  }
+
+  function selectFelt(id: FeltId) {
+    setFelt(id);
+    document.documentElement.setAttribute('data-felt', id);
+    try {
+      localStorage.setItem('aevanor.felt', id);
+    } catch {
+      /* ignore */
+    }
+  }
+
   return (
     <div className="win95-scrim" onClick={onClose}>
       <div onClick={(e) => e.stopPropagation()}>
@@ -43,21 +92,13 @@ export function SettingsPanel({ open, onClose, onConfirmNewDeal }: SettingsPanel
               <legend>Card back</legend>
               <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
                 {BACKS.map((id) => {
-                  const selected = (settings.theme === 'heritage' && id === 'weave') ||
-                    document.documentElement.getAttribute('data-card-back') === id;
+                  const selected = cardBack === id;
                   return (
                     <button
                       key={id}
                       type="button"
                       title={id}
-                      onClick={() => {
-                        document.documentElement.setAttribute('data-card-back', id);
-                        try {
-                          localStorage.setItem('aevanor.cardBack', id);
-                        } catch {
-                          /* ignore */
-                        }
-                      }}
+                      onClick={() => selectBack(id)}
                       style={{
                         padding: 2,
                         cursor: 'default',
@@ -90,9 +131,7 @@ export function SettingsPanel({ open, onClose, onConfirmNewDeal }: SettingsPanel
               <legend>Table felt</legend>
               <div style={{ display: 'flex', gap: 14, flexWrap: 'wrap' }}>
                 {FELTS.map((f) => {
-                  const current =
-                    document.documentElement.getAttribute('data-felt') || 'green';
-                  const on = current === f.id;
+                  const on = felt === f.id;
                   return (
                     <label
                       key={f.id}
@@ -100,14 +139,7 @@ export function SettingsPanel({ open, onClose, onConfirmNewDeal }: SettingsPanel
                     >
                       <button
                         type="button"
-                        onClick={() => {
-                          document.documentElement.setAttribute('data-felt', f.id);
-                          try {
-                            localStorage.setItem('aevanor.felt', f.id);
-                          } catch {
-                            /* ignore */
-                          }
-                        }}
+                        onClick={() => selectFelt(f.id)}
                         style={{
                           width: 13,
                           height: 13,

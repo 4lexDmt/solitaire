@@ -85,6 +85,13 @@
   z-index: 20;
 }
 
+.win95-window--maximized {
+  top: 4px;
+  left: 4px;
+  right: 4px;
+  bottom: 38px;
+}
+
 @media (max-width: 720px) {
   .desktop__icons {
     display: none;

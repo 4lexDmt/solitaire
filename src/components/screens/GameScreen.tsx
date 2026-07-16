@@ -8,6 +8,7 @@ import { useReducedMotion } from '@/hooks/useReducedMotion';
 import { LostScreen } from '@/components/screens/LostScreen';
 import { WinScreen } from '@/components/screens/WinScreen';
 import type { AchievementId } from '@/state/achievements';
+import { useSettingsStore } from '@/state/settings';
 import type { GameState } from '@/engine/types';
 import '@/components/board/board.css';
 
@@ -39,6 +40,9 @@ export function GameScreen({
   newAchievements = [],
 }: GameScreenProps) {
   const { reducedMotion } = useReducedMotion();
+  const motionEnabled = useSettingsStore((s) => s.motionEnabled);
+  const showCascade = winCelebrationActive && motionEnabled && !reducedMotion;
+  const showReducedWin = winCelebrationActive && (!motionEnabled || reducedMotion) && !showWin;
 
   return (
     <div className="game-screen" style={{ height: '100%' }}>
@@ -50,10 +54,10 @@ export function GameScreen({
         <Board game={game} />
       </main>
 
-      {winCelebrationActive && !reducedMotion ? (
+      {showCascade ? (
         <WinCascadeCanvas active game={game} onComplete={onWinCelebrationComplete} />
       ) : null}
-      {winCelebrationActive && reducedMotion ? (
+      {showReducedWin ? (
         <ReducedMotionWinOverlay
           active
           game={game}

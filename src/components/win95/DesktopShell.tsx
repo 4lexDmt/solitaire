@@ -1,6 +1,7 @@
 'use client';
 
 import { canAutoComplete } from '@/lib/autoComplete';
+import { STATUS_FLASH_EVENT } from '@/lib/statusFlash';
 import { useSettingsStore } from '@/state/settings';
 import { useStatsStore } from '@/state/stats';
 import {
@@ -38,6 +39,7 @@ interface DesktopShellProps {
   onOpenDaily: () => void;
   onSelectVariant: (id: VariantId) => void;
   onHome: () => void;
+  onDrawCountChange?: (n: 1 | 3) => void;
   isDaily?: boolean;
 }
 
@@ -60,23 +62,43 @@ export function DesktopShell({
   onOpenDaily,
   onSelectVariant,
   onHome,
+  onDrawCountChange,
   isDaily,
 }: DesktopShellProps) {
   const [startOpen, setStartOpen] = useState(false);
+  const [maximized, setMaximized] = useState(true);
   const [clock, setClock] = useState(formatClock);
+  const [statusFlash, setStatusFlash] = useState<string | null>(null);
   const soundEnabled = useSettingsStore((s) => s.soundEnabled);
   const setSoundEnabled = useSettingsStore((s) => s.setSoundEnabled);
   const drawCount = useSettingsStore((s) => s.drawCount);
   const spiderSuits = useSettingsStore((s) => s.spiderSuits);
   const showTimer = useSettingsStore((s) => s.showTimer);
+  const setShowTimer = useSettingsStore((s) => s.setShowTimer);
+  const motionEnabled = useSettingsStore((s) => s.motionEnabled);
+  const setMotionEnabled = useSettingsStore((s) => s.setMotionEnabled);
+  const setDrawCount = useSettingsStore((s) => s.setDrawCount);
   const dailyStreak = useStatsStore((s) => s.dailyCurrentStreak);
-  const autoFinish = useCallback(() => {
-    window.dispatchEvent(new CustomEvent('aevanor:auto-complete'));
-  }, []);
 
   useEffect(() => {
     const id = window.setInterval(() => setClock(formatClock()), 20_000);
     return () => window.clearInterval(id);
+  }, []);
+
+  useEffect(() => {
+    let clearId = 0;
+    const onFlash = (e: Event) => {
+      const msg = (e as CustomEvent<string>).detail;
+      if (!msg) return;
+      setStatusFlash(msg);
+      window.clearTimeout(clearId);
+      clearId = window.setTimeout(() => setStatusFlash(null), 2600);
+    };
+    window.addEventListener(STATUS_FLASH_EVENT, onFlash);
+    return () => {
+      window.removeEventListener(STATUS_FLASH_EVENT, onFlash);
+      window.clearTimeout(clearId);
+    };
   }, []);
 
   useEffect(() => {
@@ -86,10 +108,17 @@ export function DesktopShell({
         e.preventDefault();
         onNewGame();
       }
+      const k = e.key.toLowerCase();
+      if (k === 'h' && !e.ctrlKey && !e.metaKey && !e.altKey) {
+        const tag = (e.target as HTMLElement | null)?.tagName;
+        if (tag === 'INPUT' || tag === 'TEXTAREA') return;
+        e.preventDefault();
+        onHint();
+      }
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [onNewGame]);
+  }, [onNewGame, onHint]);
 
   const variantName =
     game.variantId === 'freecell'
@@ -107,11 +136,19 @@ export function DesktopShell({
     return 'FreeCell';
   }, [drawCount, game.variantId, isDaily, spiderSuits]);
 
-  const statusText = STATUS[game.variantId] ?? STATUS.klondike;
+  const statusText = statusFlash ?? STATUS[game.variantId] ?? STATUS.klondike;
   const canAuto = canAutoComplete(game);
   const locked = game.status === 'won' || game.status === 'lost';
 
   const closeOverlays = useCallback(() => setStartOpen(false), []);
+
+  const changeDraw = useCallback(
+    (n: 1 | 3) => {
+      setDrawCount(n);
+      onDrawCountChange?.(n);
+    },
+    [onDrawCountChange, setDrawCount],
+  );
 
   const menus = [
     {
@@ -181,7 +218,7 @@ export function DesktopShell({
         {
           type: 'item' as const,
           label: 'Auto-Complete',
-          disabled: !canAuto || locked,
+          disabled: locked || game.status !== 'playing',
           onClick: onAuto,
         },
         { type: 'sep' as const },
@@ -202,9 +239,34 @@ export function DesktopShell({
       items: [
         {
           type: 'item' as const,
+          label: 'Draw One',
+          mark: drawCount === 1 ? '●' : '',
+          onClick: () => changeDraw(1),
+        },
+        {
+          type: 'item' as const,
+          label: 'Draw Three',
+          mark: drawCount === 3 ? '●' : '',
+          onClick: () => changeDraw(3),
+        },
+        { type: 'sep' as const },
+        {
+          type: 'item' as const,
           label: 'Sound',
           mark: soundEnabled ? '✔' : '',
           onClick: () => setSoundEnabled(!soundEnabled),
+        },
+        {
+          type: 'item' as const,
+          label: 'Timed Game',
+          mark: showTimer ? '✔' : '',
+          onClick: () => setShowTimer(!showTimer),
+        },
+        {
+          type: 'item' as const,
+          label: 'Win Animation',
+          mark: motionEnabled ? '✔' : '',
+          onClick: () => setMotionEnabled(!motionEnabled),
         },
         { type: 'sep' as const },
         { type: 'item' as const, label: 'Appearance…', onClick: onOpenSettings },
@@ -242,7 +304,7 @@ export function DesktopShell({
         </button>
       </div>
 
-      <div className="win95-window">
+      <div className={`win95-window${maximized ? ' win95-window--maximized' : ''}`}>
         <div className="win95-titlebar">
           <span className="win95-titlebar__icon">♠</span>
           <span className="win95-titlebar__label">{winTitle}</span>
@@ -250,8 +312,13 @@ export function DesktopShell({
             <button type="button" className="win95-caption-btn" aria-label="Minimize" onClick={onPause}>
               _
             </button>
-            <button type="button" className="win95-caption-btn" aria-label="Maximize" tabIndex={-1}>
-              □
+            <button
+              type="button"
+              className="win95-caption-btn"
+              aria-label={maximized ? 'Restore' : 'Maximize'}
+              onClick={() => setMaximized((v) => !v)}
+            >
+              {maximized ? '❐' : '□'}
             </button>
             <button
               type="button"
@@ -280,12 +347,15 @@ export function DesktopShell({
             <span style={{ color: '#c9a000' }}>💡</span> Hint
           </Win95Button>
           <Win95Button
-            onClick={() => {
-              if (canAuto) autoFinish();
-              else onAuto();
-            }}
-            disabled={locked || game.variantId === 'spider'}
-            title={game.variantId === 'spider' ? 'Auto-complete is for Klondike & FreeCell' : undefined}
+            onClick={onAuto}
+            disabled={locked || game.status !== 'playing'}
+            title={
+              game.variantId === 'spider'
+                ? 'Auto-complete is for Klondike & FreeCell'
+                : canAuto
+                  ? 'Finish to foundations'
+                  : 'Move available cards to foundations'
+            }
           >
             ⏭ Auto
           </Win95Button>
@@ -369,7 +439,13 @@ export function DesktopShell({
           Start
         </button>
         <div className="win95-sep" />
-        <button type="button" className="win95-task">
+        <button
+          type="button"
+          className="win95-task"
+          onClick={() => {
+            if (paused) onResume();
+          }}
+        >
           <span style={{ color: '#0a5f30' }}>♠</span>
           <span>{winTitle}</span>
         </button>
@@ -408,6 +484,8 @@ export function DesktopShell({
                 { icon: '⚙', label: 'Options', onClick: onOpenSettings },
                 { icon: '?', label: 'How to Play', onClick: onOpenHelp },
                 { icon: 'ℹ', label: 'About', onClick: onOpenAbout },
+                { sep: true },
+                { icon: '⏻', label: 'Restart…', onClick: onHome },
               ].map((item, i) =>
                 'sep' in item && item.sep ? (
                   <div key={`s-${i}`} className="win95-menu__sep" />
