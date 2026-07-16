@@ -1,5 +1,6 @@
 import type { PileType, Suit } from '@/engine/types';
-import { SUIT_CHAR, isRed } from './ClassicCard';
+import { SuitGlyph } from '@/assets/cards/suits';
+import { isRed } from './ClassicCard';
 
 type PilePlaceholderProps = {
   variant: PileType;
@@ -7,7 +8,7 @@ type PilePlaceholderProps = {
   hinted?: boolean;
 };
 
-/** Empty-pile outlines and watermarks — dashed Win9x style. */
+/** Empty-pile outlines and watermarks — dashed Win9x style (vector suits, no emoji). */
 export function PilePlaceholder({
   variant,
   suit,
@@ -27,11 +28,15 @@ export function PilePlaceholder({
               : 'var(--foundation-watermark)',
           }}
         >
-          {SUIT_CHAR[suit]}
+          <SuitGlyph suit={suit} size={34} />
         </span>
       ) : null}
       {variant === 'stock' ? (
-        <span className="pile-placeholder__suit-ghost" style={{ fontSize: '30px', color: 'rgba(255,255,255,.4)' }}>
+        <span
+          className="pile-placeholder__recycle"
+          style={{ color: 'rgba(255,255,255,.4)' }}
+          aria-hidden
+        >
           ↻
         </span>
       ) : null}

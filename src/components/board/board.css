@@ -398,6 +398,14 @@ html[data-four-color='true'] .card-view__inner:not(.card-view__inner--four-color
 .pile-placeholder__suit-ghost {
   font-size: clamp(22px, calc(var(--card-w) * 0.45), 34px);
   line-height: 1;
+  display: grid;
+  place-items: center;
+}
+
+.pile-placeholder__suit-ghost svg {
+  width: 1em;
+  height: 1em;
+  display: block;
 }
 
 .pile-placeholder {

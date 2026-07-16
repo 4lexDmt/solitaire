@@ -5,7 +5,10 @@ type CardFaceProps = {
   card: Card;
 };
 
-/** Full deck-of-cards face art — correct rank/suit and balanced proportions. */
+/**
+ * Playing-card faces — always the traditional deck-of-cards SVG art
+ * (rank, suit pips, and court illustrations). Never emoji / Unicode glyphs.
+ */
 export function CardFace({ card }: CardFaceProps) {
   return (
     <div className="card-view__inner">
