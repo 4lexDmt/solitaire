@@ -108,13 +108,15 @@ export function rankMoves(state: GameState): Move[] {
 
 /**
  * Return 1–2 card ids to highlight for the best hint move(s).
- * Draw/recycle hints return an empty list (UI highlights stock separately).
+ * Draw/recycle hints use the sentinel id `'stock'` (StockPile checks for it).
  */
 export function getHintCardIds(state: GameState): string[] {
   const ranked = rankMoves(state);
   if (ranked.length === 0) return [];
 
   const best = ranked[0];
+  if (best.drew || best.recycled) return ['stock'];
+
   const bestScore = scoreMoveHeuristic(state, best);
   const ids: string[] = [];
 
@@ -124,7 +126,9 @@ export function getHintCardIds(state: GameState): string[] {
 
   if (ranked.length > 1) {
     const second = ranked[1];
-    if (second.cardIds.length > 0) {
+    if (second.drew || second.recycled) {
+      // Prefer a nearby card hint; stock is already the fallback when best.
+    } else if (second.cardIds.length > 0) {
       const secondId = second.cardIds[second.cardIds.length - 1];
       const secondScore = scoreMoveHeuristic(state, second);
       if (secondId !== ids[0] && secondScore >= bestScore - 8) {

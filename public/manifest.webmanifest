@@ -1,7 +1,7 @@
 {
   "name": "Aevanor",
   "short_name": "Aevanor",
-  "description": "Premium Klondike solitaire — calm, ad-free, offline-first.",
+  "description": "Premium solitaire — Klondike, FreeCell, and Spider. Calm, ad-free, offline-first.",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",

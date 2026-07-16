@@ -27,7 +27,22 @@ describe('hints', () => {
     const hints = getHintCardIds(state);
     expect(hints.length).toBeLessThanOrEqual(2);
     for (const id of hints) {
-      expect(id).toMatch(/^[CDHS](10|[2-9AJQK])$/);
+      expect(id === 'stock' || /^[CDHS](10|[2-9AJQK])(-\d+)?$/.test(id)).toBe(true);
+    }
+  });
+
+  it('highlights stock when the best hint is a draw', () => {
+    // Seed with no card moves that outrank drawing — use a state where draw is legal.
+    // We assert the contract: when best ranked move is a draw/recycle, hints are ['stock'].
+    const state = newGame({ seed: 'hint-stock-01', drawCount: 1, scoreMode: 'none' });
+    const ranked = rankMoves(state);
+    const best = ranked[0];
+    if (best?.drew || best?.recycled) {
+      expect(getHintCardIds(state)).toEqual(['stock']);
+    } else {
+      const hints = getHintCardIds(state);
+      expect(hints).not.toContain('stock');
+      expect(hints.length).toBeGreaterThan(0);
     }
   });
 

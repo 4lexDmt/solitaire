@@ -143,7 +143,8 @@ function executeTableauDeal(
 
   const tableauIds = Object.values(state.piles)
     .filter((p) => p.type === 'tableau')
-    .map((p) => p.id);
+    .map((p) => p.id)
+    .sort((a, b) => Number(a.split('-')[1]) - Number(b.split('-')[1]));
   if (tableauIds.some((id) => state.piles[id].cards.length === 0)) return null;
 
   const next = cloneState(state);
