@@ -1,18 +1,19 @@
 import type { Card } from '@/engine/types';
-import { ExternalCardFace } from '@/assets/cards/externalFaces';
+import { CardFaceSvg } from '@/assets/cards/faces';
 
 type CardFaceProps = {
   card: Card;
 };
 
 /**
- * Playing-card faces — always the traditional deck-of-cards SVG art
- * (rank, suit pips, and court illustrations). Never emoji / Unicode glyphs.
+ * Playing-card faces with corner rank indices + vector suit pips.
+ * Uses programmatic faces (not the pip-only external SVGs) so ranks stay
+ * readable when cards are stacked on mobile.
  */
 export function CardFace({ card }: CardFaceProps) {
   return (
     <div className="card-view__inner">
-      <ExternalCardFace card={card} />
+      <CardFaceSvg card={card} />
     </div>
   );
 }
