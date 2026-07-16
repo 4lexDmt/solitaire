@@ -2,7 +2,7 @@
 
 import type { Suit } from '@/engine/types';
 
-/** Patterned card back only — face art lives in ExternalCardFace / public/cards. */
+/** Patterned card back only — face art lives in CardFace / faces.tsx. */
 export function ClassicCardBack() {
   return <div className="classic-back" aria-hidden />;
 }
