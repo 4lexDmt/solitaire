@@ -33,8 +33,17 @@ export function HomeScreen({
   const label = useClientDailyLabel();
   const variantId = useSettingsStore((s) => s.variantId);
   const setVariantId = useSettingsStore((s) => s.setVariantId);
+  const scoreMode = useSettingsStore((s) => s.scoreMode);
+  const setScoreMode = useSettingsStore((s) => s.setScoreMode);
   const spiderSuits = useSettingsStore((s) => s.spiderSuits);
   const setSpiderSuits = useSettingsStore((s) => s.setSpiderSuits);
+
+  const onVariantChange = (next: VariantId) => {
+    setVariantId(next);
+    if (next !== 'klondike' && scoreMode === 'vegas') {
+      setScoreMode('standard');
+    }
+  };
 
   return (
     <div className="home-screen">
@@ -81,7 +90,7 @@ export function HomeScreen({
         <SegmentedControl<VariantId>
           label="Game variant"
           value={variantId}
-          onChange={setVariantId}
+          onChange={onVariantChange}
           options={[
             { value: 'klondike', label: 'Klondike' },
             { value: 'freecell', label: 'FreeCell' },

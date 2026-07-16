@@ -119,11 +119,11 @@ function enumerateMoves(state: GameState, skipScoring = false): Move[] {
     }
   }
 
-  // Worrying back: foundation tops may return to the tableau only.
+  // Worrying back: foundation tops may return to the tableau or an empty free cell.
   for (const from of FOUNDATION_IDS) {
     const top = topCard(state.piles[from]);
     if (!top) continue;
-    for (const to of TABLEAU_IDS) {
+    for (const to of [...TABLEAU_IDS, ...CELL_IDS]) {
       tryMove(from, to, [top.id]);
     }
   }

@@ -92,10 +92,11 @@ export function Board({ game }: BoardProps) {
 
     if (lastMove.flipped) playSound('flip');
 
-    if (lastMove.to.startsWith('foundation-')) {
+    const completedTo = lastMove.completed?.[0]?.to;
+    if (lastMove.to.startsWith('foundation-') || completedTo) {
       playSound('foundation');
       vibrate(HAPTIC.foundationDrop, hapticsEnabled);
-      setFoundationSparkle(lastMove.to);
+      setFoundationSparkle(completedTo ?? lastMove.to);
       window.setTimeout(() => setFoundationSparkle(null), 600);
     } else {
       playSound('drop');

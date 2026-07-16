@@ -227,4 +227,40 @@ describe('spider rules', () => {
     expect(spider.score(move, 'standard')).toBe(105);
     expect(spider.score(move, 'none')).toBe(0);
   });
+
+  it('stock deal that completes a run can be undone', () => {
+    // K→2 already on tableau-0; Ace is stock top so the deal finishes the run.
+    const partial = Array.from({ length: 12 }, (_, i) =>
+      copy(createCard('spades', (13 - i) as Rank, true), 'run'),
+    ); // K..2
+    const ace = copy(createCard('spades', 1, true), 'deal');
+    const fillers = Array.from({ length: 9 }, (_, i) =>
+      copy(createCard('hearts', ((i % 13) + 1) as Rank, false), `f${i}`),
+    );
+    // Stock top = last element → dealt to tableau-0 first.
+    const state = stateWith({
+      stock: pile('stock', 'stock', [...fillers, ace]),
+      'tableau-0': pile('tableau-0', 'tableau', [
+        copy(createCard('hearts', 5, false), 'buried'),
+        ...partial,
+      ]),
+      ...Object.fromEntries(
+        Array.from({ length: 9 }, (_, i) => [
+          `tableau-${i + 1}`,
+          pile(`tableau-${i + 1}`, 'tableau', [copy(createCard('hearts', 8, true), `t${i}`)]),
+        ]),
+      ),
+    });
+
+    const drawn = draw(state, Date.now(), spider);
+    expect(drawn).not.toBe(state);
+    expect(drawn.piles['foundation-0'].cards).toHaveLength(13);
+    expect(drawn.history[drawn.history.length - 1]?.completed?.length).toBe(1);
+
+    const reverted = undo(drawn);
+    expect(reverted.piles['foundation-0'].cards).toHaveLength(0);
+    expect(reverted.piles.stock.cards.map((c) => c.id)).toEqual(
+      state.piles.stock.cards.map((c) => c.id),
+    );
+  });
 });

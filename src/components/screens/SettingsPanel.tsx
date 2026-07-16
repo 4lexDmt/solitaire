@@ -71,7 +71,12 @@ export function SettingsPanel({
               label="Game variant"
               value={settings.variantId}
               onChange={(variantId) =>
-                applyWithConfirmation(() => settings.setVariantId(variantId))
+                applyWithConfirmation(() => {
+                  settings.setVariantId(variantId);
+                  if (variantId !== 'klondike' && settings.scoreMode === 'vegas') {
+                    settings.setScoreMode('standard');
+                  }
+                })
               }
               options={[
                 { value: 'klondike', label: 'Klondike' },

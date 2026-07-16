@@ -30,9 +30,13 @@ export function canAutoComplete(state: GameState): boolean {
   if (variant.foundationsLocked) return false; // Spider settles runs automatically
 
   if (!allCardsFaceUpExceptStock(state)) return false;
+  if (variant.isWon(state)) return false;
 
+  // FreeCell: ordered tableaus + at least one foundation play. Empty free cells
+  // must not block Finish (parking moves are still legal but irrelevant).
   if (variant.id === 'freecell') {
-    return allTableausOrdered(state) && !variant.isWon(state);
+    if (!allTableausOrdered(state)) return false;
+    return variant.getLegalMoves(state).some((m) => m.to.startsWith('foundation-'));
   }
 
   const moves = variant.getLegalMoves(state).filter((m) => !m.drew && !m.recycled);

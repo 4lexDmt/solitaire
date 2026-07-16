@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { createCard } from '../deck';
-import { applyMove, newGame, undo } from '../reducer';
+import { applyMove, newGame, resolveGameStatus, undo } from '../reducer';
 import type { GameState, Pile } from '../types';
 import { freecell } from '../variants/freecell';
 
@@ -182,6 +182,33 @@ describe('freecell rules', () => {
     expect(moves.some((m) => m.from === 'cell-0' && m.to === 'foundation-0')).toBe(true);
     expect(moves.some((m) => m.from === 'tableau-0' && m.to === 'tableau-1')).toBe(true);
     expect(moves.some((m) => m.from === 'tableau-0' && m.to.startsWith('cell-'))).toBe(true);
+  });
+
+  it('enumerates foundation→cell worry-back so canDrop and getLegalMoves agree', () => {
+    const state = stateWith({
+      'foundation-0': pile('foundation-0', 'foundation', [createCard('hearts', 1, true)]),
+      'tableau-0': pile('tableau-0', 'tableau', [createCard('spades', 13, true)]),
+    });
+    expect(freecell.canDrop(state, ['HA'], 'foundation-0', 'cell-0')).toBe(true);
+    const moves = freecell.getLegalMoves(state);
+    expect(moves.some((m) => m.from === 'foundation-0' && m.to === 'cell-0')).toBe(true);
+    expect(moves.some((m) => m.from === 'foundation-0' && m.to === 'tableau-1')).toBe(true);
+    const resolved = resolveGameStatus({ ...state, status: 'playing' }, freecell);
+    expect(resolved.status).toBe('playing');
+  });
+
+  it('allows foundation→tableau worry-back', () => {
+    const state = stateWith({
+      'foundation-0': pile('foundation-0', 'foundation', [
+        createCard('hearts', 1, true),
+        createCard('hearts', 2, true),
+      ]),
+      'tableau-0': pile('tableau-0', 'tableau', [createCard('spades', 3, true)]),
+    });
+    expect(freecell.canDrop(state, ['H2'], 'foundation-0', 'tableau-0')).toBe(true);
+    expect(
+      freecell.getLegalMoves(state).some((m) => m.from === 'foundation-0' && m.to === 'tableau-0'),
+    ).toBe(true);
   });
 
   it('autoMoveTarget prefers foundation, then occupied tableau, then cell', () => {

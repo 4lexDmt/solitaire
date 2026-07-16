@@ -240,9 +240,25 @@ export function AppShell() {
 
   useEffect(() => {
     if (game.status !== 'lost') return;
+    const key = `${game.seed}-${game.moves}-lost`;
+    if (processedWinRef.current === key) return;
+    processedWinRef.current = key;
+
+    recordGame({
+      won: false,
+      variantId: game.variantId,
+      drawCount: game.drawCount,
+      elapsedMs: game.elapsedMs,
+      moves: game.moves,
+      isDaily,
+      dailyDate: isDaily ? dailyDateKey() : undefined,
+      finalScore: game.score,
+      scoreMode: game.scoreMode,
+    });
+
     void clearSavedGame();
     setHasSavedGame(false);
-  }, [game.status]);
+  }, [game.status, game.seed, game.moves, game.elapsedMs, game.variantId, game.drawCount, game.score, game.scoreMode, isDaily, recordGame]);
 
   const handleWinCelebrationComplete = useCallback(() => {
     setWinCelebrationActive(false);
