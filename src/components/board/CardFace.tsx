@@ -1,15 +1,15 @@
 import type { Card } from '@/engine/types';
-import { ClassicCardFace } from './ClassicCard';
+import { CardFaceSvg } from '@/assets/cards/faces';
 
 type CardFaceProps = {
   card: Card;
 };
 
-/** Classic desktop solitaire face (Aevanor Solitaire.dc.html). */
+/** Pip / court card faces — correct rank, suit, and layout for every card. */
 export function CardFace({ card }: CardFaceProps) {
   return (
     <div className="card-view__inner">
-      <ClassicCardFace card={card} />
+      <CardFaceSvg card={card} />
     </div>
   );
 }

@@ -231,6 +231,29 @@ html[data-four-color='true'] .card-view__inner:not(.card-view__inner--four-color
   opacity: 0;
 }
 
+.card-view--shake {
+  animation: card-invalid-shake 320ms ease-in-out;
+}
+
+@keyframes card-invalid-shake {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  20% {
+    transform: translateX(calc(-1 * var(--invalid-shake-px, 6px)));
+  }
+  40% {
+    transform: translateX(var(--invalid-shake-px, 6px));
+  }
+  60% {
+    transform: translateX(calc(-1 * var(--invalid-shake-px, 6px)));
+  }
+  80% {
+    transform: translateX(var(--invalid-shake-px, 6px));
+  }
+}
+
 .card-view--focused,
 .card-view:focus-visible {
   outline: 2px solid var(--accent);

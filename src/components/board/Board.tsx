@@ -13,7 +13,6 @@ import { getMovableCardIds, resolveTargetAtPoint } from '@/lib/hitTest';
 import { playSound, setSoundEnabled, unlockAudio } from '@/lib/sound';
 import { useGameStore } from '@/state/store';
 import { useSettingsStore } from '@/state/settings';
-import { LayoutGroup } from 'motion/react';
 import { flashStatus } from '@/lib/statusFlash';
 import { AutoCompleteBar } from './AutoCompleteBar';
 import { CellPile } from './CellPile';
@@ -327,8 +326,8 @@ export function Board({ game }: BoardProps) {
         onFinish={() => void handleAutoComplete()}
       />
 
-      <LayoutGroup>
-        <div
+      <div
+          key={game.seed}
           ref={boardRef}
           className={`board${leftHanded ? ' board--left-handed' : ''}`}
           data-variant={game.variantId}
@@ -410,7 +409,6 @@ export function Board({ game }: BoardProps) {
           />
         ))}
         </div>
-      </LayoutGroup>
 
       <DragLayer
         drag={drag}

@@ -70,6 +70,7 @@ const WIN_DIALOG_DELAY_MS = 2800;
 export function AppShell() {
   const [booting, setBooting] = useState(true);
   const [bootPct, setBootPct] = useState(0);
+  const [dealReady, setDealReady] = useState(false);
   const [paused, setPaused] = useState(false);
   const [showWin, setShowWin] = useState(false);
   const [winCelebrationActive, setWinCelebrationActive] = useState(false);
@@ -188,21 +189,20 @@ export function AppShell() {
     }
   }, [winnableOnly, drawCount, variantId]);
 
-  // Boot splash
+  // Boot splash progress — stay until the first deal is ready (no preview-deal flash).
   useEffect(() => {
     if (!booting) return;
     const id = window.setInterval(() => {
-      setBootPct((p) => {
-        const next = Math.min(100, p + Math.random() * 16 + 7);
-        if (next >= 100) {
-          window.clearInterval(id);
-          window.setTimeout(() => setBooting(false), 280);
-        }
-        return next;
-      });
+      setBootPct((p) => Math.min(100, p + Math.random() * 16 + 7));
     }, 120);
     return () => window.clearInterval(id);
   }, [booting]);
+
+  useEffect(() => {
+    if (!booting || !dealReady || bootPct < 100) return;
+    const id = window.setTimeout(() => setBooting(false), 200);
+    return () => window.clearTimeout(id);
+  }, [booting, dealReady, bootPct]);
 
   const finalizeWin = useCallback(async () => {
     const dailyDate = isDaily ? dailyDateKey() : undefined;
@@ -302,68 +302,66 @@ export function AppShell() {
   }, []);
 
   const startGame = useCallback(
-    (options?: { seed?: string; daily?: boolean; variantId?: VariantId }) => {
-      void (async () => {
-        usedUndoRef.current = false;
-        worryBackRef.current = false;
-        processedWinRef.current = null;
-        setShowWin(false);
-        setWinCelebrationActive(false);
-        setWinAchievements([]);
-        setPaused(false);
-        setConfirm(null);
-        setIsDaily(Boolean(options?.daily));
+    async (options?: { seed?: string; daily?: boolean; variantId?: VariantId }) => {
+      usedUndoRef.current = false;
+      worryBackRef.current = false;
+      processedWinRef.current = null;
+      setShowWin(false);
+      setWinCelebrationActive(false);
+      setWinAchievements([]);
+      setPaused(false);
+      setConfirm(null);
+      setIsDaily(Boolean(options?.daily));
 
-        const gameVariantId = options?.daily
-          ? 'klondike'
-          : (options?.variantId ?? useSettingsStore.getState().variantId);
+      const gameVariantId = options?.daily
+        ? 'klondike'
+        : (options?.variantId ?? useSettingsStore.getState().variantId);
 
-        if (options?.variantId) setVariantId(options.variantId);
-        if (options?.daily) {
-          setVariantId('klondike');
-          useSettingsStore.getState().setDrawCount(1);
+      if (options?.variantId) setVariantId(options.variantId);
+      if (options?.daily) {
+        setVariantId('klondike');
+        useSettingsStore.getState().setDrawCount(1);
+      }
+
+      const settings = useSettingsStore.getState();
+      const drawForGame = options?.daily ? 1 : settings.drawCount;
+      let seed = options?.seed;
+      if (options?.daily) {
+        try {
+          seed = await dailyWinnableSeed(1);
+        } catch {
+          seed = options?.seed;
         }
+      }
 
-        const settings = useSettingsStore.getState();
-        const drawForGame = options?.daily ? 1 : settings.drawCount;
-        let seed = options?.seed;
-        if (options?.daily) {
-          try {
-            seed = await dailyWinnableSeed(1);
-          } catch {
-            seed = options?.seed;
-          }
+      if (!seed && settings.winnableOnly && gameVariantId === 'klondike') {
+        try {
+          seed = await pickWinnableSeed(drawForGame);
+        } catch {
+          seed = undefined;
         }
+      }
 
-        if (!seed && settings.winnableOnly && gameVariantId === 'klondike') {
-          try {
-            seed = await pickWinnableSeed(drawForGame);
-          } catch {
-            seed = undefined;
-          }
-        }
+      const gameScoreMode =
+        gameVariantId !== 'klondike' && settings.scoreMode === 'vegas'
+          ? 'standard'
+          : settings.scoreMode;
 
-        const gameScoreMode =
-          gameVariantId !== 'klondike' && settings.scoreMode === 'vegas'
-            ? 'standard'
-            : settings.scoreMode;
+      const startingScore =
+        gameScoreMode === 'vegas' && settings.vegasCumulative
+          ? useStatsStore.getState().vegasBankroll - 52
+          : undefined;
 
-        const startingScore =
-          gameScoreMode === 'vegas' && settings.vegasCumulative
-            ? useStatsStore.getState().vegasBankroll - 52
-            : undefined;
-
-        newGame({
-          seed,
-          variantId: gameVariantId,
-          drawCount: drawForGame,
-          scoreMode: gameScoreMode,
-          stockPassLimit: settings.stockPassLimit,
-          startingScore,
-          spiderSuits: settings.spiderSuits,
-        });
-        setHasSavedGame(true);
-      })();
+      newGame({
+        seed,
+        variantId: gameVariantId,
+        drawCount: drawForGame,
+        scoreMode: gameScoreMode,
+        stockPassLimit: settings.stockPassLimit,
+        startingScore,
+        spiderSuits: settings.spiderSuits,
+      });
+      setHasSavedGame(true);
     },
     [newGame, setVariantId],
   );
@@ -429,12 +427,17 @@ export function AppShell() {
         setShowWin(false);
         setWinCelebrationActive(false);
         setWinAchievements([]);
+        setDealReady(false);
         setBooting(true);
         setBootPct(0);
-        startedRef.current = false;
+        startedRef.current = true;
+        void (async () => {
+          await startGame();
+          setDealReady(true);
+        })();
       },
     });
-  }, []);
+  }, [startGame]);
 
   const handleHint = useCallback(() => {
     if (game.status !== 'playing') return;
@@ -500,9 +503,9 @@ export function AppShell() {
     [game.seed, game.variantId, isDaily, startGame],
   );
 
-  // Auto-start first deal after hydrate (+ optional resume)
+  // Prepare the first deal during boot so the desktop never shows the preview seed.
   useEffect(() => {
-    if (!hydrated || startedRef.current || booting) return;
+    if (!hydrated || startedRef.current) return;
     startedRef.current = true;
     void (async () => {
       const saved = await loadSavedGame();
@@ -512,11 +515,13 @@ export function AppShell() {
         setIsDaily(saved.isDaily);
         useGameStore.setState({ game: saved.game, theme });
         setHasSavedGame(true);
+        setDealReady(true);
         return;
       }
-      startGame();
+      await startGame();
+      setDealReady(true);
     })();
-  }, [hydrated, booting, startGame, theme]);
+  }, [hydrated, startGame, theme]);
 
   useEffect(() => {
     if (paused || game.status !== 'playing') return;
@@ -566,10 +571,17 @@ export function AppShell() {
             'Draw from the stock when you need more cards.',
           ];
 
-  if (booting) {
+  if (booting || !dealReady) {
     return (
       <div className="desktop">
-        <div className="win95-boot" onClick={() => setBooting(false)} role="presentation">
+        <div
+          className="win95-boot"
+          onClick={() => {
+            if (dealReady) setBooting(false);
+            else setBootPct(100);
+          }}
+          role="presentation"
+        >
           <div className="win95-boot__panel">
             <div className="win95-titlebar" style={{ height: 'auto', padding: '4px 8px' }}>
               <span className="win95-titlebar__icon">♠</span>

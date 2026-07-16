@@ -1,10 +1,7 @@
 'use client';
 
-import { CASCADE } from '@/config/tokens';
 import type { Card } from '@/engine/types';
 import { cardAriaLabel, cardZIndex } from '@/lib/layout';
-import { invalidShakeTransition } from '@/lib/motionPresets';
-import { motion } from 'motion/react';
 import { CardBack } from './CardBack';
 import { CardFace } from './CardFace';
 
@@ -30,11 +27,7 @@ interface CardViewProps {
   onDoubleClick?: (event: React.MouseEvent<HTMLElement>) => void;
 }
 
-/** Instant face/back swap — matches Aevanor Solitaire.dc.html (no 3D flip). */
-function CardFlipInner({ card }: { card: Card; reducedMotion: boolean }) {
-  return card.faceUp ? <CardFace card={card} /> : <CardBack />;
-}
-
+/** Instant face/back swap — no Motion layout (avoids deal-time card morphing). */
 export function CardView({
   card,
   depthIndex,
@@ -46,7 +39,6 @@ export function CardView({
   focused = false,
   pileId,
   tabIndex,
-  reducedMotion = false,
   shake = false,
   invalidFlash = false,
   foundationSparkle = false,
@@ -64,13 +56,13 @@ export function CardView({
     invalidFlash ? 'card-view--invalid-flash' : '',
     foundationSparkle ? 'card-view--foundation-sparkle' : '',
     hiddenForDeal ? 'card-view--deal-hidden' : '',
+    shake ? 'card-view--shake' : '',
   ]
     .filter(Boolean)
     .join(' ');
 
   return (
-    <motion.div
-      layout={false}
+    <div
       className={classNames}
       style={{
         top: topOffsetStyle,
@@ -83,27 +75,12 @@ export function CardView({
       data-card-id={card.id}
       data-pile-id={pileId}
       data-focused={focused || undefined}
-      animate={
-        shake
-          ? {
-              x: [
-                0,
-                -CASCADE.invalidShakePx,
-                CASCADE.invalidShakePx,
-                -CASCADE.invalidShakePx,
-                CASCADE.invalidShakePx,
-                0,
-              ],
-            }
-          : { x: 0 }
-      }
-      transition={shake ? invalidShakeTransition(reducedMotion) : undefined}
       onFocus={onFocus}
       onPointerDown={onPointerDown}
       onDoubleClick={onDoubleClick}
       draggable={false}
     >
-      <CardFlipInner card={card} reducedMotion={reducedMotion} />
-    </motion.div>
+      {card.faceUp ? <CardFace card={card} /> : <CardBack />}
+    </div>
   );
 }
