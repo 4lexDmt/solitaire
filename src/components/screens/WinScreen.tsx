@@ -1,14 +1,11 @@
 'use client';
 
 import { AchievementBadge } from '@/components/ui/AchievementBadge';
-import { Button } from '@/components/ui/Button';
-import { Modal } from '@/components/ui/Modal';
-import { StatTile } from '@/components/ui/StatTile';
 import { Toast } from '@/components/ui/Toast';
-import { TrophyIcon } from '@/components/ui/icons';
+import { Win95Button, Win95Dialog, formatTimer } from '@/components/win95/primitives';
 import { DailyLeaderboard } from '@/components/auth/DailyLeaderboard';
 import { buildDailyShareString, dailyDateKey } from '@/lib/daily';
-import { formatDuration, formatNumber } from '@/lib/format';
+import { formatNumber } from '@/lib/format';
 import type { GameState } from '@/engine/types';
 import { ACHIEVEMENTS, getAchievement, type AchievementId } from '@/state/achievements';
 import { useStatsStore } from '@/state/stats';
@@ -50,6 +47,12 @@ export function WinScreen({
 
   const toastAchievement = newAchievements[toastIndex];
   const toastDef = toastAchievement ? getAchievement(toastAchievement) : undefined;
+  const gameName =
+    game.variantId === 'freecell'
+      ? 'FreeCell'
+      : game.variantId === 'spider'
+        ? 'Spider'
+        : 'Klondike';
 
   async function handleShare() {
     const text = buildDailyShareString({
@@ -59,90 +62,92 @@ export function WinScreen({
       streak: dailyStreak,
     });
     try {
-      if (navigator.share) {
-        await navigator.share({ text });
-      } else {
+      if (navigator.share) await navigator.share({ text });
+      else {
         await navigator.clipboard.writeText(text);
         setCopied(true);
         window.setTimeout(() => setCopied(false), 2000);
       }
     } catch {
-      // User dismissed share sheet.
+      /* dismissed */
     }
   }
 
+  if (!open) return null;
+
   return (
     <>
-      <Modal open={open} onClose={onHome} title="You won." variant="celebration">
-        <div className="flex flex-col items-center gap-0 text-center">
-          <div className="mb-2.5 flex h-[46px] w-[46px] items-center justify-center text-accent">
-            <TrophyIcon size={46} />
-          </div>
-          <p className="modal-subtitle mb-[18px]">
-            {isDaily
-              ? 'Daily challenge complete. Well played.'
-              : 'A tidy game. Well played.'}
-          </p>
+      <div className="win95-scrim">
+        <Win95Dialog title="Congratulations!" onClose={onHome} size="sm">
+          <div style={{ textAlign: 'center' }}>
+            <div style={{ fontSize: 44, animation: 'trophy 1.4s ease-in-out infinite' }}>🏆</div>
+            <div
+              className="win95-pixel"
+              style={{ fontSize: 22, color: '#0a5f30', letterSpacing: 1, margin: '6px 0 2px' }}
+            >
+              YOU WON!
+            </div>
+            <div style={{ fontSize: 12, color: '#555', marginBottom: 14 }}>{gameName} solved</div>
 
-          {newAchievements.length > 0 ? (
-            <div className="mb-[18px] w-full">
-              <p className="mb-2 font-ui text-xs font-semibold uppercase tracking-wide text-accent">
-                Achievement{newAchievements.length > 1 ? 's' : ''} unlocked
-              </p>
-              <div className="flex gap-2">
+            {newAchievements.length > 0 ? (
+              <div style={{ display: 'flex', gap: 8, justifyContent: 'center', marginBottom: 12 }}>
                 {newAchievements.map((id) => {
                   const def = ACHIEVEMENTS.find((a) => a.id === id);
                   if (!def) return null;
-                  return (
-                    <AchievementBadge
-                      key={id}
-                      achievement={def}
-                      unlocked
-                      compact
-                    />
-                  );
+                  return <AchievementBadge key={id} achievement={def} unlocked compact />;
                 })}
               </div>
+            ) : null}
+
+            <div style={{ display: 'flex', gap: 8, marginBottom: 18 }}>
+              <div className="win95-inset" style={{ flex: 1, padding: 8 }}>
+                <div className="win95-pixel" style={{ fontSize: 16, color: '#04057a' }}>
+                  {formatTimer(game.elapsedMs)}
+                </div>
+                <div style={{ fontSize: 10, color: '#555' }}>TIME</div>
+              </div>
+              <div className="win95-inset" style={{ flex: 1, padding: 8 }}>
+                <div className="win95-pixel" style={{ fontSize: 16, color: '#04057a' }}>
+                  {formatNumber(game.moves)}
+                </div>
+                <div style={{ fontSize: 10, color: '#555' }}>MOVES</div>
+              </div>
+              <div className="win95-inset" style={{ flex: 1, padding: 8 }}>
+                <div className="win95-pixel" style={{ fontSize: 16, color: '#0a5f30' }}>
+                  {game.scoreMode === 'none' ? '—' : formatNumber(game.score)}
+                </div>
+                <div style={{ fontSize: 10, color: '#555' }}>SCORE</div>
+              </div>
             </div>
-          ) : null}
 
-          <div className="mb-[18px] grid w-full grid-cols-3 gap-2">
-          <StatTile label="Time" value={formatDuration(game.elapsedMs)} />
-          <StatTile label="Moves" value={formatNumber(game.moves)} />
-          {game.scoreMode !== 'none' ? (
-            <StatTile label="Score" value={formatNumber(game.score)} />
-          ) : (
-            <StatTile label="Score" value="—" />
-          )}
-        </div>
+            <div style={{ display: 'flex', gap: 8, justifyContent: 'center', flexWrap: 'wrap' }}>
+              {isDaily ? (
+                <Win95Button onClick={() => void handleShare()}>
+                  {copied ? 'Copied!' : 'Share'}
+                </Win95Button>
+              ) : null}
+              <Win95Button className="win95-btn--primary" onClick={onNewGame}>
+                Play Again
+              </Win95Button>
+              <Win95Button onClick={onReplayDeal}>Replay</Win95Button>
+              <Win95Button onClick={onHome}>Close</Win95Button>
+            </div>
 
-        <div className="flex w-full flex-col gap-2">
-          {isDaily ? (
-            <Button fullWidth variant="ghost" onClick={() => void handleShare()}>
-              {copied ? 'Copied!' : 'Share result'}
-            </Button>
-          ) : null}
-          <Button fullWidth onClick={onNewGame}>
-            New Game
-          </Button>
-          <Button fullWidth variant="ghost" onClick={onReplayDeal}>
-            Replay this deal
-          </Button>
-        </div>
-
-        {isDaily ? <DailyLeaderboard date={dailyDateKey()} /> : null}
+            {isDaily ? (
+              <div style={{ marginTop: 14, textAlign: 'left' }}>
+                <DailyLeaderboard date={dailyDateKey()} />
+              </div>
+            ) : null}
+          </div>
+        </Win95Dialog>
       </div>
-    </Modal>
 
       <Toast
         open={showToast && Boolean(toastDef)}
         message={toastDef ? `Achievement unlocked: ${toastDef.title}` : ''}
         onDismiss={() => {
-          if (toastIndex + 1 < newAchievements.length) {
-            setToastIndex((i) => i + 1);
-          } else {
-            setShowToast(false);
-          }
+          if (toastIndex + 1 < newAchievements.length) setToastIndex((i) => i + 1);
+          else setShowToast(false);
         }}
       />
     </>

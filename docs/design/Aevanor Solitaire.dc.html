@@ -1,0 +1,719 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet data-dc-atomics>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Silkscreen:wght@400;700&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box}
+html,body{margin:0;height:100%}
+body{font-family:Tahoma,Verdana,Geneva,'DejaVu Sans',sans-serif;-webkit-font-smoothing:none;font-smooth:never;background:#0a807e;color:#000;overflow:hidden}
+a{color:#04057a}a:hover{color:#1a86d8}
+::selection{background:#04057a;color:#fff}
+::-webkit-scrollbar{width:16px;height:16px}
+::-webkit-scrollbar-track{background:#dfdfdf;box-shadow:inset 1px 1px grey}
+::-webkit-scrollbar-thumb{background:#c0c0c0;box-shadow:inset -1px -1px #0a0a0a,inset 1px 1px #fff,inset -2px -2px grey,inset 2px 2px #dfdfdf}
+@keyframes blink{50%{opacity:0}}
+@keyframes hintpulse{0%,100%{box-shadow:0 0 0 3px rgba(255,236,120,.95),0 0 16px 5px rgba(255,214,40,.85)}50%{box-shadow:0 0 0 3px rgba(255,236,120,.35),0 0 10px 2px rgba(255,214,40,.3)}}
+@keyframes barmove{to{background-position:24px 0}}
+@keyframes splashin{from{opacity:0}to{opacity:1}}
+@keyframes trophy{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
+</style>
+</helmet>
+<div style="position:fixed;inset:0;overflow:hidden;user-select:none;-webkit-user-select:none;font-family:Tahoma,Verdana,Geneva,sans-serif;font-size:13px">
+
+  <!-- ============ BOOT SPLASH ============ -->
+  <sc-if value="{{ isBoot }}" hint-placeholder-val="{{ true }}">
+    <div onClick="{{ skipBoot }}" style="position:absolute;inset:0;background:radial-gradient(ellipse at 50% 40%,#0e6b6b,#053b3b);display:grid;place-items:center;z-index:900;animation:splashin .4s ease">
+      <div style="width:440px;max-width:86%;background:#c0c0c0;box-shadow:inset -1px -1px #0a0a0a,inset 1px 1px #dfdfdf,inset -2px -2px grey,inset 2px 2px #fff;padding:3px">
+        <div style="background:linear-gradient(90deg,#04057a,#1a86d8);color:#fff;font-weight:bold;padding:4px 8px;display:flex;align-items:center;gap:7px;font-size:12px">
+          <span style="display:inline-grid;place-items:center;width:16px;height:16px;background:#0a5f30;color:#fff;box-shadow:inset -1px -1px #000,inset 1px 1px #4bd07a;font-size:11px">&#9824;</span>
+          Aevanor Solitaire
+        </div>
+        <div style="padding:26px 24px 22px;text-align:center;background:#c0c0c0">
+          <div style="font-family:'Silkscreen',monospace;font-size:30px;letter-spacing:1px;color:#0a3a3a;text-shadow:2px 2px 0 #8fa;margin-bottom:4px">AEVANOR</div>
+          <div style="display:flex;gap:5px;justify-content:center;margin:10px 0 18px">
+            <span style="font-size:26px;color:#1a1a1a">&#9824;</span><span style="font-size:26px;color:#c22">&#9829;</span><span style="font-size:26px;color:#c22">&#9830;</span><span style="font-size:26px;color:#1a1a1a">&#9827;</span>
+          </div>
+          <div style="font-size:11px;color:#333;margin-bottom:6px">Solitaire, beautifully restored &mdash; v3.1</div>
+          <div style="height:20px;background:#fff;box-shadow:inset -1px -1px #fff,inset 1px 1px grey,inset -2px -2px #dfdfdf,inset 2px 2px #0a0a0a;padding:3px">
+            <div style="height:100%;width:{{ bootPct }}%;background:repeating-linear-gradient(90deg,#0a5f30 0 14px,#0e7a3f 14px 24px);animation:barmove .5s linear infinite"></div>
+          </div>
+          <div style="font-size:10px;color:#555;margin-top:8px;font-family:'Silkscreen',monospace">loading assets&hellip; click to skip</div>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+
+  <!-- ============ DESKTOP ============ -->
+  <div style="position:absolute;inset:0;background:#0a807e">
+
+    <!-- desktop icons -->
+    <div style="position:absolute;left:10px;top:14px;display:flex;flex-direction:column;gap:20px;width:70px">
+      <div onDoubleClick="{{ onNew }}" title="New game" style="text-align:center;cursor:default;padding:4px 2px" style-hover="background:rgba(0,0,60,.35)">
+        <div style="width:34px;height:34px;margin:0 auto 4px;display:grid;place-items:center;background:linear-gradient(135deg,#0e7a3f,#0a5f30);box-shadow:inset -1px -1px #063;inset 1px 1px #4bd07a;font-size:20px;color:#fff">&#9824;</div>
+        <div style="color:#fff;font-size:11px;text-shadow:1px 1px 1px #000">Solitaire</div>
+      </div>
+      <div onDoubleClick="{{ openStats }}" title="Statistics" style="text-align:center;cursor:default;padding:4px 2px" style-hover="background:rgba(0,0,60,.35)">
+        <div style="width:34px;height:34px;margin:0 auto 4px;display:grid;place-items:center;background:#c0c0c0;box-shadow:inset -1px -1px #808080,inset 1px 1px #fff;font-size:18px">&#128202;</div>
+        <div style="color:#fff;font-size:11px;text-shadow:1px 1px 1px #000">Stats</div>
+      </div>
+      <div onDoubleClick="{{ openHelp }}" title="How to play" style="text-align:center;cursor:default;padding:4px 2px" style-hover="background:rgba(0,0,60,.35)">
+        <div style="width:34px;height:34px;margin:0 auto 4px;display:grid;place-items:center;background:#f7f3c0;box-shadow:inset -1px -1px #808080,inset 1px 1px #fff;font-size:18px;font-weight:bold;color:#04057a;font-family:serif">?</div>
+        <div style="color:#fff;font-size:11px;text-shadow:1px 1px 1px #000">Read Me</div>
+      </div>
+    </div>
+
+    <!-- ============ MAIN WINDOW ============ -->
+    <div style="position:absolute;top:14px;left:88px;right:14px;bottom:46px;background:#c0c0c0;box-shadow:inset -1px -1px #0a0a0a,inset 1px 1px #dfdfdf,inset -2px -2px grey,inset 2px 2px #fff;display:flex;flex-direction:column;min-width:0;padding:3px">
+
+      <!-- title bar -->
+      <div style="height:26px;flex:none;background:linear-gradient(90deg,#04057a,#1a86d8);display:flex;align-items:center;padding:0 3px 0 5px;gap:6px">
+        <span style="display:inline-grid;place-items:center;width:16px;height:16px;background:#0a5f30;color:#fff;box-shadow:inset -1px -1px #000,inset 1px 1px #4bd07a;font-size:11px">&#9824;</span>
+        <span style="color:#fff;font-weight:bold;font-size:12px;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ winTitle }}</span>
+        <div style="display:flex;gap:2px">
+          <button style="width:18px;height:16px;padding:0;background:#c0c0c0;border:0;box-shadow:inset -1px -1px #0a0a0a,inset 1px 1px #fff,inset -2px -2px grey,inset 2px 2px #dfdfdf;font-size:9px;line-height:1;cursor:default;display:grid;place-items:end center">_</button>
+          <button style="width:18px;height:16px;padding:0;background:#c0c0c0;border:0;box-shadow:inset -1px -1px #0a0a0a,inset 1px 1px #fff,inset -2px -2px grey,inset 2px 2px #dfdfdf;font-size:9px;line-height:1;cursor:default">&#9723;</button>
+          <button onClick="{{ onReboot }}" style="width:18px;height:16px;padding:0;background:#c0c0c0;border:0;box-shadow:inset -1px -1px #0a0a0a,inset 1px 1px #fff,inset -2px -2px grey,inset 2px 2px #dfdfdf;font-size:10px;font-weight:bold;line-height:1;cursor:default">&#10005;</button>
+        </div>
+      </div>
+
+      <!-- menu bar -->
+      <div style="height:22px;flex:none;display:flex;align-items:stretch;padding:1px 0;position:relative;z-index:60">
+        <div onClick="{{ mGame }}" style="padding:2px 8px;cursor:default;font-size:13px" style-hover="background:#04057a;color:#fff"><u>G</u>ame</div>
+        <div onClick="{{ mEdit }}" style="padding:2px 8px;cursor:default;font-size:13px" style-hover="background:#04057a;color:#fff"><u>E</u>dit</div>
+        <div onClick="{{ mOpt }}" style="padding:2px 8px;cursor:default;font-size:13px" style-hover="background:#04057a;color:#fff"><u>O</u>ptions</div>
+        <div onClick="{{ mHelp }}" style="padding:2px 8px;cursor:default;font-size:13px" style-hover="background:#04057a;color:#fff"><u>H</u>elp</div>
+      </div>
+
+      <!-- toolbar -->
+      <div style="flex:none;display:flex;align-items:center;gap:4px;padding:4px 5px;background:#c0c0c0;box-shadow:inset 0 1px #dfdfdf,inset 0 -1px grey;flex-wrap:wrap">
+        <button onClick="{{ onNew }}" style="display:flex;align-items:center;gap:5px;height:28px;padding:0 9px;background:#c0c0c0;border:0;box-shadow:inset -1px -1px #0a0a0a,inset 1px 1px #fff,inset -2px -2px grey,inset 2px 2px #dfdfdf;cursor:default;font-size:12px" style-active="box-shadow:inset 1px 1px #0a0a0a,inset -1px -1px #fff,inset 2px 2px grey"><span style="font-size:14px;color:#0a5f30">&#9827;</span>New</button>
+        <button onClick="{{ onRestart }}" style="display:flex;align-items:center;gap:5px;height:28px;padding:0 9px;background:#c0c0c0;border:0;box-shadow:inset -1px -1px #0a0a0a,inset 1px 1px #fff,inset -2px -2px grey,inset 2px 2px #dfdfdf;cursor:default;font-size:12px" style-active="box-shadow:inset 1px 1px #0a0a0a,inset -1px -1px #fff,inset 2px 2px grey">&#8635; Restart</button>
+        <button onClick="{{ onUndo }}" style="{{ undoBtnStyle }}" style-active="box-shadow:inset 1px 1px #0a0a0a,inset -1px -1px #fff,inset 2px 2px grey">&#8630; Undo</button>
+        <button onClick="{{ onHint }}" style="display:flex;align-items:center;gap:5px;height:28px;padding:0 9px;background:#c0c0c0;border:0;box-shadow:inset -1px -1px #0a0a0a,inset 1px 1px #fff,inset -2px -2px grey,inset 2px 2px #dfdfdf;cursor:default;font-size:12px" style-active="box-shadow:inset 1px 1px #0a0a0a,inset -1px -1px #fff,inset 2px 2px grey"><span style="color:#c9a000">&#128161;</span>Hint</button>
+        <button onClick="{{ onAuto }}" style="display:flex;align-items:center;gap:5px;height:28px;padding:0 9px;background:#c0c0c0;border:0;box-shadow:inset -1px -1px #0a0a0a,inset 1px 1px #fff,inset -2px -2px grey,inset 2px 2px #dfdfdf;cursor:default;font-size:12px" style-active="box-shadow:inset 1px 1px #0a0a0a,inset -1px -1px #fff,inset 2px 2px grey">&#9193; Auto</button>
+        <div style="width:2px;height:24px;box-shadow:inset -1px 0 #fff,inset 1px 0 grey;margin:0 3px"></div>
+        <div style="display:flex;box-shadow:inset -1px -1px #fff,inset 1px 1px grey,inset -2px -2px #dfdfdf,inset 2px 2px #0a0a0a;padding:2px">
+          <sc-for list="{{ gameTabs }}" as="tab" hint-placeholder-count="3">
+            <button onClick="{{ tab.onClick }}" style="{{ tab.style }}">{{ tab.label }}</button>
+          </sc-for>
+        </div>
+        <div style="flex:1"></div>
+        <div style="display:flex;gap:8px;align-items:center">
+          <div style="display:flex;flex-direction:column;align-items:center;box-shadow:inset -1px -1px #fff,inset 1px 1px grey,inset -2px -2px #dfdfdf,inset 2px 2px #0a0a0a;padding:2px 10px;background:#c8c8c8"><span style="font-size:9px;color:#444">TIME</span><span style="font-family:'Silkscreen',monospace;font-size:13px;color:#04057a">{{ timeStr }}</span></div>
+          <div style="display:flex;flex-direction:column;align-items:center;box-shadow:inset -1px -1px #fff,inset 1px 1px grey,inset -2px -2px #dfdfdf,inset 2px 2px #0a0a0a;padding:2px 10px;background:#c8c8c8"><span style="font-size:9px;color:#444">MOVES</span><span style="font-family:'Silkscreen',monospace;font-size:13px;color:#04057a">{{ movesStr }}</span></div>
+          <div style="display:flex;flex-direction:column;align-items:center;box-shadow:inset -1px -1px #fff,inset 1px 1px grey,inset -2px -2px #dfdfdf,inset 2px 2px #0a0a0a;padding:2px 10px;background:#c8c8c8"><span style="font-size:9px;color:#444">SCORE</span><span style="font-family:'Silkscreen',monospace;font-size:13px;color:#0a5f30">{{ scoreStr }}</span></div>
+        </div>
+      </div>
+
+      <!-- board -->
+      <div style="flex:1;position:relative;overflow:hidden;box-shadow:inset -1px -1px #fff,inset 1px 1px grey,inset -2px -2px #dfdfdf,inset 2px 2px #0a0a0a;margin-top:3px">
+        <div style="{{ feltStyle }}">
+          <div ref="{{ setStage }}" style="position:absolute;inset:0">
+            <div ref="{{ setBoard }}" style="{{ boardStyle }}">
+              <sc-for list="{{ pileZones }}" as="zone" hint-placeholder-count="7">
+                <div data-pile="{{ zone.id }}" onClick="{{ zone.onClick }}" style="{{ zone.style }}">
+                  <sc-if value="{{ zone.showGhost }}" hint-placeholder-val="{{ false }}"><span style="{{ zone.ghostStyle }}">{{ zone.ghost }}</span></sc-if>
+                  <sc-if value="{{ zone.showCount }}" hint-placeholder-val="{{ false }}"><span style="position:absolute;bottom:2px;right:4px;font-family:'Silkscreen',monospace;font-size:11px;color:#fff;text-shadow:1px 1px 0 #000">{{ zone.count }}</span></sc-if>
+                </div>
+              </sc-for>
+              <sc-for list="{{ renderCards }}" as="card" hint-placeholder-count="0">
+                <div data-cardpile="{{ card.pile }}" data-cardid="{{ card.id }}" onPointerDown="{{ card.onDown }}" onClick="{{ card.onClick }}" onDoubleClick="{{ card.onDbl }}" style="{{ card.style }}">
+                  <sc-if value="{{ card.faceUp }}" hint-placeholder-val="{{ true }}">
+                    <span style="position:absolute;top:3px;left:5px;font-weight:bold;font-size:15px;line-height:.85;text-align:center;color:{{ card.faceColor }}">{{ card.rankStr }}<br>{{ card.suitChar }}</span>
+                    <span style="position:absolute;inset:0;display:grid;place-items:center;font-size:34px;color:{{ card.faceColor }}">{{ card.suitChar }}</span>
+                    <span style="position:absolute;bottom:3px;right:5px;font-weight:bold;font-size:15px;line-height:.85;text-align:center;transform:rotate(180deg);color:{{ card.faceColor }}">{{ card.rankStr }}<br>{{ card.suitChar }}</span>
+                  </sc-if>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+          <!-- paused overlay -->
+          <sc-if value="{{ paused }}" hint-placeholder-val="{{ false }}">
+            <div style="position:absolute;inset:0;background:rgba(6,40,30,.86);display:grid;place-items:center;z-index:40">
+              <div style="text-align:center">
+                <div style="font-family:'Silkscreen',monospace;font-size:26px;color:#fff;letter-spacing:2px;margin-bottom:14px">PAUSED</div>
+                <button onClick="{{ onResume }}" style="height:30px;padding:0 20px;background:#c0c0c0;border:0;box-shadow:inset -1px -1px #0a0a0a,inset 1px 1px #fff,inset -2px -2px grey,inset 2px 2px #dfdfdf;cursor:default;font-size:13px" style-active="box-shadow:inset 1px 1px #0a0a0a,inset -1px -1px #fff,inset 2px 2px grey">&#9654; Resume</button>
+              </div>
+            </div>
+          </sc-if>
+        </div>
+      </div>
+
+      <!-- status bar -->
+      <div style="height:22px;flex:none;display:flex;align-items:stretch;gap:3px;margin-top:3px;font-size:11px">
+        <div style="flex:1;display:flex;align-items:center;padding:0 7px;box-shadow:inset -1px -1px #fff,inset 1px 1px grey;color:#333;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ statusText }}</div>
+        <div style="display:flex;align-items:center;padding:0 8px;box-shadow:inset -1px -1px #fff,inset 1px 1px grey;color:#333">Daily streak: {{ streakStr }} &#128293;</div>
+        <div style="display:flex;align-items:center;padding:0 8px;box-shadow:inset -1px -1px #fff,inset 1px 1px grey;color:#333">{{ modeStr }}</div>
+      </div>
+    </div>
+
+    <!-- ============ DROPDOWN MENU ============ -->
+    <sc-if value="{{ menuOpen }}" hint-placeholder-val="{{ false }}">
+      <div style="position:absolute;top:{{ menuTop }}px;left:{{ menuLeft }}px;min-width:200px;background:#c0c0c0;box-shadow:inset -1px -1px #0a0a0a,inset 1px 1px #dfdfdf,inset -2px -2px grey,inset 2px 2px #fff;padding:2px;z-index:120">
+        <sc-for list="{{ menuItems }}" as="mi" hint-placeholder-count="5">
+          <sc-if value="{{ mi.isSep }}" hint-placeholder-val="{{ false }}"><div style="height:2px;margin:3px 2px;box-shadow:inset 0 1px grey,inset 0 -1px #fff"></div></sc-if>
+          <sc-if value="{{ mi.isItem }}" hint-placeholder-val="{{ true }}">
+            <div onClick="{{ mi.onClick }}" style="{{ mi.style }}" style-hover="{{ mi.hoverStyle }}">
+              <span style="width:16px;text-align:center;font-size:11px">{{ mi.mark }}</span>
+              <span style="flex:1">{{ mi.label }}</span>
+              <span style="color:#555;font-size:11px;margin-left:16px">{{ mi.accel }}</span>
+            </div>
+          </sc-if>
+        </sc-for>
+      </div>
+    </sc-if>
+
+    <!-- ============ TASKBAR ============ -->
+    <div style="position:absolute;left:0;right:0;bottom:0;height:34px;background:#c0c0c0;box-shadow:inset 0 2px #dfdfdf,inset 0 1px #fff;display:flex;align-items:center;gap:5px;padding:3px 4px;z-index:70">
+      <button onClick="{{ onStart }}" style="{{ startBtnStyle }}" style-active="box-shadow:inset 1px 1px #0a0a0a,inset -1px -1px #fff,inset 2px 2px grey"><span style="display:inline-grid;place-items:center;width:18px;height:18px;background:#0a5f30;color:#fff;box-shadow:inset -1px -1px #063,inset 1px 1px #4bd07a;font-size:12px">&#9824;</span>Start</button>
+      <div style="width:2px;height:24px;box-shadow:inset -1px 0 #fff,inset 1px 0 grey;margin:0 1px"></div>
+      <button style="display:flex;align-items:center;gap:6px;height:26px;padding:0 10px;max-width:220px;background:#c0c0c0;border:0;box-shadow:inset 1px 1px #0a0a0a,inset -1px -1px #fff,inset 2px 2px grey;cursor:default;font-size:12px;font-weight:bold"><span style="color:#0a5f30">&#9824;</span><span style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ winTitle }}</span></button>
+      <div style="flex:1"></div>
+      <div style="display:flex;align-items:center;gap:8px;height:26px;padding:0 10px 0 8px;box-shadow:inset -1px -1px #fff,inset 1px 1px grey">
+        <span onClick="{{ onToggleSound }}" title="Sound" style="cursor:default;font-size:14px">{{ soundIcon }}</span>
+        <span style="font-size:12px;font-variant-numeric:tabular-nums">{{ clockStr }}</span>
+      </div>
+    </div>
+
+    <!-- start menu -->
+    <sc-if value="{{ startOpen }}" hint-placeholder-val="{{ false }}">
+      <div style="position:absolute;left:4px;bottom:37px;width:236px;background:#c0c0c0;box-shadow:inset -1px -1px #0a0a0a,inset 1px 1px #dfdfdf,inset -2px -2px grey,inset 2px 2px #fff;padding:3px;z-index:130;display:flex">
+        <div style="width:26px;background:linear-gradient(#1a86d8,#04057a);writing-mode:vertical-rl;transform:rotate(180deg);text-align:center;color:#fff;font-family:'Silkscreen',monospace;font-size:13px;letter-spacing:2px;padding:8px 0">AEVANOR&nbsp;95</div>
+        <div style="flex:1">
+          <sc-for list="{{ startItems }}" as="si" hint-placeholder-count="6">
+            <sc-if value="{{ si.isSep }}" hint-placeholder-val="{{ false }}"><div style="height:2px;margin:3px 2px;box-shadow:inset 0 1px grey,inset 0 -1px #fff"></div></sc-if>
+            <sc-if value="{{ si.isItem }}" hint-placeholder-val="{{ true }}">
+              <div onClick="{{ si.onClick }}" style="display:flex;align-items:center;gap:9px;padding:6px 10px;cursor:default;font-size:13px" style-hover="background:#04057a;color:#fff"><span style="font-size:16px;width:18px;text-align:center">{{ si.icon }}</span>{{ si.label }}</div>
+            </sc-if>
+          </sc-for>
+        </div>
+      </div>
+    </sc-if>
+
+    <!-- click-away catcher -->
+    <sc-if value="{{ overlayOpen }}" hint-placeholder-val="{{ false }}"><div onClick="{{ closeAll }}" style="position:absolute;inset:0;z-index:55"></div></sc-if>
+  </div>
+
+  <!-- ============ DIALOGS ============ -->
+  <sc-if value="{{ dialogOpen }}" hint-placeholder-val="{{ false }}">
+    <div style="position:absolute;inset:0;background:rgba(0,20,20,.28);display:grid;place-items:center;z-index:300;padding:16px">
+
+      <!-- ABOUT -->
+      <sc-if value="{{ dlgAbout }}" hint-placeholder-val="{{ false }}">
+        <div style="width:380px;max-width:100%;background:#c0c0c0;box-shadow:inset -1px -1px #0a0a0a,inset 1px 1px #dfdfdf,inset -2px -2px grey,inset 2px 2px #fff;padding:3px">
+          <div style="background:linear-gradient(90deg,#04057a,#1a86d8);color:#fff;font-weight:bold;font-size:12px;padding:4px 6px;display:flex;justify-content:space-between">About Aevanor Solitaire<span onClick="{{ closeDialog }}" style="cursor:default;padding:0 4px">&#10005;</span></div>
+          <div style="padding:20px;text-align:center">
+            <div style="font-family:'Silkscreen',monospace;font-size:24px;color:#0a3a3a;text-shadow:2px 2px 0 #8fa">AEVANOR</div>
+            <div style="font-size:12px;margin:6px 0 14px">Solitaire Collection &mdash; Version 3.1</div>
+            <div style="display:flex;gap:6px;justify-content:center;margin-bottom:14px;font-size:22px"><span>&#9824;</span><span style="color:#c22">&#9829;</span><span style="color:#c22">&#9830;</span><span>&#9827;</span></div>
+            <div style="text-align:left;background:#fff;box-shadow:inset -1px -1px #fff,inset 1px 1px grey,inset -2px -2px #dfdfdf,inset 2px 2px #0a0a0a;padding:10px;font-size:12px;line-height:1.5">Klondike &middot; FreeCell &middot; Spider<br>Calm, ad-free, offline-first.<br><br>A nostalgic restoration of the desktop solitaire everyone remembers.</div>
+            <div style="margin-top:16px"><button onClick="{{ closeDialog }}" style="height:26px;padding:0 26px;background:#c0c0c0;border:0;box-shadow:inset -1px -1px #0a0a0a,inset 1px 1px #fff,inset -2px -2px grey,inset 2px 2px #dfdfdf;cursor:default;font-size:12px" style-active="box-shadow:inset 1px 1px #0a0a0a,inset -1px -1px #fff,inset 2px 2px grey">OK</button></div>
+          </div>
+        </div>
+      </sc-if>
+
+      <!-- HELP -->
+      <sc-if value="{{ dlgHelp }}" hint-placeholder-val="{{ false }}">
+        <div style="width:460px;max-width:100%;background:#c0c0c0;box-shadow:inset -1px -1px #0a0a0a,inset 1px 1px #dfdfdf,inset -2px -2px grey,inset 2px 2px #fff;padding:3px">
+          <div style="background:linear-gradient(90deg,#04057a,#1a86d8);color:#fff;font-weight:bold;font-size:12px;padding:4px 6px;display:flex;justify-content:space-between">How to Play &mdash; {{ gameName }}<span onClick="{{ closeDialog }}" style="cursor:default;padding:0 4px">&#10005;</span></div>
+          <div style="padding:14px">
+            <div style="background:#fff;box-shadow:inset -1px -1px #fff,inset 1px 1px grey,inset -2px -2px #dfdfdf,inset 2px 2px #0a0a0a;padding:12px;max-height:300px;overflow:auto;font-size:13px;line-height:1.55">
+              <sc-for list="{{ helpLines }}" as="line" hint-placeholder-count="4"><p style="{{ line.style }}">{{ line.text }}</p></sc-for>
+            </div>
+            <div style="margin-top:12px;text-align:right"><button onClick="{{ closeDialog }}" style="height:26px;padding:0 26px;background:#c0c0c0;border:0;box-shadow:inset -1px -1px #0a0a0a,inset 1px 1px #fff,inset -2px -2px grey,inset 2px 2px #dfdfdf;cursor:default;font-size:12px" style-active="box-shadow:inset 1px 1px #0a0a0a,inset -1px -1px #fff,inset 2px 2px grey">OK</button></div>
+          </div>
+        </div>
+      </sc-if>
+
+      <!-- STATS -->
+      <sc-if value="{{ dlgStats }}" hint-placeholder-val="{{ false }}">
+        <div style="width:440px;max-width:100%;background:#c0c0c0;box-shadow:inset -1px -1px #0a0a0a,inset 1px 1px #dfdfdf,inset -2px -2px grey,inset 2px 2px #fff;padding:3px">
+          <div style="background:linear-gradient(90deg,#04057a,#1a86d8);color:#fff;font-weight:bold;font-size:12px;padding:4px 6px;display:flex;justify-content:space-between">Statistics<span onClick="{{ closeDialog }}" style="cursor:default;padding:0 4px">&#10005;</span></div>
+          <div style="padding:14px">
+            <div style="background:#fff;box-shadow:inset -1px -1px #fff,inset 1px 1px grey,inset -2px -2px #dfdfdf,inset 2px 2px #0a0a0a;padding:2px">
+              <div style="display:grid;grid-template-columns:1.3fr .7fr .7fr .7fr 1fr 1fr;background:#c0c0c0;font-size:11px;font-weight:bold;padding:4px 6px">
+                <span>Game</span><span style="text-align:center">Played</span><span style="text-align:center">Won</span><span style="text-align:center">Win %</span><span style="text-align:center">Best Time</span><span style="text-align:center">Best Moves</span>
+              </div>
+              <sc-for list="{{ statsRows }}" as="row" hint-placeholder-count="3">
+                <div style="{{ row.style }}"><span style="font-weight:bold">{{ row.name }}</span><span style="text-align:center">{{ row.played }}</span><span style="text-align:center">{{ row.won }}</span><span style="text-align:center">{{ row.pct }}</span><span style="text-align:center;font-family:'Silkscreen',monospace;font-size:11px">{{ row.bestTime }}</span><span style="text-align:center;font-family:'Silkscreen',monospace;font-size:11px">{{ row.bestMoves }}</span></div>
+              </sc-for>
+            </div>
+            <div style="display:flex;justify-content:space-between;margin-top:12px"><button onClick="{{ onResetStats }}" style="height:26px;padding:0 14px;background:#c0c0c0;border:0;box-shadow:inset -1px -1px #0a0a0a,inset 1px 1px #fff,inset -2px -2px grey,inset 2px 2px #dfdfdf;cursor:default;font-size:12px" style-active="box-shadow:inset 1px 1px #0a0a0a,inset -1px -1px #fff,inset 2px 2px grey">Reset&hellip;</button><button onClick="{{ closeDialog }}" style="height:26px;padding:0 26px;background:#c0c0c0;border:0;box-shadow:inset -1px -1px #0a0a0a,inset 1px 1px #fff,inset -2px -2px grey,inset 2px 2px #dfdfdf;cursor:default;font-size:12px" style-active="box-shadow:inset 1px 1px #0a0a0a,inset -1px -1px #fff,inset 2px 2px grey">OK</button></div>
+          </div>
+        </div>
+      </sc-if>
+
+      <!-- DAILY -->
+      <sc-if value="{{ dlgDaily }}" hint-placeholder-val="{{ false }}">
+        <div style="width:360px;max-width:100%;background:#c0c0c0;box-shadow:inset -1px -1px #0a0a0a,inset 1px 1px #dfdfdf,inset -2px -2px grey,inset 2px 2px #fff;padding:3px">
+          <div style="background:linear-gradient(90deg,#04057a,#1a86d8);color:#fff;font-weight:bold;font-size:12px;padding:4px 6px;display:flex;justify-content:space-between">Daily Challenge<span onClick="{{ closeDialog }}" style="cursor:default;padding:0 4px">&#10005;</span></div>
+          <div style="padding:18px;text-align:center">
+            <div style="font-size:34px;margin-bottom:2px">&#128197;</div>
+            <div style="font-weight:bold;font-size:15px">{{ dailyDate }}</div>
+            <div style="font-size:11px;color:#555;margin-bottom:14px">Deal #{{ dailySeedLabel }} &middot; Klondike (Draw 1)</div>
+            <div style="display:flex;gap:8px;justify-content:center;margin-bottom:16px">
+              <div style="flex:1;background:#fff;box-shadow:inset -1px -1px #fff,inset 1px 1px grey,inset -2px -2px #dfdfdf,inset 2px 2px #0a0a0a;padding:8px"><div style="font-family:'Silkscreen',monospace;font-size:20px;color:#c9520a">{{ streakStr }}</div><div style="font-size:10px;color:#555">CURRENT STREAK</div></div>
+              <div style="flex:1;background:#fff;box-shadow:inset -1px -1px #fff,inset 1px 1px grey,inset -2px -2px #dfdfdf,inset 2px 2px #0a0a0a;padding:8px"><div style="font-family:'Silkscreen',monospace;font-size:20px;color:#04057a">{{ dailyLongest }}</div><div style="font-size:10px;color:#555">LONGEST</div></div>
+            </div>
+            <div style="font-size:12px;color:#333;margin-bottom:14px">{{ dailyNote }}</div>
+            <button onClick="{{ onPlayDaily }}" style="height:30px;padding:0 24px;background:#c0c0c0;border:0;box-shadow:inset -1px -1px #0a0a0a,inset 1px 1px #fff,inset -2px -2px grey,inset 2px 2px #dfdfdf;cursor:default;font-size:13px;font-weight:bold" style-active="box-shadow:inset 1px 1px #0a0a0a,inset -1px -1px #fff,inset 2px 2px grey">&#9654; Play Today's Deal</button>
+          </div>
+        </div>
+      </sc-if>
+
+      <!-- OPTIONS -->
+      <sc-if value="{{ dlgOptions }}" hint-placeholder-val="{{ false }}">
+        <div style="width:430px;max-width:100%;background:#c0c0c0;box-shadow:inset -1px -1px #0a0a0a,inset 1px 1px #dfdfdf,inset -2px -2px grey,inset 2px 2px #fff;padding:3px">
+          <div style="background:linear-gradient(90deg,#04057a,#1a86d8);color:#fff;font-weight:bold;font-size:12px;padding:4px 6px;display:flex;justify-content:space-between">Options<span onClick="{{ closeDialog }}" style="cursor:default;padding:0 4px">&#10005;</span></div>
+          <div style="padding:14px;display:flex;flex-direction:column;gap:12px">
+            <fieldset style="border:0;box-shadow:inset -1px -1px #fff,inset 1px 1px grey,inset -2px -2px #dfdfdf,inset 2px 2px #0a0a0a;padding:10px;margin:0"><legend style="font-size:11px;padding:0 4px">Card back</legend>
+              <div style="display:flex;gap:8px;flex-wrap:wrap">
+                <sc-for list="{{ optionBacks }}" as="b" hint-placeholder-count="6"><div onClick="{{ b.onClick }}" style="{{ b.wrapStyle }}"><div style="{{ b.style }}"></div></div></sc-for>
+              </div>
+            </fieldset>
+            <fieldset style="border:0;box-shadow:inset -1px -1px #fff,inset 1px 1px grey,inset -2px -2px #dfdfdf,inset 2px 2px #0a0a0a;padding:10px;margin:0"><legend style="font-size:11px;padding:0 4px">Table felt</legend>
+              <div style="display:flex;gap:14px">
+                <sc-for list="{{ optionFelts }}" as="f" hint-placeholder-count="3"><label onClick="{{ f.onClick }}" style="display:flex;align-items:center;gap:5px;cursor:default;font-size:12px"><span style="width:13px;height:13px;border-radius:50%;box-shadow:inset -1px -1px #fff,inset 1px 1px grey;background:#fff;display:grid;place-items:center"><span style="{{ f.dot }}"></span></span><span style="width:14px;height:14px;box-shadow:inset 0 0 0 1px rgba(0,0,0,.4);background:{{ f.swatch }}"></span>{{ f.label }}</label></sc-for>
+              </div>
+            </fieldset>
+            <div style="display:flex;gap:12px">
+              <fieldset style="flex:1;border:0;box-shadow:inset -1px -1px #fff,inset 1px 1px grey,inset -2px -2px #dfdfdf,inset 2px 2px #0a0a0a;padding:10px;margin:0"><legend style="font-size:11px;padding:0 4px">Klondike draw</legend>
+                <sc-for list="{{ optionDraws }}" as="d" hint-placeholder-count="2"><label onClick="{{ d.onClick }}" style="display:flex;align-items:center;gap:6px;cursor:default;font-size:12px;padding:2px 0"><span style="width:13px;height:13px;border-radius:50%;box-shadow:inset -1px -1px #fff,inset 1px 1px grey;background:#fff;display:grid;place-items:center"><span style="{{ d.dot }}"></span></span>{{ d.label }}</label></sc-for>
+              </fieldset>
+              <fieldset style="flex:1;border:0;box-shadow:inset -1px -1px #fff,inset 1px 1px grey,inset -2px -2px #dfdfdf,inset 2px 2px #0a0a0a;padding:10px;margin:0"><legend style="font-size:11px;padding:0 4px">Spider suits</legend>
+                <sc-for list="{{ optionSuits }}" as="s" hint-placeholder-count="3"><label onClick="{{ s.onClick }}" style="display:flex;align-items:center;gap:6px;cursor:default;font-size:12px;padding:2px 0"><span style="width:13px;height:13px;border-radius:50%;box-shadow:inset -1px -1px #fff,inset 1px 1px grey;background:#fff;display:grid;place-items:center"><span style="{{ s.dot }}"></span></span>{{ s.label }}</label></sc-for>
+              </fieldset>
+            </div>
+            <fieldset style="border:0;box-shadow:inset -1px -1px #fff,inset 1px 1px grey,inset -2px -2px #dfdfdf,inset 2px 2px #0a0a0a;padding:10px;margin:0"><legend style="font-size:11px;padding:0 4px">General</legend>
+              <div style="display:flex;gap:18px;flex-wrap:wrap">
+                <sc-for list="{{ optionToggles }}" as="t" hint-placeholder-count="3"><label onClick="{{ t.onClick }}" style="display:flex;align-items:center;gap:6px;cursor:default;font-size:12px"><span style="width:14px;height:14px;box-shadow:inset -1px -1px #fff,inset 1px 1px grey,inset -2px -2px #dfdfdf,inset 2px 2px #0a0a0a;background:#fff;display:grid;place-items:center;font-size:11px;font-weight:bold;color:#0a5f30">{{ t.check }}</span>{{ t.label }}</label></sc-for>
+              </div>
+            </fieldset>
+            <div style="text-align:right"><button onClick="{{ closeDialog }}" style="height:26px;padding:0 26px;background:#c0c0c0;border:0;box-shadow:inset -1px -1px #0a0a0a,inset 1px 1px #fff,inset -2px -2px grey,inset 2px 2px #dfdfdf;cursor:default;font-size:12px" style-active="box-shadow:inset 1px 1px #0a0a0a,inset -1px -1px #fff,inset 2px 2px grey">Done</button></div>
+          </div>
+        </div>
+      </sc-if>
+
+      <!-- CONFIRM -->
+      <sc-if value="{{ dlgConfirm }}" hint-placeholder-val="{{ false }}">
+        <div style="width:340px;max-width:100%;background:#c0c0c0;box-shadow:inset -1px -1px #0a0a0a,inset 1px 1px #dfdfdf,inset -2px -2px grey,inset 2px 2px #fff;padding:3px">
+          <div style="background:linear-gradient(90deg,#04057a,#1a86d8);color:#fff;font-weight:bold;font-size:12px;padding:4px 6px">Aevanor Solitaire</div>
+          <div style="padding:18px 16px">
+            <div style="display:flex;gap:12px;align-items:flex-start;font-size:13px;line-height:1.4"><span style="font-size:28px">&#10068;</span><span>{{ confirmMsg }}</span></div>
+            <div style="display:flex;gap:10px;justify-content:center;margin-top:18px"><button onClick="{{ onConfirmYes }}" style="height:26px;padding:0 24px;background:#c0c0c0;border:0;box-shadow:inset -1px -1px #0a0a0a,inset 1px 1px #fff,inset -2px -2px grey,inset 2px 2px #dfdfdf;cursor:default;font-size:12px" style-active="box-shadow:inset 1px 1px #0a0a0a,inset -1px -1px #fff,inset 2px 2px grey">Yes</button><button onClick="{{ closeDialog }}" style="height:26px;padding:0 24px;background:#c0c0c0;border:0;box-shadow:inset -1px -1px #0a0a0a,inset 1px 1px #fff,inset -2px -2px grey,inset 2px 2px #dfdfdf;cursor:default;font-size:12px" style-active="box-shadow:inset 1px 1px #0a0a0a,inset -1px -1px #fff,inset 2px 2px grey">No</button></div>
+          </div>
+        </div>
+      </sc-if>
+
+      <!-- WIN -->
+      <sc-if value="{{ dlgWin }}" hint-placeholder-val="{{ false }}">
+        <div style="width:360px;max-width:100%;background:#c0c0c0;box-shadow:inset -1px -1px #0a0a0a,inset 1px 1px #dfdfdf,inset -2px -2px grey,inset 2px 2px #fff;padding:3px">
+          <div style="background:linear-gradient(90deg,#04057a,#1a86d8);color:#fff;font-weight:bold;font-size:12px;padding:4px 6px;display:flex;justify-content:space-between">Congratulations!<span onClick="{{ closeDialog }}" style="cursor:default;padding:0 4px">&#10005;</span></div>
+          <div style="padding:20px;text-align:center">
+            <div style="font-size:44px;animation:trophy 1.4s ease-in-out infinite">&#127942;</div>
+            <div style="font-family:'Silkscreen',monospace;font-size:22px;color:#0a5f30;letter-spacing:1px;margin:6px 0 2px">YOU WON!</div>
+            <div style="font-size:12px;color:#555;margin-bottom:14px">{{ gameName }} solved</div>
+            <div style="display:flex;gap:8px;margin-bottom:18px">
+              <div style="flex:1;background:#fff;box-shadow:inset -1px -1px #fff,inset 1px 1px grey,inset -2px -2px #dfdfdf,inset 2px 2px #0a0a0a;padding:8px"><div style="font-family:'Silkscreen',monospace;font-size:16px;color:#04057a">{{ timeStr }}</div><div style="font-size:10px;color:#555">TIME</div></div>
+              <div style="flex:1;background:#fff;box-shadow:inset -1px -1px #fff,inset 1px 1px grey,inset -2px -2px #dfdfdf,inset 2px 2px #0a0a0a;padding:8px"><div style="font-family:'Silkscreen',monospace;font-size:16px;color:#04057a">{{ movesStr }}</div><div style="font-size:10px;color:#555">MOVES</div></div>
+              <div style="flex:1;background:#fff;box-shadow:inset -1px -1px #fff,inset 1px 1px grey,inset -2px -2px #dfdfdf,inset 2px 2px #0a0a0a;padding:8px"><div style="font-family:'Silkscreen',monospace;font-size:16px;color:#0a5f30">{{ scoreStr }}</div><div style="font-size:10px;color:#555">SCORE</div></div>
+            </div>
+            <div style="display:flex;gap:8px;justify-content:center"><button onClick="{{ onWinAgain }}" style="height:28px;padding:0 18px;background:#c0c0c0;border:0;box-shadow:inset -1px -1px #0a0a0a,inset 1px 1px #fff,inset -2px -2px grey,inset 2px 2px #dfdfdf;cursor:default;font-size:12px;font-weight:bold" style-active="box-shadow:inset 1px 1px #0a0a0a,inset -1px -1px #fff,inset 2px 2px grey">Play Again</button><button onClick="{{ closeDialog }}" style="height:28px;padding:0 18px;background:#c0c0c0;border:0;box-shadow:inset -1px -1px #0a0a0a,inset 1px 1px #fff,inset -2px -2px grey,inset 2px 2px #dfdfdf;cursor:default;font-size:12px" style-active="box-shadow:inset 1px 1px #0a0a0a,inset -1px -1px #fff,inset 2px 2px grey">Close</button></div>
+          </div>
+        </div>
+      </sc-if>
+    </div>
+  </sc-if>
+
+  <!-- ============ DRAG LAYER ============ -->
+  <sc-if value="{{ dragging }}" hint-placeholder-val="{{ false }}">
+    <div style="position:fixed;inset:0;z-index:400;pointer-events:none">
+      <sc-for list="{{ dragCards }}" as="card" hint-placeholder-count="0">
+        <div style="{{ card.style }}">
+          <span style="position:absolute;top:3px;left:5px;font-weight:bold;font-size:15px;line-height:.85;text-align:center;color:{{ card.faceColor }}">{{ card.rankStr }}<br>{{ card.suitChar }}</span>
+          <span style="position:absolute;inset:0;display:grid;place-items:center;font-size:34px;color:{{ card.faceColor }}">{{ card.suitChar }}</span>
+          <span style="position:absolute;bottom:3px;right:5px;font-weight:bold;font-size:15px;line-height:.85;text-align:center;transform:rotate(180deg);color:{{ card.faceColor }}">{{ card.rankStr }}<br>{{ card.suitChar }}</span>
+        </div>
+      </sc-for>
+    </div>
+  </sc-if>
+
+  <!-- ============ WIN CANVAS ============ -->
+  <canvas ref="{{ setWinCanvas }}" style="{{ winCanvasStyle }}"></canvas>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1280,&quot;height&quot;:820},&quot;initialGame&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;klondike&quot;,&quot;freecell&quot;,&quot;spider&quot;],&quot;default&quot;:&quot;klondike&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Game&quot;},&quot;feltColor&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;green&quot;,&quot;blue&quot;,&quot;burgundy&quot;],&quot;default&quot;:&quot;green&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Appearance&quot;},&quot;cardBack&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;weave&quot;,&quot;argyle&quot;,&quot;waves&quot;,&quot;citadel&quot;,&quot;bloom&quot;,&quot;circuit&quot;],&quot;default&quot;:&quot;weave&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Appearance&quot;},&quot;enableSound&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Game&quot;},&quot;enableBoot&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Game&quot;}}">
+class Component extends DCLogic {
+  constructor(props){
+    super(props);
+    const P = props || {};
+    this.KEY = 'aevanor.retro.v1';
+    const inGame = ['klondike','freecell','spider'].includes(P.initialGame) ? P.initialGame : 'klondike';
+    this.state = {
+      screen: (P.enableBoot === false) ? 'desktop' : 'boot',
+      bootPct: 0,
+      game: inGame,
+      mode: 'normal',
+      openMenu: null, menuLeft: 0,
+      startOpen: false,
+      dialog: null, confirm: null,
+      score: 0, moves: 0, time: 0,
+      won: false, paused: false, winAnimating: false,
+      hintId: null, statusFlash: null,
+      clock: this._clock(),
+      stageW: 0, stageH: 0,
+      settings: {
+        sound: P.enableSound !== false,
+        draw: 1, spiderSuits: 1,
+        felt: ['green','blue','burgundy'].includes(P.feltColor) ? P.feltColor : 'green',
+        cardBack: ['weave','argyle','waves','citadel','bloom','circuit'].includes(P.cardBack) ? P.cardBack : 'weave',
+        timed: true, animations: true,
+      },
+      stats: this._blankStats(),
+      daily: { lastWonDate:null, streak:0, longest:0 },
+      dailyToday: this._dateKey(new Date()),
+    };
+    this.piles = {}; this.drag = null; this.undoStack = [];
+    this.lastSeed = Math.floor(Math.random()*1e9); this.lastGame = inGame;
+    this.timerStarted = false;
+  }
+
+  /* ---------- lifecycle ---------- */
+  componentDidMount(){
+    this._load();
+    this.deal(this.state.game, this.lastSeed);
+    this._timer = setInterval(()=>{
+      const s=this.state;
+      if(s.screen==='desktop' && this.timerStarted && !s.won && !s.paused && !s.winAnimating && s.settings.timed) this.setState(p=>({time:p.time+1}));
+    },1000);
+    this._clockIv = setInterval(()=>this.setState({clock:this._clock()}),20000);
+    this._key = (e)=>this._onKey(e);
+    window.addEventListener('keydown', this._key);
+    if(this.state.screen==='boot') this.startBoot();
+  }
+  componentWillUnmount(){
+    clearInterval(this._timer); clearInterval(this._clockIv); clearInterval(this._bootIv);
+    clearTimeout(this._winDlg); clearTimeout(this._auto); clearTimeout(this._h); clearTimeout(this._flash);
+    cancelAnimationFrame(this._raf);
+    window.removeEventListener('keydown', this._key);
+    window.removeEventListener('pointermove', this.onDragMove);
+    window.removeEventListener('pointerup', this.onDragUp);
+    if(this.ro) this.ro.disconnect();
+    if(this.actx) try{ this.actx.close(); }catch(_){}
+  }
+  startBoot(){
+    clearInterval(this._bootIv);
+    this._bootIv = setInterval(()=>{
+      this.setState(s=>{
+        const p = Math.min(100, s.bootPct + Math.random()*16 + 7);
+        if(p>=100){ clearInterval(this._bootIv); setTimeout(()=>this.setState({screen:'desktop'}),380); }
+        return {bootPct:p};
+      });
+    },150);
+  }
+  skipBoot = ()=>{ clearInterval(this._bootIv); this.setState({screen:'desktop', bootPct:100}); };
+  setStage = (el)=>{ this.stageEl=el; if(el && !this.ro){ this.ro=new ResizeObserver(()=>{ const r=el.getBoundingClientRect(); this.setState({stageW:r.width, stageH:r.height}); }); this.ro.observe(el); } };
+  setBoard = (el)=>{ this.boardEl=el; };
+  setWinCanvas = (el)=>{ this.winCanvas=el; };
+
+  /* ---------- storage ---------- */
+  _load(){
+    try{ const raw=localStorage.getItem(this.KEY); if(!raw) return; const d=JSON.parse(raw);
+      this.setState(s=>({ settings:{...s.settings, ...(d.settings||{})}, stats:{...s.stats, ...(d.stats||{})}, daily:{...s.daily, ...(d.daily||{})} }));
+    }catch(_){}
+  }
+  persist(){ try{ localStorage.setItem(this.KEY, JSON.stringify({settings:this.state.settings, stats:this.state.stats, daily:this.state.daily})); }catch(_){} }
+  _blankStats(){ const g=()=>({played:0,won:0,bestTime:0,bestMoves:0}); return {klondike:g(),freecell:g(),spider:g()}; }
+
+  /* ---------- helpers ---------- */
+  _clock(){ const d=new Date(); let h=d.getHours(); const m=d.getMinutes(); const ap=h<12?'AM':'PM'; h=h%12||12; return h+':'+(m<10?'0':'')+m+' '+ap; }
+  _dateKey(d){ return d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate(); }
+  _yesterday(){ const d=new Date(); d.setDate(d.getDate()-1); return this._dateKey(d); }
+  rankStr(r){ return ['','A','2','3','4','5','6','7','8','9','10','J','Q','K'][r]; }
+  suitChar(s){ return ['\u2660','\u2665','\u2666','\u2663'][s]; }
+  isRed(s){ return s===1||s===2; }
+  color(c){ return this.isRed(c.suit)?'red':'black'; }
+  opp(a,b){ return this.isRed(a.suit)!==this.isRed(b.suit); }
+  fmtTime(s){ const m=Math.floor(s/60); const ss=s%60; return m+':'+(ss<10?'0':'')+ss; }
+  clamp(v,a,b){ return Math.max(a,Math.min(b,v)); }
+  _mul(seed){ let a=seed>>>0; return ()=>{ a|=0; a=a+0x6D2B79F5|0; let t=Math.imul(a^a>>>15,1|a); t=t+Math.imul(t^t>>>7,61|t)^t; return ((t^t>>>14)>>>0)/4294967296; }; }
+
+  /* ---------- audio ---------- */
+  ensureAudio(){ if(!this.actx){ const AC=window.AudioContext||window.webkitAudioContext; if(AC) this.actx=new AC(); } if(this.actx && this.actx.state==='suspended') this.actx.resume(); }
+  tone(freq,dur,type,gain,delay){ if(!this.actx) return; const t0=this.actx.currentTime+(delay||0); const o=this.actx.createOscillator(); const g=this.actx.createGain(); o.type=type||'square'; o.frequency.value=freq; g.gain.setValueAtTime(gain||0.05,t0); g.gain.exponentialRampToValueAtTime(0.0001,t0+dur); o.connect(g); g.connect(this.actx.destination); o.start(t0); o.stop(t0+dur+0.02); }
+  play(name){ if(!this.state.settings.sound) return; this.ensureAudio(); if(!this.actx) return;
+    switch(name){
+      case 'click': this.tone(620,0.03,'square',0.03); break;
+      case 'deal': this.tone(300,0.05,'triangle',0.05); this.tone(240,0.05,'triangle',0.04,0.03); break;
+      case 'place': this.tone(430,0.05,'square',0.045); break;
+      case 'flip': this.tone(760,0.03,'square',0.035); break;
+      case 'invalid': this.tone(150,0.14,'sawtooth',0.05); break;
+      case 'complete': [523,659,784,1046].forEach((f,i)=>this.tone(f,0.12,'square',0.05,i*0.07)); break;
+      case 'win': [523,659,784,1046,784,1046,1318].forEach((f,i)=>this.tone(f,0.16,'square',0.06,i*0.13)); break;
+    }
+  }
+
+  /* ---------- deck / deal ---------- */
+  buildDeck(game){ const cards=[]; let uid=0;
+    if(game==='spider'){ const suits=this.state.settings.spiderSuits; const seq=suits===1?[0]:suits===2?[0,1]:[0,1,2,3];
+      for(let s=0;s<8;s++){ const suit=seq[s%seq.length]; for(let r=1;r<=13;r++) cards.push({id:'k'+(uid++),rank:r,suit,faceUp:false}); }
+    } else { for(let s=0;s<4;s++) for(let r=1;r<=13;r++) cards.push({id:'k'+(uid++),rank:r,suit:s,faceUp:false}); }
+    return cards; }
+  shuffle(arr,seed){ const rnd=(seed!=null)?this._mul(seed):Math.random; for(let i=arr.length-1;i>0;i--){ const j=Math.floor(rnd()*(i+1)); const t=arr[i]; arr[i]=arr[j]; arr[j]=t; } return arr; }
+  deal(game,seed){
+    const deck=this.shuffle(this.buildDeck(game),seed); const piles={}; let k=0;
+    if(game==='klondike'){
+      piles.stock=[]; piles.waste=[]; for(let i=0;i<4;i++) piles['f'+i]=[]; for(let i=0;i<7;i++) piles['t'+i]=[];
+      for(let col=0;col<7;col++){ for(let n=0;n<=col;n++){ const c=deck[k++]; c.faceUp=(n===col); piles['t'+col].push(c); } }
+      while(k<deck.length){ const c=deck[k++]; c.faceUp=false; piles.stock.push(c); }
+    } else if(game==='freecell'){
+      for(let i=0;i<4;i++) piles['c'+i]=[]; for(let i=0;i<4;i++) piles['f'+i]=[]; for(let i=0;i<8;i++) piles['t'+i]=[];
+      for(k=0;k<deck.length;k++){ const c=deck[k]; c.faceUp=true; piles['t'+(k%8)].push(c); }
+    } else {
+      piles.stock=[]; for(let i=0;i<8;i++) piles['f'+i]=[]; for(let i=0;i<10;i++) piles['t'+i]=[];
+      for(let col=0;col<10;col++){ const cnt=col<4?6:5; for(let n=0;n<cnt;n++){ const c=deck[k++]; c.faceUp=false; piles['t'+col].push(c); } const p=piles['t'+col]; p[p.length-1].faceUp=true; }
+      while(k<deck.length){ const c=deck[k++]; c.faceUp=false; piles.stock.push(c); }
+    }
+    this.piles=piles; this.undoStack=[]; this.timerStarted=false; this.lastSeed=seed; this.lastGame=game;
+    cancelAnimationFrame(this._raf); if(this.winCanvas){ const cx=this.winCanvas.getContext('2d'); cx&&cx.clearRect(0,0,this.winCanvas.width,this.winCanvas.height); }
+    this.setState({score:0,moves:0,time:0,won:false,paused:false,winAnimating:false,hintId:null,statusFlash:null});
+    this.forceUpdate();
+  }
+
+  /* ---------- game controls ---------- */
+  incPlayed(){ this.setState(s=>({stats:{...s.stats,[s.game]:{...s.stats[s.game],played:s.stats[s.game].played+1}}}), ()=>this.persist()); }
+  onNew = ()=>{ this.closeAll(); if(this.state.moves>0 && !this.state.won){ this.setState({dialog:'confirm', confirm:{msg:'Start a new game? Your current game will be recorded as a loss.', onYes:()=>this.doNew()}}); } else this.doNew(); };
+  doNew(){ this.setState({dialog:null,confirm:null,mode:'normal'},()=>{ this.incPlayed(); this.deal(this.state.game, Math.floor(Math.random()*1e9)); this.play('deal'); }); }
+  onRestart = ()=>{ this.closeAll(); this.setState({mode:this.state.mode},()=>{ this.deal(this.lastGame, this.lastSeed); this.play('deal'); }); };
+  onReboot = ()=>{ this.closeAll(); this.setState({dialog:'confirm', confirm:{msg:'Exit to desktop? This will restart Aevanor Solitaire.', onYes:()=>{ this.setState({dialog:null,confirm:null,screen:'boot',bootPct:0},()=>{ this.startBoot(); this.deal(this.state.game, Math.floor(Math.random()*1e9)); }); }}}); };
+  selectGame(g){ this.closeAll(); if(g===this.state.game){ this.onNew(); return; } this.setState({game:g,mode:'normal',dialog:null},()=>{ this.incPlayed(); this.deal(g, Math.floor(Math.random()*1e9)); this.play('deal'); }); }
+  startDaily = ()=>{ this.closeAll(); const seed=parseInt(this.state.dailyToday.replace(/-/g,''),10); this.setState({game:'klondike',mode:'daily',dialog:null,settings:{...this.state.settings,draw:1}},()=>{ this.incPlayed(); this.deal('klondike',seed); this.play('deal'); }); };
+
+  bumpMoves(){ this.timerStarted=true; this.setState(s=>({moves:s.moves+1})); }
+  addScore(n){ this.setState(s=>({score:Math.max(0,s.score+n)})); }
+  flashMsg(t){ this.setState({statusFlash:t}); clearTimeout(this._flash); this._flash=setTimeout(()=>this.setState({statusFlash:null}),2600); }
+
+  /* ---------- rules ---------- */
+  locate(id){ for(const pid in this.piles){ const idx=this.piles[pid].findIndex(c=>c.id===id); if(idx>=0) return {pileId:pid,index:idx}; } return null; }
+  isAltDesc(run){ for(let i=1;i<run.length;i++){ if(run[i].rank!==run[i-1].rank-1||!this.opp(run[i],run[i-1])) return false; } return true; }
+  isSuitDesc(run){ for(let i=1;i<run.length;i++){ if(run[i].rank!==run[i-1].rank-1||run[i].suit!==run[i-1].suit) return false; } return true; }
+  grabbable(pid,run){ const g=this.state.game; if(run.some(c=>!c.faceUp)) return false;
+    if(g==='spider') return this.isSuitDesc(run);
+    if(pid[0]==='f'||pid==='waste'||pid[0]==='c') return run.length===1;
+    return this.isAltDesc(run); }
+  maxSuper(destId){ let free=0; for(let i=0;i<4;i++) if(this.piles['c'+i].length===0) free++; let empt=0; for(let i=0;i<8;i++){ const id='t'+i; if(this.piles[id].length===0 && id!==destId) empt++; } return (free+1)*Math.pow(2,empt); }
+  validate(fromId,run,toId){ const g=this.state.game; const to=this.piles[toId]; const first=run[0]; const top=to.length?to[to.length-1]:null;
+    if(toId[0]==='f'){ if(g==='spider') return false; if(run.length!==1) return false; return top?(top.suit===first.suit&&first.rank===top.rank+1):(first.rank===1); }
+    if(toId[0]==='c'){ return run.length===1 && to.length===0; }
+    if(g==='klondike'){ if(!this.isAltDesc(run)) return false; return top?(this.opp(first,top)&&first.rank===top.rank-1):(first.rank===13); }
+    if(g==='freecell'){ if(!this.isAltDesc(run)) return false; if(run.length>this.maxSuper(toId)) return 'super'; return top?(this.opp(first,top)&&first.rank===top.rank-1):true; }
+    if(!this.isSuitDesc(run)) return false; return top?(first.rank===top.rank-1):true; }
+  tryMove(fromId,run,toId){ const v=this.validate(fromId,run,toId); if(v==='super'){ this.flashMsg('Not enough free cells / empty columns to move '+run.length+' cards.'); return false; } if(!v) return false;
+    const g=this.state.game; const from=this.piles[fromId], to=this.piles[toId];
+    this.pushUndo(); from.splice(from.length-run.length, run.length); for(const c of run) to.push(c);
+    this.play('place'); this.bumpMoves(); this.scoreMove(fromId,toId);
+    if((g==='klondike'||g==='spider') && fromId[0]==='t' && from.length && !from[from.length-1].faceUp){ from[from.length-1].faceUp=true; this.play('flip'); this.addScore(5); }
+    if(g==='spider' && toId[0]==='t') this.spiderComplete(toId);
+    this.checkWin(); return true; }
+  scoreMove(from,to){ if(to[0]==='f') this.addScore(10); else if(from==='waste'&&to[0]==='t') this.addScore(5); else if(from[0]==='f'&&to[0]==='t') this.addScore(-15); }
+  spiderComplete(pid){ const p=this.piles[pid]; if(p.length<13) return; const tail=p.slice(-13); if(tail[0].rank!==13) return; for(let i=0;i<13;i++){ if(!tail[i].faceUp||tail[i].rank!==13-i||tail[i].suit!==tail[0].suit) return; } let slot=null; for(let i=0;i<8;i++){ if(this.piles['f'+i].length===0){ slot='f'+i; break; } } if(!slot) return; p.splice(p.length-13,13); for(const c of tail) this.piles[slot].push(c); this.addScore(100); this.play('complete'); if(p.length && !p[p.length-1].faceUp){ p[p.length-1].faceUp=true; this.play('flip'); } }
+
+  /* ---------- stock ---------- */
+  stockClick = ()=>{ this.closeAll(); const g=this.state.game;
+    if(g==='klondike'){ this.pushUndo();
+      if(this.piles.stock.length===0){ const w=this.piles.waste; while(w.length){ const c=w.pop(); c.faceUp=false; this.piles.stock.push(c); } this.play('flip'); }
+      else { const n=this.state.settings.draw; for(let i=0;i<n && this.piles.stock.length;i++){ const c=this.piles.stock.pop(); c.faceUp=true; this.piles.waste.push(c); } this.play('deal'); }
+      this.bumpMoves(); this.forceUpdate();
+    } else if(g==='spider'){
+      if(this.piles.stock.length<10){ this.play('invalid'); return; }
+      for(let i=0;i<10;i++){ if(this.piles['t'+i].length===0){ this.play('invalid'); this.flashMsg('Fill every empty column before dealing.'); return; } }
+      this.pushUndo(); for(let i=0;i<10;i++){ const c=this.piles.stock.pop(); c.faceUp=true; this.piles['t'+i].push(c); } this.play('deal'); this.bumpMoves(); for(let i=0;i<10;i++) this.spiderComplete('t'+i); this.forceUpdate();
+    }
+  };
+
+  /* ---------- drag ---------- */
+  startDrag = (id,e)=>{ if(this.state.won||this.state.paused||this.state.winAnimating) return; const loc=this.locate(id); if(!loc) return; const {pileId,index}=loc; if(pileId==='stock') return; const pile=this.piles[pileId]; const card=pile[index]; if(!card.faceUp) return; const rest=pile.slice(index); let run; if(this.grabbable(pileId,rest)) run=rest; else if(index===pile.length-1) run=[card]; else { this.play('invalid'); return; } e.preventDefault&&e.preventDefault(); this.ensureAudio(); const rect=e.currentTarget.getBoundingClientRect(); const L=this.layout(); const scale=rect.height/L.ch; this.drag={ ids:run.map(c=>c.id), cards:run, fromPile:pileId, grabDX:e.clientX-rect.left, grabDY:e.clientY-rect.top, x:e.clientX, y:e.clientY, w:rect.width, h:rect.height, fan:L.fanFace*scale }; window.addEventListener('pointermove', this.onDragMove); window.addEventListener('pointerup', this.onDragUp); this.forceUpdate(); };
+  onDragMove = (e)=>{ if(!this.drag) return; this.drag.x=e.clientX; this.drag.y=e.clientY; this.forceUpdate(); };
+  onDragUp = (e)=>{ window.removeEventListener('pointermove', this.onDragMove); window.removeEventListener('pointerup', this.onDragUp); const d=this.drag; this.drag=null; if(!d){ this.forceUpdate(); return; } const dr={left:e.clientX-d.grabDX, top:e.clientY-d.grabDY, w:d.w, h:d.h}; const target=this.findDrop(dr,d); if(target && target!==d.fromPile){ if(!this.tryMove(d.fromPile, d.cards, target)) this.play('invalid'); } this.forceUpdate(); };
+  pileRects(exclude){ const map={}; if(!this.boardEl) return map; this.boardEl.querySelectorAll('[data-pile]').forEach(z=>{ const id=z.dataset.pile; if(id==='stock'||id==='waste') return; const r=z.getBoundingClientRect(); map[id]={left:r.left,top:r.top,right:r.right,bottom:r.bottom}; }); this.boardEl.querySelectorAll('[data-cardpile]').forEach(c=>{ const id=c.dataset.cardpile; if(!map[id]) return; if(exclude && exclude.includes(c.dataset.cardid)) return; const r=c.getBoundingClientRect(); const m=map[id]; m.left=Math.min(m.left,r.left); m.top=Math.min(m.top,r.top); m.right=Math.max(m.right,r.right); m.bottom=Math.max(m.bottom,r.bottom); }); return map; }
+  findDrop(dr,d){ const map=this.pileRects(d.ids); let best=null,bestArea=0; const dl=dr.left,dt=dr.top,drr=dr.left+dr.w,db=dr.top+dr.h; for(const id in map){ const m=map[id]; const ox=Math.max(0,Math.min(drr,m.right)-Math.max(dl,m.left)); const oy=Math.max(0,Math.min(db,m.bottom)-Math.max(dt,m.top)); const a=ox*oy; if(a>bestArea){ bestArea=a; best=id; } } return bestArea>0?best:null; }
+
+  doubleClick = (id)=>{ if(this.state.won||this.state.paused) return; const loc=this.locate(id); if(!loc) return; const {pileId,index}=loc; const p=this.piles[pileId]; if(index!==p.length-1) return; const card=p[index]; if(!card.faceUp) return; const g=this.state.game; if(g!=='spider'){ for(let i=0;i<4;i++){ if(this.validate(pileId,[card],'f'+i)===true){ this.tryMove(pileId,[card],'f'+i); this.forceUpdate(); return; } } } if(g==='freecell'){ for(let i=0;i<4;i++){ if(this.validate(pileId,[card],'c'+i)===true){ this.tryMove(pileId,[card],'c'+i); this.forceUpdate(); return; } } } this.play('invalid'); };
+
+  /* ---------- undo / hint / auto ---------- */
+  clone(){ const o={}; for(const k in this.piles) o[k]=this.piles[k].map(c=>({...c})); return o; }
+  pushUndo(){ this.undoStack.push({piles:this.clone(), score:this.state.score, moves:this.state.moves}); if(this.undoStack.length>400) this.undoStack.shift(); }
+  onUndo = ()=>{ this.closeAll(); if(!this.undoStack.length) return; const s=this.undoStack.pop(); this.piles=s.piles; this.setState({score:s.score,moves:s.moves}); this.play('click'); this.forceUpdate(); };
+  findAnyMove(){ const srcs=[]; for(const pid in this.piles){ if(pid==='stock'||pid[0]==='f') continue; const p=this.piles[pid]; for(let i=0;i<p.length;i++){ if(!p[i].faceUp) continue; const run=p.slice(i); if(this.grabbable(pid,run)){ srcs.push({pid,run}); } } } const tars=Object.keys(this.piles).filter(id=>id!=='stock'&&id!=='waste'); for(const s of srcs){ for(const t of tars){ if(t===s.pid) continue; if(this.validate(s.pid,s.run,t)===true){ return {id:s.run[0].id}; } } } return null; }
+  onHint = ()=>{ this.closeAll(); const m=this.findAnyMove(); if(m){ this.setState({hintId:m.id}); clearTimeout(this._h); this._h=setTimeout(()=>this.setState({hintId:null}),1400); this.play('click'); } else { this.flashMsg(this.state.game==='klondike'?'No moves \u2014 draw from the stock.':'No available moves.'); this.play('invalid'); } };
+  onAuto = ()=>{ this.closeAll(); if(this.state.game==='spider'){ this.flashMsg('Auto-complete is available in Klondike & FreeCell.'); return; } const step=()=>{ const mv=this.findFound(); if(mv){ const p=this.piles[mv.from]; this.tryMove(mv.from,[p[p.length-1]],mv.to); this.forceUpdate(); this._auto=setTimeout(step,110); } }; step(); };
+  findFound(){ const tops=[]; if(this.state.game==='klondike') tops.push('waste'); for(const id in this.piles){ if(id[0]==='t'||id[0]==='c') tops.push(id); } for(const pid of tops){ const p=this.piles[pid]; if(!p.length) continue; const c=p[p.length-1]; if(!c.faceUp) continue; for(let i=0;i<4;i++){ if(this.validate(pid,[c],'f'+i)===true) return {from:pid,to:'f'+i}; } } return null; }
+
+  /* ---------- win ---------- */
+  checkWin(){ const g=this.state.game; const n=g==='spider'?8:4; let won=true; for(let i=0;i<n;i++){ if(this.piles['f'+i].length!==13){ won=false; break; } } if(won && !this.state.won) this.doWin(); }
+  doWin(){ const g=this.state.game; const stats={...this.state.stats}; const gs={...stats[g]}; gs.won=(gs.won||0)+1; if(!gs.bestTime||this.state.time<gs.bestTime) gs.bestTime=this.state.time; if(!gs.bestMoves||this.state.moves<gs.bestMoves) gs.bestMoves=this.state.moves; stats[g]=gs; let daily=this.state.daily; if(this.state.mode==='daily'){ const today=this.state.dailyToday; if(daily.lastWonDate!==today){ const streak=daily.lastWonDate===this._yesterday()?daily.streak+1:1; daily={lastWonDate:today,streak,longest:Math.max(daily.longest,streak)}; } } this.play('win'); const anim=this.state.settings.animations; this.setState({won:true, stats, daily, winAnimating:anim}, ()=>{ this.persist(); if(anim){ this.startWinAnim(); this._winDlg=setTimeout(()=>this.setState({dialog:'win'}),2800); } else this.setState({dialog:'win'}); }); }
+  startWinAnim(){ const cv=this.winCanvas; if(!cv){ setTimeout(()=>this.startWinAnim(),60); return; } const dpr=Math.min(2,window.devicePixelRatio||1); const W=cv.clientWidth,H=cv.clientHeight; cv.width=W*dpr; cv.height=H*dpr; const ctx=cv.getContext('2d'); ctx.setTransform(dpr,0,0,dpr,0,0); ctx.clearRect(0,0,W,H); const rectCv=cv.getBoundingClientRect(); const n=this.state.game==='spider'?8:4; const founds=[]; for(let i=0;i<n;i++){ const id='f'+i; const el=this.boardEl&&this.boardEl.querySelector('[data-pile="'+id+'"]'); const r=el?el.getBoundingClientRect():null; founds.push({cards:this.piles[id].map(c=>({...c})), r}); } const shooters=[]; let more=true; while(more){ more=false; for(const f of founds){ if(f.cards.length){ const c=f.cards.pop(); more=true; const sx=f.r?(f.r.left-rectCv.left):Math.random()*W; const sy=f.r?(f.r.top-rectCv.top):20; const w=f.r?f.r.width:70,h=f.r?f.r.height:98; shooters.push({card:c,x:sx,y:sy,w,h,vx:(sx<W/2?1:-1)*(2+Math.random()*3),vy:-(3+Math.random()*4)}); } } } let i=0; const live=[]; let tick=0; const step=()=>{ tick++; if(tick%5===0 && i<shooters.length) live.push(shooters[i++]); for(const s of live){ s.vy+=0.32; s.x+=s.vx; s.y+=s.vy; if(s.y+s.h>H){ s.y=H-s.h; s.vy=-s.vy*0.8; if(Math.abs(s.vy)<2.5) s.vy=-(6+Math.random()*4); } this.drawWinCard(ctx,s); } const alive=live.some(s=>s.x>-s.w-60 && s.x<W+60); if(this.state.winAnimating && (i<shooters.length||alive)) this._raf=requestAnimationFrame(step); }; this._raf=requestAnimationFrame(step); }
+  drawWinCard(ctx,s){ const {x,y,w,h,card}=s; const r=8; ctx.beginPath(); ctx.moveTo(x+r,y); ctx.arcTo(x+w,y,x+w,y+h,r); ctx.arcTo(x+w,y+h,x,y+h,r); ctx.arcTo(x,y+h,x,y,r); ctx.arcTo(x,y,x+w,y,r); ctx.closePath(); ctx.fillStyle='#fdfdfb'; ctx.fill(); ctx.lineWidth=1; ctx.strokeStyle='#5a5a5a'; ctx.stroke(); ctx.fillStyle=this.isRed(card.suit)?'#c22222':'#1a1a1a'; ctx.textBaseline='top'; ctx.font='bold 15px Tahoma,sans-serif'; ctx.fillText(this.rankStr(card.rank),x+5,y+4); ctx.font='26px serif'; ctx.textAlign='center'; ctx.fillText(this.suitChar(card.suit),x+w/2,y+h/2-16); ctx.textAlign='left'; }
+  onWinAgain = ()=>{ this.setState({dialog:null,won:false,winAnimating:false},()=>{ this.incPlayed(); this.deal(this.state.game,Math.floor(Math.random()*1e9)); this.play('deal'); }); };
+
+  /* ---------- menus / dialogs ---------- */
+  openMenu(name,e){ const left=e&&e.currentTarget?e.currentTarget.offsetLeft:6; this.setState(s=>({openMenu:s.openMenu===name?null:name, menuLeft:left+2, startOpen:false, dialog:null})); this.play('click'); }
+  mGame=(e)=>this.openMenu('game',e); mEdit=(e)=>this.openMenu('edit',e); mOpt=(e)=>this.openMenu('opt',e); mHelp=(e)=>this.openMenu('help',e);
+  onStart=()=>{ this.setState(s=>({startOpen:!s.startOpen, openMenu:null})); this.play('click'); };
+  closeAll=()=>{ this.setState({openMenu:null, startOpen:false}); };
+  closeDialog=()=>{ this.setState({dialog:null,confirm:null}); };
+  openDialog(name){ this.closeAll(); this.setState({dialog:name}); this.play('click'); }
+  openStats=()=>this.openDialog('stats'); openHelp=()=>this.openDialog('help');
+  onResetStats=()=>{ this.setState({stats:this._blankStats(), daily:{lastWonDate:null,streak:0,longest:0}}, ()=>this.persist()); };
+  onConfirmYes=()=>{ const c=this.state.confirm; this.setState({dialog:null,confirm:null},()=>{ c&&c.onYes&&c.onYes(); }); };
+  setSetting(k,v,cb){ this.setState(s=>({settings:{...s.settings,[k]:v}}), ()=>{ this.persist(); cb&&cb(); }); this.play('click'); }
+  setSuits(n){ this.setSetting('spiderSuits',n,()=>{ if(this.state.game==='spider') this.deal('spider',Math.floor(Math.random()*1e9)); }); }
+  onToggleSound=()=>{ const v=!this.state.settings.sound; this.setState(s=>({settings:{...s.settings,sound:v}}),()=>{ this.persist(); if(v) this.play('click'); }); }
+  onResume=()=>{ this.setState({paused:false}); };
+  togglePause=()=>{ this.setState(s=>({paused:!s.paused})); };
+
+  _onKey(e){ if(this.state.screen!=='desktop') return; const k=e.key.toLowerCase(); if(e.key==='F2'){ e.preventDefault(); this.onNew(); } else if((e.ctrlKey||e.metaKey)&&k==='z'){ e.preventDefault(); this.onUndo(); } else if(k==='h'&&!e.ctrlKey){ this.onHint(); } else if(k==='escape'){ this.closeAll(); this.closeDialog(); } }
+
+  /* ---------- layout ---------- */
+  layout(){ const g=this.state.game; const ch=106,cw=76;
+    if(g==='klondike'){ const z=[]; z.push({id:'stock',x:16,y:14,type:'stock'}); z.push({id:'waste',x:106,y:14,type:'waste'}); for(let i=0;i<4;i++) z.push({id:'f'+i,x:340+i*90,y:14,type:'found',suit:i}); for(let i=0;i<7;i++) z.push({id:'t'+i,x:16+i*90,y:140,type:'tab'}); return {game:g,cw,ch,fanFace:26,fanDown:13,boardW:706,boardH:560,zones:z}; }
+    if(g==='freecell'){ const z=[]; for(let i=0;i<4;i++) z.push({id:'c'+i,x:16+i*90,y:14,type:'cell'}); for(let i=0;i<4;i++) z.push({id:'f'+i,x:436+i*90,y:14,type:'found',suit:i}); for(let i=0;i<8;i++) z.push({id:'t'+i,x:16+i*98,y:140,type:'tab'}); return {game:g,cw,ch,fanFace:28,fanDown:28,boardW:802,boardH:560,zones:z}; }
+    const z=[]; for(let i=0;i<8;i++) z.push({id:'f'+i,x:16+i*44,y:14,type:'foundmini'}); z.push({id:'stock',x:826,y:14,type:'stock'}); for(let i=0;i<10;i++) z.push({id:'t'+i,x:16+i*90,y:132,type:'tab'}); return {game:g,cw,ch,fanFace:24,fanDown:11,boardW:918,boardH:650,zones:z};
+  }
+  backStyle(){ const n=this.state.settings.cardBack; const base={ weave:{c:'#1a3a6e',img:'repeating-linear-gradient(45deg,#26529a 0 5px,#1a3a6e 5px 10px),repeating-linear-gradient(-45deg,rgba(120,160,220,.5) 0 5px,transparent 5px 10px)'}, argyle:{c:'#6e1a2e',img:'repeating-linear-gradient(45deg,#93304a 0 9px,#6e1a2e 9px 18px),repeating-linear-gradient(-45deg,#93304a 0 9px,transparent 9px 18px)'}, waves:{c:'#166a64',img:'repeating-radial-gradient(circle at 50% 0,#2a938a 0 4px,#166a64 4px 8px)'}, citadel:{c:'#2a2a6e',img:'repeating-linear-gradient(0deg,#3d3d97 0 4px,#2a2a6e 4px 8px),repeating-linear-gradient(90deg,rgba(150,150,220,.35) 0 4px,transparent 4px 8px)'}, bloom:{c:'#2f5a2a',img:'radial-gradient(circle at 50% 50%,#5aa84e 2px,transparent 3px)',size:'12px 12px'}, circuit:{c:'#14324a',img:'repeating-linear-gradient(90deg,#1f5273 0 2px,transparent 2px 12px),repeating-linear-gradient(0deg,#1f5273 0 2px,transparent 2px 12px)'} }[n]||{c:'#1a3a6e',img:'none'}; return {backgroundColor:base.c, backgroundImage:base.img, backgroundSize:base.size||'auto'}; }
+
+  /* ---------- render ---------- */
+  renderVals(){
+    const st=this.state, S=st.settings; const L=this.layout();
+    const sw=st.stageW||L.boardW, sh=st.stageH||L.boardH;
+    const scale=this.clamp(Math.min((sw-16)/L.boardW,(sh-16)/L.boardH),0.34,1.3);
+    const feltMap={ green:'radial-gradient(ellipse 92% 74% at 50% 20%,#1c9350,#0c6135 55%,#08461f)', blue:'radial-gradient(ellipse 92% 74% at 50% 20%,#2a83c4,#12507f 55%,#0a3557)', burgundy:'radial-gradient(ellipse 92% 74% at 50% 20%,#a8353d,#6b1e26 55%,#43101a)' };
+    const feltStyle={position:'absolute',inset:0,background:feltMap[S.felt]||feltMap.green,boxShadow:'inset 0 0 130px rgba(0,0,0,.5)'};
+    const boardStyle={position:'absolute',left:'50%',top:6+'px',width:L.boardW+'px',height:L.boardH+'px',transform:'translateX(-50%) scale('+scale+')',transformOrigin:'top center'};
+
+    // zones
+    const gN=(this.state.game==='klondike')?'Klondike':(this.state.game==='freecell')?'FreeCell':'Spider';
+    const pileZones=L.zones.map(z=>{ const pile=this.piles[z.id]||[]; const empty=pile.length===0; const mini=z.type==='foundmini'; const w=mini?36:L.cw, h=mini?52:L.ch;
+      let ghost='',showGhost=false,ghostStyle='';
+      if(empty){ if(z.type==='found'){ ghost=this.suitChar(z.suit); showGhost=true; ghostStyle='font-size:34px;color:'+(this.isRed(z.suit)?'rgba(255,180,180,.4)':'rgba(255,255,255,.32)'); } else if(z.type==='stock'&&this.state.game==='klondike'){ ghost='\u21bb'; showGhost=true; ghostStyle='font-size:30px;color:rgba(255,255,255,.4)'; } }
+      const style={position:'absolute',left:z.x+'px',top:z.y+'px',width:w+'px',height:h+'px',borderRadius:mini?'4px':'6px',boxShadow:'inset 0 0 0 1px rgba(0,0,0,.28)',background:'rgba(255,255,255,.06)',border:'1px dashed rgba(255,255,255,.22)',display:'grid',placeItems:'center',zIndex:0};
+      const isStockZone=z.id==='stock';
+      return {id:z.id, style, ghost, showGhost, ghostStyle, onClick:isStockZone?this.stockClick:undefined, showCount:isStockZone&&this.state.game==='spider', count:Math.ceil((this.piles.stock||[]).length/10)+''};
+    });
+
+    // cards
+    const back=this.backStyle();
+    const draw3=this.state.game==='klondike'&&S.draw===3;
+    const renderCards=[];
+    for(const z of L.zones){ if(z.type==='foundmini'&&false){} const pile=this.piles[z.id]; if(!pile) continue; const mini=z.type==='foundmini'; let off=0;
+      for(let i=0;i<pile.length;i++){ const c=pile[i]; const isTab=z.type==='tab'; let left=z.x, top=z.y;
+        if(isTab){ top=z.y+off; off+=(c.faceUp?L.fanFace:L.fanDown); }
+        else if(z.id==='waste'&&draw3){ const kk=i-(pile.length-3); left=z.x+(kk>0?kk*18:0); }
+        else if(z.type==='found'||z.type==='cell'||z.type==='stock'||z.type==='waste'){ /* stacked */ }
+        else if(mini){ /* stacked at marker; slight peek */ top=z.y - Math.min(pile.length-1-i,3)*1; }
+        const w=mini?36:L.cw, h=mini?52:L.ch;
+        const dragging=this.drag&&this.drag.ids.includes(c.id);
+        const hint=st.hintId===c.id;
+        const base={position:'absolute',left:left+'px',top:top+'px',width:w+'px',height:h+'px',borderRadius:'6px',zIndex:i+1,fontFamily:'Tahoma,sans-serif',boxShadow:'0 1px 2px rgba(0,0,0,.4)'};
+        let style;
+        if(c.faceUp){ style={...base,background:'#fdfdfb',border:'1px solid #b8b8b8',cursor:'default'}; }
+        else { style={...base,border:'3px solid #eef0f2',backgroundColor:back.backgroundColor,backgroundImage:back.backgroundImage,backgroundSize:back.backgroundSize,cursor:z.id==='stock'?'default':'default'}; }
+        if(dragging) style.opacity=0;
+        if(hint) style.animation='hintpulse .55s ease-in-out infinite';
+        const stockCard=z.id==='stock';
+        renderCards.push({ id:c.id, pile:z.id, style, faceUp:c.faceUp, rankStr:mini?'':this.rankStr(c.rank), suitChar:this.suitChar(c.suit), faceColor:this.isRed(c.suit)?'#c22222':'#1a1a1a', onDown:stockCard?undefined:(e=>this.startDrag(c.id,e)), onClick:stockCard?this.stockClick:undefined, onDbl:stockCard?undefined:(()=>this.doubleClick(c.id)) });
+      }
+    }
+
+    // drag layer
+    const dragCards=[]; if(this.drag){ const d=this.drag; d.cards.forEach((c,idx)=>{ dragCards.push({ style:{position:'fixed',left:(d.x-d.grabDX)+'px',top:(d.y-d.grabDY+idx*d.fan)+'px',width:d.w+'px',height:d.h+'px',borderRadius:'6px',background:'#fdfdfb',border:'1px solid #b8b8b8',boxShadow:'0 6px 14px rgba(0,0,0,.5)',fontFamily:'Tahoma,sans-serif'}, faceUp:true, rankStr:this.rankStr(c.rank), suitChar:this.suitChar(c.suit), faceColor:this.isRed(c.suit)?'#c22222':'#1a1a1a' }); }); }
+
+    // toolbar tabs
+    const tab=(id,label)=>({ id, label, onClick:()=>this.selectGame(id), style: 'height:24px;padding:0 12px;border:0;cursor:default;font-size:12px;'+(st.game===id?'background:#0a5f30;color:#fff;box-shadow:inset 1px 1px #063,inset -1px -1px #2fae63;font-weight:bold':'background:#c0c0c0;color:#333;box-shadow:inset -1px -1px #0a0a0a,inset 1px 1px #fff,inset -2px -2px grey,inset 2px 2px #dfdfdf') });
+    const gameTabs=[tab('klondike','Klondike'),tab('freecell','FreeCell'),tab('spider','Spider')];
+    const undoDisabled=!this.undoStack.length;
+    const undoBtnStyle='display:flex;align-items:center;gap:5px;height:28px;padding:0 9px;border:0;cursor:default;font-size:12px;background:#c0c0c0;box-shadow:inset -1px -1px #0a0a0a,inset 1px 1px #fff,inset -2px -2px grey,inset 2px 2px #dfdfdf;'+(undoDisabled?'color:#888;text-shadow:1px 1px #dfdfdf':'color:#000');
+
+    // menu items
+    const item=(label,accel,onClick,mark,disabled)=>({isItem:true,isSep:false,label,accel:accel||'',mark:mark||'',onClick:disabled?(()=>{}):onClick, style:'display:flex;align-items:center;gap:4px;padding:4px 8px 4px 4px;cursor:default;font-size:13px;'+(disabled?'color:#888':'color:#000'), hoverStyle:disabled?'':'background:#04057a;color:#fff'});
+    const sep=()=>({isSep:true,isItem:false});
+    const dot=(on)=>on?'\u25cf':'';
+    const chk=(on)=>on?'\u2714':'';
+    let menuItems=[];
+    if(st.openMenu==='game') menuItems=[ item('New Game','F2',this.onNew), item('Restart Deal','',this.onRestart), sep(), item('Klondike','',()=>this.selectGame('klondike'),dot(st.game==='klondike')), item('FreeCell','',()=>this.selectGame('freecell'),dot(st.game==='freecell')), item('Spider','',()=>this.selectGame('spider'),dot(st.game==='spider')), sep(), item('Daily Challenge\u2026','',()=>this.openDialog('daily')), item('Statistics\u2026','',()=>this.openDialog('stats')), sep(), item('Exit','',this.onReboot) ];
+    else if(st.openMenu==='edit') menuItems=[ item('Undo','Ctrl+Z',this.onUndo,'',undoDisabled), item('Hint','H',this.onHint), item('Auto-Complete','',this.onAuto), sep(), item(st.paused?'Resume':'Pause','',this.togglePause) ];
+    else if(st.openMenu==='opt') menuItems=[ item('Draw One','',()=>this.setSetting('draw',1),dot(S.draw===1)), item('Draw Three','',()=>this.setSetting('draw',3),dot(S.draw===3)), sep(), item('Sound','',this.onToggleSound,chk(S.sound)), item('Timed Game','',()=>this.setSetting('timed',!S.timed),chk(S.timed)), item('Win Animation','',()=>this.setSetting('animations',!S.animations),chk(S.animations)), sep(), item('Appearance\u2026','',()=>this.openDialog('options')) ];
+    else if(st.openMenu==='help') menuItems=[ item('How to Play\u2026','',()=>this.openDialog('help')), sep(), item('About Aevanor Solitaire\u2026','',()=>this.openDialog('about')) ];
+
+    const sIcon=(icon,label,onClick)=>({isItem:true,isSep:false,icon,label,onClick});
+    const startItems=[ sIcon('\ud83c\udccf','New Game',this.onNew), {isSep:true,isItem:false}, sIcon('\u2660','Klondike',()=>this.selectGame('klondike')), sIcon('\u2663','FreeCell',()=>this.selectGame('freecell')), sIcon('\ud83d\udd77','Spider',()=>this.selectGame('spider')), sIcon('\ud83d\udcc5','Daily Challenge',()=>this.openDialog('daily')), {isSep:true,isItem:false}, sIcon('\ud83d\udcca','Statistics',()=>this.openDialog('stats')), sIcon('\u2699','Options',()=>this.openDialog('options')), sIcon('?','How to Play',()=>this.openDialog('help')), sIcon('\u2139','About',()=>this.openDialog('about')), {isSep:true,isItem:false}, sIcon('\u23fb','Restart\u2026',this.onReboot) ];
+
+    // stats rows
+    const rowNames={klondike:'Klondike',freecell:'FreeCell',spider:'Spider'};
+    const statsRows=['klondike','freecell','spider'].map((g,idx)=>{ const s=st.stats[g]; const pct=s.played?Math.round(s.won/s.played*100)+'%':'\u2014'; return {name:rowNames[g], played:s.played, won:s.won, pct, bestTime:s.bestTime?this.fmtTime(s.bestTime):'\u2014', bestMoves:s.bestMoves||'\u2014', style:'display:grid;grid-template-columns:1.3fr .7fr .7fr .7fr 1fr 1fr;padding:5px 6px;font-size:12px;'+(idx%2?'background:#eef':'background:#fff')}; });
+
+    // options
+    const backNames=['weave','argyle','waves','citadel','bloom','circuit'];
+    const optionBacks=backNames.map(n=>{ const sel=S.cardBack===n; const saved=S.cardBack; this.state.settings.cardBack=n; const bs=this.backStyle(); this.state.settings.cardBack=saved; return { onClick:()=>this.setSetting('cardBack',n), wrapStyle:'padding:2px;cursor:default;'+(sel?'box-shadow:0 0 0 2px #04057a':'box-shadow:inset -1px -1px #fff,inset 1px 1px grey'), style:'width:34px;height:46px;border-radius:4px;border:3px solid #eef0f2;background-color:'+bs.backgroundColor+';background-image:'+bs.backgroundImage+';background-size:'+bs.backgroundSize }; });
+    const feltSw={green:'#0c6135',blue:'#12507f',burgundy:'#6b1e26'};
+    const optionFelts=[['green','Green'],['blue','Blue'],['burgundy','Burgundy']].map(([v,label])=>({ onClick:()=>this.setSetting('felt',v), label, swatch:feltSw[v], dot:'width:7px;height:7px;border-radius:50%;background:'+(S.felt===v?'#04057a':'transparent') }));
+    const rad=(on)=>'width:7px;height:7px;border-radius:50%;background:'+(on?'#04057a':'transparent');
+    const optionDraws=[[1,'Draw one card'],[3,'Draw three cards']].map(([v,label])=>({ onClick:()=>this.setSetting('draw',v), label, dot:rad(S.draw===v) }));
+    const optionSuits=[[1,'One suit (easy)'],[2,'Two suits'],[4,'Four suits (hard)']].map(([v,label])=>({ onClick:()=>this.setSuits(v), label, dot:rad(S.spiderSuits===v) }));
+    const optionToggles=[['sound','Sound effects',S.sound],['timed','Timed game',S.timed],['animations','Win animation',S.animations]].map(([k,label,on])=>({ onClick:()=>this.setSetting(k,!on), label, check:on?'\u2714':'' }));
+
+    // help
+    const helpMap={
+      klondike:['Klondike','Build the four foundations up from Ace to King, each in a single suit.','On the tableau, stack cards down in alternating colours (e.g. red 7 on black 8). Move sequences together.','Only a King (or a run led by a King) may fill an empty column.','Click the stock to turn cards to the waste; when it empties, click again to recycle.','Double-click a card to send it home automatically.'],
+      freecell:['FreeCell','Every card is dealt face-up \u2014 almost every deal is winnable with careful play.','Build foundations up by suit from Ace. Stack the tableau down in alternating colours.','Use the four free cells to park one card each. Any card may fill an empty column.','How many cards you can move at once depends on free cells and empty columns.'],
+      spider:['Spider','Build descending runs within a column. Complete a full King-to-Ace run of one suit to clear it.','You may drop a card onto any card one rank higher, but only same-suit runs move as a group.','Deal a new row from the stock only when no column is empty.','Clear all eight suits to win. Fewer suits is easier \u2014 change it in Options.']
+    };
+    const hl=helpMap[st.game]; const helpLines=hl.map((t,i)=>({text:t, style:i===0?'margin:0 0 8px;font-family:\'Silkscreen\',monospace;font-size:14px;color:#0a3a3a':'margin:0 0 8px'}));
+
+    const modeLabel = st.mode==='daily'?'Daily Challenge':(gN+(st.game==='klondike'?(S.draw===3?' \u00b7 Draw 3':' \u00b7 Draw 1'):st.game==='spider'?(' \u00b7 '+S.spiderSuits+'-suit'):''));
+    const defaultStatus = st.game==='klondike'?'Build the foundations from Ace to King, one suit each.':st.game==='freecell'?'Free the aces \u2014 park cards in the cells and build down.':'Clear a full suit King to Ace to remove it from play.';
+
+    return {
+      isBoot: st.screen==='boot', bootPct: Math.round(st.bootPct), skipBoot:this.skipBoot,
+      winTitle:'Aevanor Solitaire \u2014 '+gN+(st.mode==='daily'?' (Daily)':''),
+      gameName:gN,
+      onReboot:this.onReboot,
+      mGame:this.mGame, mEdit:this.mEdit, mOpt:this.mOpt, mHelp:this.mHelp,
+      onNew:this.onNew, onRestart:this.onRestart, onUndo:this.onUndo, onHint:this.onHint, onAuto:this.onAuto,
+      undoBtnStyle, gameTabs,
+      timeStr:S.timed?this.fmtTime(st.time):'\u2014', movesStr:st.moves+'', scoreStr:st.score+'',
+      feltStyle, boardStyle, setStage:this.setStage, setBoard:this.setBoard,
+      pileZones, renderCards,
+      dragging:!!this.drag, dragCards,
+      paused:st.paused, onResume:this.onResume,
+      menuOpen:!!st.openMenu, menuItems, menuLeft:st.menuLeft, menuTop:52,
+      overlayOpen:!!st.openMenu||st.startOpen, closeAll:this.closeAll,
+      startBtnStyle:'display:flex;align-items:center;gap:6px;height:26px;padding:0 10px 0 4px;background:#c0c0c0;border:0;cursor:default;font-size:13px;font-weight:bold;'+(st.startOpen?'box-shadow:inset 1px 1px #0a0a0a,inset -1px -1px #fff,inset 2px 2px grey':'box-shadow:inset -1px -1px #0a0a0a,inset 1px 1px #fff,inset -2px -2px grey,inset 2px 2px #dfdfdf'),
+      onStart:this.onStart, startOpen:st.startOpen, startItems,
+      soundIcon:S.sound?'\ud83d\udd0a':'\ud83d\udd07', onToggleSound:this.onToggleSound, clockStr:st.clock,
+      statusText: st.statusFlash||defaultStatus, streakStr:st.daily.streak+'', modeStr:modeLabel,
+      dialogOpen:!!st.dialog,
+      dlgAbout:st.dialog==='about', dlgHelp:st.dialog==='help', dlgStats:st.dialog==='stats', dlgDaily:st.dialog==='daily', dlgOptions:st.dialog==='options', dlgConfirm:st.dialog==='confirm', dlgWin:st.dialog==='win',
+      closeDialog:this.closeDialog,
+      helpLines, statsRows, onResetStats:this.onResetStats,
+      confirmMsg:st.confirm?st.confirm.msg:'', onConfirmYes:this.onConfirmYes,
+      dailyDate:new Date().toLocaleDateString(undefined,{weekday:'long',month:'long',day:'numeric'}), dailySeedLabel:st.dailyToday.replace(/-/g,'').slice(2), dailyLongest:st.daily.longest+'', dailyNote:st.daily.lastWonDate===st.dailyToday?'You already cleared today \u2014 play again for fun.':'A fresh guaranteed deal, the same for everyone today.', onPlayDaily:this.startDaily,
+      optionBacks, optionFelts, optionDraws, optionSuits, optionToggles,
+      onWinAgain:this.onWinAgain,
+      openStats:this.openStats, openHelp:this.openHelp,
+      setWinCanvas:this.setWinCanvas,
+      winCanvasStyle: st.winAnimating?{position:'fixed',inset:0,width:'100%',height:'100%',zIndex:280,pointerEvents:'none'}:{display:'none'},
+    };
+  }
+}
+</script>
+</body>
+</html>

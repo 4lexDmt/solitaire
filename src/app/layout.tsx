@@ -1,12 +1,13 @@
 import type { Metadata, Viewport } from 'next';
-import { Inter } from 'next/font/google';
+import { Silkscreen } from 'next/font/google';
 import { SerwistProviderClient } from '@/components/SerwistProviderClient';
 import { BRAND } from '@/config/brand';
 import './globals.css';
 
-const inter = Inter({
+const silkscreen = Silkscreen({
+  weight: ['400', '700'],
   subsets: ['latin'],
-  variable: '--font-inter',
+  variable: '--font-silkscreen',
   display: 'swap',
 });
 
@@ -38,8 +39,8 @@ export const metadata: Metadata = {
 
 export const viewport: Viewport = {
   themeColor: [
-    { media: '(prefers-color-scheme: light)', color: '#2E7D5B' },
-    { media: '(prefers-color-scheme: dark)', color: '#15323B' },
+    { media: '(prefers-color-scheme: light)', color: '#04057a' },
+    { media: '(prefers-color-scheme: dark)', color: '#04057a' },
   ],
   width: 'device-width',
   initialScale: 1,
@@ -51,8 +52,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={`${inter.variable} h-full antialiased`}>
-      <body className="min-h-full flex flex-col antialiased">
+    <html lang="en" className={`${silkscreen.variable} h-full`} data-felt="green" data-card-back="weave">
+      <body className="min-h-full flex flex-col">
         <SerwistProviderClient>{children}</SerwistProviderClient>
       </body>
     </html>

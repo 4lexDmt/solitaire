@@ -1,15 +1,15 @@
 import type { Card } from '@/engine/types';
-import { CardFaceSvg } from '@/assets/cards/faces';
+import { ClassicCardFace } from './ClassicCard';
 
 type CardFaceProps = {
   card: Card;
 };
 
-/** SVG card face — original design-system artwork (Contract H). */
+/** Classic desktop solitaire face (Aevanor Solitaire.dc.html). */
 export function CardFace({ card }: CardFaceProps) {
   return (
     <div className="card-view__inner">
-      <CardFaceSvg card={card} />
+      <ClassicCardFace card={card} />
     </div>
   );
 }

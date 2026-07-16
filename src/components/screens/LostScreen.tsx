@@ -1,7 +1,6 @@
 'use client';
 
-import { Button } from '@/components/ui/Button';
-import { Modal } from '@/components/ui/Modal';
+import { Win95Button, Win95Dialog } from '@/components/win95/primitives';
 import { formatDuration, formatNumber } from '@/lib/format';
 
 interface LostScreenProps {
@@ -21,22 +20,25 @@ export function LostScreen({
   onNewGame,
   onHome,
 }: LostScreenProps) {
+  if (!open) return null;
+
   return (
-    <Modal open={open} onClose={onRestart} title="No moves left" variant="celebration">
-      <p className="modal-subtitle mb-[18px]">
-        The deal is stuck. Timer {formatDuration(elapsedMs)} · {formatNumber(moves)} moves
-      </p>
-      <div className="flex flex-col gap-2">
-        <Button fullWidth onClick={onRestart}>
-          Restart deal
-        </Button>
-        <Button fullWidth variant="ghost" onClick={onNewGame}>
-          New game
-        </Button>
-        <Button fullWidth variant="ghost" onClick={onHome}>
-          Home
-        </Button>
-      </div>
-    </Modal>
+    <div className="win95-scrim">
+      <Win95Dialog title="Aevanor Solitaire" onClose={onRestart} size="sm">
+        <div style={{ display: 'flex', gap: 12, alignItems: 'flex-start', fontSize: 13, lineHeight: 1.4 }}>
+          <span style={{ fontSize: 28 }}>❓</span>
+          <span>
+            No moves left. Timer {formatDuration(elapsedMs)} · {formatNumber(moves)} moves.
+          </span>
+        </div>
+        <div style={{ display: 'flex', gap: 10, justifyContent: 'center', marginTop: 18 }}>
+          <Win95Button className="win95-btn--primary" onClick={onRestart}>
+            Restart
+          </Win95Button>
+          <Win95Button onClick={onNewGame}>New Game</Win95Button>
+          <Win95Button onClick={onHome}>Close</Win95Button>
+        </div>
+      </Win95Dialog>
+    </div>
   );
 }

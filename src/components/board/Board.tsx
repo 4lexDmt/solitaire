@@ -273,6 +273,16 @@ export function Board({ game }: BoardProps) {
     step();
   }, [autoCompleteBusy, reducedMotion]);
 
+  useEffect(() => {
+    const onAuto = () => {
+      if (canAutoComplete(useGameStore.getState().game)) {
+        handleAutoComplete();
+      }
+    };
+    window.addEventListener('aevanor:auto-complete', onAuto);
+    return () => window.removeEventListener('aevanor:auto-complete', onAuto);
+  }, [handleAutoComplete]);
+
   const isSelected = useCallback(
     (pileId: string, cardId: string) =>
       selection?.pileId === pileId && selection?.cardId === cardId,

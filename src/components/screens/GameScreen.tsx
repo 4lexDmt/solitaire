@@ -4,10 +4,8 @@ import { LiveRegion } from '@/components/a11y/LiveRegion';
 import { Board } from '@/components/board/Board';
 import { ReducedMotionWinOverlay } from '@/components/board/ReducedMotionWinOverlay';
 import { WinCascadeCanvas } from '@/components/board/WinCascadeCanvas';
-import { HUD } from '@/components/hud/HUD';
 import { useReducedMotion } from '@/hooks/useReducedMotion';
 import { LostScreen } from '@/components/screens/LostScreen';
-import { PausedScreen } from '@/components/screens/PausedScreen';
 import { WinScreen } from '@/components/screens/WinScreen';
 import type { AchievementId } from '@/state/achievements';
 import type { GameState } from '@/engine/types';
@@ -19,73 +17,42 @@ interface GameScreenProps {
   showWin: boolean;
   winCelebrationActive: boolean;
   onWinCelebrationComplete: () => void;
-  onMenu: () => void;
-  onUndo: () => void;
-  onRedo: () => void;
-  onHint: () => void;
   onRestart: () => void;
   onResume: () => void;
   onNewGame: () => void;
   onHome: () => void;
-  onOpenSettings: () => void;
-  onOpenStats: () => void;
   isDaily?: boolean;
   newAchievements?: AchievementId[];
 }
 
+/** Board + overlays rendered inside the Win9x felt well. */
 export function GameScreen({
   game,
   paused,
   showWin,
   winCelebrationActive,
   onWinCelebrationComplete,
-  onMenu,
-  onUndo,
-  onRedo,
-  onHint,
   onRestart,
-  onResume,
   onNewGame,
   onHome,
-  onOpenSettings,
-  onOpenStats,
   isDaily,
   newAchievements = [],
 }: GameScreenProps) {
   const { reducedMotion } = useReducedMotion();
-  const hudLocked = winCelebrationActive || showWin || game.status === 'won';
 
   return (
-    <div className="game-screen flex min-h-full flex-1 flex-col">
+    <div className="game-screen" style={{ height: '100%' }}>
       <LiveRegion
         message={game.status === 'won' ? 'Game won' : game.status === 'lost' ? 'No moves left' : ''}
         politeness="assertive"
       />
-      <main className="game-screen__table relative flex flex-1 flex-col overflow-x-auto">
-        <div
-          className="game-screen__hud-wrap"
-          style={hudLocked ? { pointerEvents: 'none' } : undefined}
-        >
-          <HUD
-            game={game}
-            onMenu={onMenu}
-            onUndo={onUndo}
-            onRedo={onRedo}
-            onHint={onHint}
-            disabled={hudLocked}
-          />
-        </div>
+      <main className="game-screen__table relative flex flex-1 flex-col overflow-x-auto overflow-y-auto">
         <Board game={game} />
       </main>
 
       {winCelebrationActive && !reducedMotion ? (
-        <WinCascadeCanvas
-          active
-          game={game}
-          onComplete={onWinCelebrationComplete}
-        />
+        <WinCascadeCanvas active game={game} onComplete={onWinCelebrationComplete} />
       ) : null}
-
       {winCelebrationActive && reducedMotion ? (
         <ReducedMotionWinOverlay
           active
@@ -93,16 +60,6 @@ export function GameScreen({
           onDismiss={onWinCelebrationComplete}
         />
       ) : null}
-
-      <PausedScreen
-        open={paused}
-        elapsedMs={game.elapsedMs}
-        moves={game.moves}
-        onResume={onResume}
-        onRestart={onRestart}
-        onHome={onHome}
-        onOpenSettings={onOpenSettings}
-      />
 
       <WinScreen
         open={showWin}
@@ -115,12 +72,12 @@ export function GameScreen({
       />
 
       <LostScreen
-        open={game.status === 'lost'}
+        open={game.status === 'lost' && !paused && !showWin && !winCelebrationActive}
         elapsedMs={game.elapsedMs}
         moves={game.moves}
-        onRestart={onRestart}
         onNewGame={onNewGame}
         onHome={onHome}
+        onRestart={onRestart}
       />
     </div>
   );

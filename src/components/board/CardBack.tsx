@@ -1,12 +1,10 @@
-'use client';
+import { ClassicCardBack } from './ClassicCard';
 
-import { CardBackPattern } from '@/assets/cards';
-
-/** Card back — theme-driven via CSS custom properties (design system Contract H). */
+/** Classic patterned card back (Aevanor Solitaire.dc.html). */
 export function CardBack() {
   return (
     <div className="card-view__inner">
-      <CardBackPattern />
+      <ClassicCardBack />
     </div>
   );
 }

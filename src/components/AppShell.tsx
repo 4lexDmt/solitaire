@@ -2,7 +2,8 @@
 
 import dynamic from 'next/dynamic';
 import { GameScreen } from '@/components/screens/GameScreen';
-import { HomeScreen } from '@/components/screens/HomeScreen';
+import { DesktopShell } from '@/components/win95/DesktopShell';
+import { Win95Button, Win95Dialog } from '@/components/win95/primitives';
 import { dailyDateKey, isDailySeed } from '@/lib/daily';
 import { dailyWinnableSeed, pickWinnableSeed, topUpWinnablePool } from '@/lib/winnablePool';
 import {
@@ -35,8 +36,6 @@ const SettingsPanel = dynamic(
   { ssr: false },
 );
 
-type Screen = 'home' | 'game';
-
 function pickSettings(state: ReturnType<typeof useSettingsStore.getState>): UserSettings {
   return {
     variantId: state.variantId,
@@ -56,16 +55,21 @@ function pickSettings(state: ReturnType<typeof useSettingsStore.getState>): User
   };
 }
 
+type Dialog = 'help' | 'about' | 'daily' | null;
+
 export function AppShell() {
-  const [screen, setScreen] = useState<Screen>('home');
+  const [booting, setBooting] = useState(true);
+  const [bootPct, setBootPct] = useState(0);
   const [paused, setPaused] = useState(false);
   const [showWin, setShowWin] = useState(false);
   const [winCelebrationActive, setWinCelebrationActive] = useState(false);
   const [winAchievements, setWinAchievements] = useState<AchievementId[]>([]);
   const [statsOpen, setStatsOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const [dialog, setDialog] = useState<Dialog>(null);
   const [hasSavedGame, setHasSavedGame] = useState(false);
   const [isDaily, setIsDaily] = useState(false);
+  const [hydrated, setHydrated] = useState(false);
 
   const game = useGameStore((s) => s.game);
   const newGame = useGameStore((s) => s.newGame);
@@ -80,99 +84,80 @@ export function AppShell() {
   const spiderSuits = useSettingsStore((s) => s.spiderSuits);
   const drawCount = useSettingsStore((s) => s.drawCount);
   const scoreMode = useSettingsStore((s) => s.scoreMode);
-  const theme = useSettingsStore((s) => s.theme);
-  const hapticsEnabled = useSettingsStore((s) => s.hapticsEnabled);
-  const winnableOnly = useSettingsStore((s) => s.winnableOnly);
   const stockPassLimit = useSettingsStore((s) => s.stockPassLimit);
+  const winnableOnly = useSettingsStore((s) => s.winnableOnly);
   const vegasCumulative = useSettingsStore((s) => s.vegasCumulative);
-  const vegasBankroll = useStatsStore((s) => s.vegasBankroll);
+  const hapticsEnabled = useSettingsStore((s) => s.hapticsEnabled);
+  const setVariantId = useSettingsStore((s) => s.setVariantId);
+  const theme = useSettingsStore((s) => s.theme);
+
+  const hydrateStats = useStatsStore((s) => s.hydrate);
   const recordGame = useStatsStore((s) => s.recordGame);
+  const vegasBankroll = useStatsStore((s) => s.vegasBankroll);
+  const dailyStreak = useStatsStore((s) => s.dailyCurrentStreak);
+  const dailyBest = useStatsStore((s) => s.dailyBestStreak);
+
+  const hydrateAchievements = useAchievementsStore((s) => s.hydrate);
   const checkAchievements = useAchievementsStore((s) => s.checkAndUnlock);
   const unlocked = useAchievementsStore((s) => s.unlocked);
 
   const usedUndoRef = useRef(false);
   const worryBackRef = useRef(false);
   const processedWinRef = useRef<string | null>(null);
-  const hydratedRef = useRef(false);
-  const autosaveTimerRef = useRef<number | null>(null);
+  const startedRef = useRef(false);
 
   useEffect(() => {
-    if (hydratedRef.current) return;
-    hydratedRef.current = true;
-
-    void (async () => {
-      const [savedSettings, savedStats, savedAchievements, savedGame] =
-        await Promise.all([
-          loadSettings(),
-          loadStats(),
-          loadAchievements(),
-          loadSavedGame(),
-        ]);
-
-      if (savedSettings) hydrateSettings(savedSettings);
-      if (savedStats) useStatsStore.getState().hydrate(savedStats);
-      if (savedAchievements) {
-        useAchievementsStore
-          .getState()
-          .hydrate(savedAchievements.unlocked, savedAchievements.unlockedAt);
-      }
-
-      const cloudStats = await pullCloudStats();
-      if (cloudStats) useStatsStore.getState().hydrate(cloudStats);
-
-      if (savedSettings?.theme) setGameTheme(savedSettings.theme);
-
-      if (savedGame && savedGame.game.status === 'playing') {
-        setHasSavedGame(true);
-      }
-    })();
-  }, [hydrateSettings, setGameTheme]);
-
-  useEffect(() => {
-    if (screen !== 'game' || game.status !== 'playing' || paused) return;
-
-    const id = window.setInterval(() => tick(1000), 1000);
-    return () => window.clearInterval(id);
-  }, [screen, game.status, paused, tick]);
-
-  useEffect(() => {
-    if (screen !== 'game' || game.status !== 'playing') return;
-
-    const worryBack = game.history.some(
-      (move) =>
-        move.from.startsWith('foundation-') && move.to.startsWith('tableau-'),
-    );
-    worryBackRef.current = worryBack;
-
-    if (autosaveTimerRef.current) {
-      window.clearTimeout(autosaveTimerRef.current);
+    try {
+      const felt = localStorage.getItem('aevanor.felt') || 'green';
+      const back = localStorage.getItem('aevanor.cardBack') || 'weave';
+      document.documentElement.setAttribute('data-felt', felt);
+      document.documentElement.setAttribute('data-card-back', back);
+    } catch {
+      document.documentElement.setAttribute('data-felt', 'green');
+      document.documentElement.setAttribute('data-card-back', 'weave');
     }
-
-    autosaveTimerRef.current = window.setTimeout(() => {
-      void autosaveGame({
-        game,
-        savedAt: Date.now(),
-        isDaily,
-        usedUndo: usedUndoRef.current,
-        worryBack: worryBackRef.current,
-      });
-      setHasSavedGame(true);
-      void syncActiveSave(game, isDaily);
-    }, 400);
-
-    return () => {
-      if (autosaveTimerRef.current) {
-        window.clearTimeout(autosaveTimerRef.current);
-      }
-    };
-  }, [game, screen, isDaily]);
+  }, []);
 
   useEffect(() => {
+    let cancelled = false;
+    void (async () => {
+      const [settings, stats, achievements, saved] = await Promise.all([
+        loadSettings(),
+        loadStats(),
+        loadAchievements(),
+        loadSavedGame(),
+      ]);
+      if (cancelled) return;
+      if (settings) hydrateSettings(settings);
+      if (stats) hydrateStats(stats);
+      if (achievements) {
+        hydrateAchievements(achievements.unlocked, achievements.unlockedAt);
+      }
+      setHasSavedGame(Boolean(saved));
+      setGameTheme(settings?.theme ?? theme);
+      setHydrated(true);
+      void pullCloudStats().then((cloud) => {
+        if (cloud && !cancelled) hydrateStats(cloud);
+      });
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [hydrateAchievements, hydrateSettings, hydrateStats, setGameTheme, theme]);
+
+  useEffect(() => {
+    if (!hydrated) return;
     const unsubSettings = useSettingsStore.subscribe((state) => {
       void saveSettings(pickSettings(state));
     });
     const unsubStats = useStatsStore.subscribe((state) => {
-      void saveStats(state);
+      const {
+        hydrate: _h,
+        recordGame: _r,
+        reset: _reset,
+        ...rest
+      } = state;
+      void saveStats(rest);
     });
     const unsubAchievements = useAchievementsStore.subscribe((state) => {
       void saveAchievements(state.unlocked, state.unlockedAt);
@@ -182,13 +167,29 @@ export function AppShell() {
       unsubStats();
       unsubAchievements();
     };
-  }, []);
+  }, [hydrated]);
 
   useEffect(() => {
     if (winnableOnly && variantId === 'klondike') {
       topUpWinnablePool(drawCount);
     }
   }, [winnableOnly, drawCount, variantId]);
+
+  // Boot splash
+  useEffect(() => {
+    if (!booting) return;
+    const id = window.setInterval(() => {
+      setBootPct((p) => {
+        const next = Math.min(100, p + Math.random() * 16 + 7);
+        if (next >= 100) {
+          window.clearInterval(id);
+          window.setTimeout(() => setBooting(false), 280);
+        }
+        return next;
+      });
+    }, 120);
+    return () => window.clearInterval(id);
+  }, [booting]);
 
   const finalizeWin = useCallback(async () => {
     const dailyDate = isDaily ? dailyDateKey() : undefined;
@@ -220,13 +221,7 @@ export function AppShell() {
     await syncOnGameEnd({ game, stats, isDaily, dailyDate });
     await clearSavedGame();
     setHasSavedGame(false);
-  }, [
-    unlocked,
-    checkAchievements,
-    game,
-    isDaily,
-    recordGame,
-  ]);
+  }, [unlocked, checkAchievements, game, isDaily, recordGame]);
 
   useEffect(() => {
     if (game.status !== 'won') return;
@@ -258,98 +253,240 @@ export function AppShell() {
 
     void clearSavedGame();
     setHasSavedGame(false);
-  }, [game.status, game.seed, game.moves, game.elapsedMs, game.variantId, game.drawCount, game.score, game.scoreMode, isDaily, recordGame]);
+  }, [
+    game.status,
+    game.seed,
+    game.moves,
+    game.elapsedMs,
+    game.variantId,
+    game.drawCount,
+    game.score,
+    game.scoreMode,
+    isDaily,
+    recordGame,
+  ]);
 
   const handleWinCelebrationComplete = useCallback(() => {
     setWinCelebrationActive(false);
     setShowWin(true);
   }, []);
 
-  function startGame(options?: { seed?: string; daily?: boolean; variantId?: VariantId }) {
+  const startGame = useCallback(
+    (options?: { seed?: string; daily?: boolean; variantId?: VariantId }) => {
+      void (async () => {
+        usedUndoRef.current = false;
+        worryBackRef.current = false;
+        processedWinRef.current = null;
+        setShowWin(false);
+        setWinCelebrationActive(false);
+        setWinAchievements([]);
+        setPaused(false);
+        setIsDaily(Boolean(options?.daily));
+
+        const gameVariantId = options?.daily
+          ? 'klondike'
+          : (options?.variantId ?? useSettingsStore.getState().variantId);
+
+        if (options?.variantId) setVariantId(options.variantId);
+        if (options?.daily) setVariantId('klondike');
+
+        const settings = useSettingsStore.getState();
+        let seed = options?.seed;
+        if (options?.daily) {
+          try {
+            seed = await dailyWinnableSeed(settings.drawCount);
+          } catch {
+            seed = options?.seed;
+          }
+        }
+
+        if (!seed && settings.winnableOnly && gameVariantId === 'klondike') {
+          try {
+            seed = await pickWinnableSeed(settings.drawCount);
+          } catch {
+            seed = undefined;
+          }
+        }
+
+        const gameScoreMode =
+          gameVariantId !== 'klondike' && settings.scoreMode === 'vegas'
+            ? 'standard'
+            : settings.scoreMode;
+
+        const startingScore =
+          gameScoreMode === 'vegas' && settings.vegasCumulative
+            ? useStatsStore.getState().vegasBankroll - 52
+            : undefined;
+
+        newGame({
+          seed,
+          variantId: gameVariantId,
+          drawCount: settings.drawCount,
+          scoreMode: gameScoreMode,
+          stockPassLimit: settings.stockPassLimit,
+          startingScore,
+          spiderSuits: settings.spiderSuits,
+        });
+        setHasSavedGame(true);
+      })();
+    },
+    [newGame, setVariantId],
+  );
+
+  // Auto-start first deal after hydrate (+ optional resume)
+  useEffect(() => {
+    if (!hydrated || startedRef.current || booting) return;
+    startedRef.current = true;
     void (async () => {
-      usedUndoRef.current = false;
-      worryBackRef.current = false;
-      processedWinRef.current = null;
-      setShowWin(false);
-      setWinCelebrationActive(false);
-      setWinAchievements([]);
-      setPaused(false);
-      setIsDaily(Boolean(options?.daily));
-
-      // Daily challenge is always the Klondike deal of the day.
-      const gameVariantId = options?.daily
-        ? 'klondike'
-        : (options?.variantId ?? variantId);
-
-      let seed = options?.seed;
-      if (options?.daily) {
-        try {
-          seed = await dailyWinnableSeed(drawCount);
-        } catch {
-          seed = options?.seed;
-        }
+      const saved = await loadSavedGame();
+      if (saved) {
+        usedUndoRef.current = saved.usedUndo;
+        worryBackRef.current = saved.worryBack;
+        setIsDaily(saved.isDaily);
+        useGameStore.setState({ game: saved.game, theme });
+        setHasSavedGame(true);
+        return;
       }
-
-      if (!seed && winnableOnly && gameVariantId === 'klondike') {
-        try {
-          seed = await pickWinnableSeed(drawCount);
-        } catch {
-          seed = undefined;
-        }
-      }
-
-      // Vegas scoring is a Klondike mode; other variants use standard scoring.
-      const gameScoreMode =
-        gameVariantId !== 'klondike' && scoreMode === 'vegas' ? 'standard' : scoreMode;
-
-      const startingScore =
-        gameScoreMode === 'vegas' && vegasCumulative
-          ? vegasBankroll - 52
-          : undefined;
-
-      newGame({
-        seed,
-        variantId: gameVariantId,
-        drawCount,
-        scoreMode: gameScoreMode,
-        stockPassLimit,
-        startingScore,
-        spiderSuits,
-      });
-      setScreen('game');
+      startGame();
     })();
-  }
+  }, [hydrated, booting, startGame, theme]);
 
-  async function resumeGame() {
-    const saved = await loadSavedGame();
-    if (!saved) return;
-    usedUndoRef.current = saved.usedUndo;
-    worryBackRef.current = saved.worryBack;
-    setIsDaily(saved.isDaily);
-    useGameStore.setState({ game: saved.game, theme });
-    setShowWin(false);
-    setWinAchievements([]);
-    setPaused(false);
-    setScreen('game');
-  }
+  useEffect(() => {
+    if (paused || game.status !== 'playing') return;
+    const id = window.setInterval(() => tick(1000), 1000);
+    return () => window.clearInterval(id);
+  }, [paused, game.status, tick]);
+
+  useEffect(() => {
+    if (game.status !== 'playing') return;
+    const id = window.setTimeout(() => {
+      void autosaveGame({
+        game,
+        savedAt: Date.now(),
+        usedUndo: usedUndoRef.current,
+        worryBack: worryBackRef.current,
+        isDaily,
+      });
+      void syncActiveSave(game, isDaily);
+    }, 800);
+    return () => window.clearTimeout(id);
+  }, [game, isDaily]);
 
   function handleUndo() {
     usedUndoRef.current = true;
     undo();
   }
 
+  function goHome() {
+    setPaused(false);
+    setShowWin(false);
+    setWinCelebrationActive(false);
+    setWinAchievements([]);
+    setBooting(true);
+    setBootPct(0);
+    startedRef.current = false;
+  }
+
+  const helpLines =
+    game.variantId === 'freecell'
+      ? [
+          'FreeCell deals all 52 cards face-up across eight columns.',
+          'Build down by alternating colors on the tableau.',
+          'Use the four free cells to park single cards.',
+          'Foundations build up by suit from Ace to King.',
+        ]
+      : game.variantId === 'spider'
+        ? [
+            'Spider uses two decks across ten columns.',
+            'Build down by rank; only same-suit runs can move together.',
+            'Deal from the stock to every column when none are empty.',
+            'Complete a King-to-Ace same-suit run to clear it.',
+          ]
+        : [
+            'Klondike builds foundations Ace to King by suit.',
+            'Tableau builds down by alternating colors.',
+            'Only Kings may fill empty columns.',
+            'Draw from the stock when you need more cards.',
+          ];
+
+  if (booting) {
+    return (
+      <div className="desktop">
+        <div className="win95-boot" onClick={() => setBooting(false)} role="presentation">
+          <div className="win95-boot__panel">
+            <div className="win95-titlebar" style={{ height: 'auto', padding: '4px 8px' }}>
+              <span className="win95-titlebar__icon">♠</span>
+              <span className="win95-titlebar__label">Aevanor Solitaire</span>
+            </div>
+            <div style={{ padding: '26px 24px 22px', textAlign: 'center', background: '#c0c0c0' }}>
+              <div
+                className="win95-pixel"
+                style={{
+                  fontSize: 30,
+                  letterSpacing: 1,
+                  color: '#0a3a3a',
+                  textShadow: '2px 2px 0 #8fa',
+                  marginBottom: 4,
+                }}
+              >
+                AEVANOR
+              </div>
+              <div style={{ display: 'flex', gap: 5, justifyContent: 'center', margin: '10px 0 18px', fontSize: 26 }}>
+                <span>♠</span>
+                <span style={{ color: '#c22' }}>♥</span>
+                <span style={{ color: '#c22' }}>♦</span>
+                <span>♣</span>
+              </div>
+              <div style={{ fontSize: 11, color: '#333', marginBottom: 6 }}>
+                Solitaire, beautifully restored — v3.1
+              </div>
+              <div className="win95-boot__bar">
+                <div className="win95-boot__fill" style={{ width: `${bootPct}%` }} />
+              </div>
+              <div
+                className="win95-pixel"
+                style={{ fontSize: 10, color: '#555', marginTop: 8 }}
+              >
+                loading assets… click to skip
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="baize-surface flex min-h-full flex-1 flex-col">
-      {screen === 'home' ? (
-        <HomeScreen
-          onNewGame={() => startGame()}
-          onDailyChallenge={() => startGame({ daily: true })}
-          onResume={() => void resumeGame()}
-          hasSavedGame={hasSavedGame}
-          onOpenStats={() => setStatsOpen(true)}
-          onOpenSettings={() => setSettingsOpen(true)}
-        />
-      ) : (
+    <>
+      <DesktopShell
+        game={game}
+        paused={paused}
+        isDaily={isDaily || isDailySeed(game.seed)}
+        onNewGame={() => startGame()}
+        onRestart={() =>
+          startGame({
+            seed: game.seed,
+            daily: isDaily,
+            variantId: game.variantId as VariantId,
+          })
+        }
+        onUndo={handleUndo}
+        onRedo={redo}
+        onHint={hint}
+        onAuto={() => {
+          if (game.variantId === 'spider') return;
+          window.dispatchEvent(new CustomEvent('aevanor:auto-complete'));
+        }}
+        onResume={() => setPaused(false)}
+        onPause={() => setPaused(true)}
+        onOpenStats={() => setStatsOpen(true)}
+        onOpenSettings={() => setSettingsOpen(true)}
+        onOpenHelp={() => setDialog('help')}
+        onOpenAbout={() => setDialog('about')}
+        onOpenDaily={() => setDialog('daily')}
+        onSelectVariant={(id) => startGame({ variantId: id })}
+        onHome={goHome}
+      >
         <GameScreen
           game={game}
           paused={paused}
@@ -358,10 +495,6 @@ export function AppShell() {
           newAchievements={winAchievements}
           onWinCelebrationComplete={handleWinCelebrationComplete}
           isDaily={isDaily || isDailySeed(game.seed)}
-          onMenu={() => setPaused(true)}
-          onUndo={handleUndo}
-          onRedo={redo}
-          onHint={hint}
           onRestart={() =>
             startGame({
               seed: game.seed,
@@ -371,31 +504,124 @@ export function AppShell() {
           }
           onResume={() => setPaused(false)}
           onNewGame={() => startGame()}
-          onHome={() => {
-            setPaused(false);
-            setShowWin(false);
-            setWinCelebrationActive(false);
-            setWinAchievements([]);
-            setScreen('home');
-          }}
-          onOpenSettings={() => {
-            setPaused(false);
-            setSettingsOpen(true);
-          }}
-          onOpenStats={() => {
-            setPaused(false);
-            setStatsOpen(true);
-          }}
+          onHome={goHome}
         />
-      )}
+      </DesktopShell>
 
       <StatsPanel open={statsOpen} onClose={() => setStatsOpen(false)} />
       <SettingsPanel
         open={settingsOpen}
         onClose={() => setSettingsOpen(false)}
-        gameInProgress={screen === 'game' && game.status === 'playing'}
         onConfirmNewDeal={() => startGame({ seed: game.seed, daily: isDaily })}
       />
-    </div>
+
+      {dialog === 'help' ? (
+        <div className="win95-scrim" onClick={() => setDialog(null)}>
+          <div onClick={(e) => e.stopPropagation()}>
+            <Win95Dialog
+              title={`How to Play — ${game.variantId === 'freecell' ? 'FreeCell' : game.variantId === 'spider' ? 'Spider' : 'Klondike'}`}
+              onClose={() => setDialog(null)}
+              size="lg"
+            >
+              <div className="win95-inset" style={{ maxHeight: 300, overflow: 'auto', fontSize: 13, lineHeight: 1.55 }}>
+                {helpLines.map((line) => (
+                  <p key={line} style={{ margin: '0 0 8px' }}>
+                    {line}
+                  </p>
+                ))}
+              </div>
+              <div style={{ marginTop: 12, textAlign: 'right' }}>
+                <Win95Button className="win95-btn--primary" onClick={() => setDialog(null)}>
+                  OK
+                </Win95Button>
+              </div>
+            </Win95Dialog>
+          </div>
+        </div>
+      ) : null}
+
+      {dialog === 'about' ? (
+        <div className="win95-scrim" onClick={() => setDialog(null)}>
+          <div onClick={(e) => e.stopPropagation()}>
+            <Win95Dialog title="About Aevanor Solitaire" onClose={() => setDialog(null)} size="sm">
+              <div style={{ textAlign: 'center' }}>
+                <div
+                  className="win95-pixel"
+                  style={{ fontSize: 24, color: '#0a3a3a', textShadow: '2px 2px 0 #8fa' }}
+                >
+                  AEVANOR
+                </div>
+                <div style={{ fontSize: 12, margin: '6px 0 14px' }}>
+                  Solitaire Collection — Version 3.1
+                </div>
+                <div style={{ display: 'flex', gap: 6, justifyContent: 'center', marginBottom: 14, fontSize: 22 }}>
+                  <span>♠</span>
+                  <span style={{ color: '#c22' }}>♥</span>
+                  <span style={{ color: '#c22' }}>♦</span>
+                  <span>♣</span>
+                </div>
+                <div className="win95-inset" style={{ textAlign: 'left', fontSize: 12, lineHeight: 1.5 }}>
+                  Klondike · FreeCell · Spider
+                  <br />
+                  Calm, ad-free, offline-first.
+                  <br />
+                  <br />
+                  A nostalgic restoration of the desktop solitaire everyone remembers.
+                </div>
+                <div style={{ marginTop: 16 }}>
+                  <Win95Button className="win95-btn--primary" onClick={() => setDialog(null)}>
+                    OK
+                  </Win95Button>
+                </div>
+              </div>
+            </Win95Dialog>
+          </div>
+        </div>
+      ) : null}
+
+      {dialog === 'daily' ? (
+        <div className="win95-scrim" onClick={() => setDialog(null)}>
+          <div onClick={(e) => e.stopPropagation()}>
+            <Win95Dialog title="Daily Challenge" onClose={() => setDialog(null)} size="sm">
+              <div style={{ textAlign: 'center' }}>
+                <div style={{ fontSize: 34, marginBottom: 2 }}>📅</div>
+                <div style={{ fontWeight: 'bold', fontSize: 15 }}>{dailyDateKey()}</div>
+                <div style={{ fontSize: 11, color: '#555', marginBottom: 14 }}>
+                  Klondike (Draw {drawCount})
+                </div>
+                <div style={{ display: 'flex', gap: 8, justifyContent: 'center', marginBottom: 16 }}>
+                  <div className="win95-inset" style={{ flex: 1, padding: 8 }}>
+                    <div className="win95-pixel" style={{ fontSize: 20, color: '#c9520a' }}>
+                      {dailyStreak}
+                    </div>
+                    <div style={{ fontSize: 10, color: '#555' }}>CURRENT STREAK</div>
+                  </div>
+                  <div className="win95-inset" style={{ flex: 1, padding: 8 }}>
+                    <div className="win95-pixel" style={{ fontSize: 20, color: '#04057a' }}>
+                      {dailyBest}
+                    </div>
+                    <div style={{ fontSize: 10, color: '#555' }}>LONGEST</div>
+                  </div>
+                </div>
+                <Win95Button
+                  className="win95-btn--primary"
+                  onClick={() => {
+                    setDialog(null);
+                    startGame({ daily: true });
+                  }}
+                >
+                  ▶ Play Today&apos;s Deal
+                </Win95Button>
+                {hasSavedGame ? (
+                  <div style={{ marginTop: 10, fontSize: 11, color: '#555' }}>
+                    Starting daily replaces your current deal.
+                  </div>
+                ) : null}
+              </div>
+            </Win95Dialog>
+          </div>
+        </div>
+      ) : null}
+    </>
   );
 }

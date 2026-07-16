@@ -2,9 +2,9 @@
 export const BRAND = {
   name: "Aevanor",
   product: "Solitaire",
-  title: "Aevanor",
+  title: "Aevanor Solitaire",
   gameName: "Solitaire",
   tagline: "Solitaire, beautifully restored.",
   description:
-    "Premium solitaire — Klondike, FreeCell, and Spider. Calm, ad-free, offline-first.",
+    "Premium solitaire — Klondike, FreeCell, and Spider. A nostalgic desktop restoration. Calm, ad-free, offline-first.",
 } as const;

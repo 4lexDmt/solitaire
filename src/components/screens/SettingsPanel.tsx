@@ -1,201 +1,316 @@
 'use client';
 
-import { AuthPanel } from '@/components/auth/AuthPanel';
-import { Button } from '@/components/ui/Button';
-import { SegmentedControl } from '@/components/ui/SegmentedControl';
-import { Sheet } from '@/components/ui/Sheet';
-import { Toggle } from '@/components/ui/Toggle';
-import { ThemePicker } from '@/components/screens/ThemePicker';
-import { VariantPicker } from '@/components/screens/VariantPicker';
-import {
-  downloadJson,
-  exportAllData,
-  importAllData,
-  parseImportFile,
-} from '@/persistence/db';
-import type { StockPassLimit } from '@/state/settings';
-import { useSettingsStore } from '@/state/settings';
-import type { ScoreMode } from '@/engine/types';
+import { Win95Button, Win95Dialog } from '@/components/win95/primitives';
 import type { SpiderSuits } from '@/engine/variant';
 import type { VariantId } from '@/engine/variants';
-import { useRef } from 'react';
+import { useSettingsStore } from '@/state/settings';
 
 interface SettingsPanelProps {
   open: boolean;
   onClose: () => void;
-  gameInProgress?: boolean;
   onConfirmNewDeal?: () => void;
 }
 
-export function SettingsPanel({
-  open,
-  onClose,
-  gameInProgress,
-  onConfirmNewDeal,
-}: SettingsPanelProps) {
-  const settings = useSettingsStore();
-  const fileRef = useRef<HTMLInputElement>(null);
+const BACKS = ['weave', 'argyle', 'waves', 'citadel', 'bloom', 'circuit'] as const;
+const FELTS = [
+  { id: 'green', label: 'Green', swatch: '#0c6135' },
+  { id: 'blue', label: 'Blue', swatch: '#12507f' },
+  { id: 'burgundy', label: 'Burgundy', swatch: '#6b1e26' },
+] as const;
 
-  function applyWithConfirmation(apply: () => void) {
-    if (!gameInProgress) {
-      apply();
-      return;
+export type FeltId = (typeof FELTS)[number]['id'];
+export type CardBackId = (typeof BACKS)[number];
+
+export function SettingsPanel({ open, onClose, onConfirmNewDeal }: SettingsPanelProps) {
+  const settings = useSettingsStore();
+
+  if (!open) return null;
+
+  function applyVariant(variantId: VariantId) {
+    settings.setVariantId(variantId);
+    if (variantId !== 'klondike' && settings.scoreMode === 'vegas') {
+      settings.setScoreMode('standard');
     }
-    const confirmed = window.confirm(
-      'Changing this option starts a fresh deal. Your current game will be replaced. Continue?',
-    );
-    if (!confirmed) return;
-    apply();
     onConfirmNewDeal?.();
   }
 
-  async function handleExport() {
-    const data = await exportAllData();
-    downloadJson(data, `solitaire-backup-${new Date().toISOString().slice(0, 10)}.json`);
-  }
-
-  async function handleImport(file: File) {
-    const data = await parseImportFile(file);
-    await importAllData(data);
-    if (data.settings) settings.hydrate(data.settings);
-    window.location.reload();
-  }
-
   return (
-    <Sheet open={open} onClose={onClose} title="Settings" side="right">
-      <div className="space-y-6">
-        <section>
-          <h3 className="mb-3 font-ui text-hud font-semibold text-ui-text">Game</h3>
-          <div className="space-y-3">
-            <SegmentedControl<VariantId>
-              label="Game variant"
-              value={settings.variantId}
-              onChange={(variantId) =>
-                applyWithConfirmation(() => {
-                  settings.setVariantId(variantId);
-                  if (variantId !== 'klondike' && settings.scoreMode === 'vegas') {
-                    settings.setScoreMode('standard');
-                  }
-                })
-              }
-              options={[
-                { value: 'klondike', label: 'Klondike' },
-                { value: 'freecell', label: 'FreeCell' },
-                { value: 'spider', label: 'Spider' },
-              ]}
-            />
-            {settings.variantId === 'klondike' ? (
-              <VariantPicker
-                onChange={(drawCount) =>
-                  applyWithConfirmation(() => settings.setDrawCount(drawCount))
-                }
-              />
-            ) : null}
-            {settings.variantId === 'spider' ? (
-              <SegmentedControl<SpiderSuits>
-                label="Spider suits"
-                value={settings.spiderSuits}
-                onChange={(spiderSuits) =>
-                  applyWithConfirmation(() => settings.setSpiderSuits(spiderSuits))
-                }
-                options={[
-                  { value: 1, label: '1 Suit' },
-                  { value: 2, label: '2 Suits' },
-                  { value: 4, label: '4 Suits' },
-                ]}
-              />
-            ) : null}
-          </div>
-        </section>
+    <div className="win95-scrim" onClick={onClose}>
+      <div onClick={(e) => e.stopPropagation()}>
+        <Win95Dialog title="Options" onClose={onClose}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+            <fieldset className="win95-fieldset">
+              <legend>Card back</legend>
+              <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                {BACKS.map((id) => {
+                  const selected = (settings.theme === 'heritage' && id === 'weave') ||
+                    document.documentElement.getAttribute('data-card-back') === id;
+                  return (
+                    <button
+                      key={id}
+                      type="button"
+                      title={id}
+                      onClick={() => {
+                        document.documentElement.setAttribute('data-card-back', id);
+                        try {
+                          localStorage.setItem('aevanor.cardBack', id);
+                        } catch {
+                          /* ignore */
+                        }
+                      }}
+                      style={{
+                        padding: 2,
+                        cursor: 'default',
+                        border: 0,
+                        background: 'transparent',
+                        boxShadow: selected
+                          ? '0 0 0 2px #04057a'
+                          : 'inset -1px -1px #fff, inset 1px 1px grey',
+                      }}
+                    >
+                      <div
+                        data-card-back={id}
+                        style={{
+                          width: 34,
+                          height: 46,
+                          borderRadius: 4,
+                          border: '3px solid #eef0f2',
+                          backgroundColor: 'var(--card-back-base)',
+                          backgroundImage: 'var(--card-back-image)',
+                          backgroundSize: 'var(--card-back-size, auto)',
+                        }}
+                      />
+                    </button>
+                  );
+                })}
+              </div>
+            </fieldset>
 
-        <section>
-          <h3 className="mb-3 font-ui text-hud font-semibold text-ui-text">Scoring</h3>
-          <SegmentedControl<ScoreMode>
-            label="Scoring mode"
-            value={settings.scoreMode}
-            onChange={(scoreMode) =>
-              applyWithConfirmation(() => settings.setScoreMode(scoreMode))
-            }
-            options={[
-              { value: 'none', label: 'None' },
-              { value: 'standard', label: 'Standard' },
-              ...(settings.variantId === 'klondike'
-                ? [{ value: 'vegas' as ScoreMode, label: 'Vegas' }]
-                : []),
-            ]}
-          />
-          {settings.scoreMode === 'vegas' && settings.variantId === 'klondike' ? (
-            <div className="mt-3">
-              <Toggle
-                label="Vegas cumulative bankroll"
-                checked={settings.vegasCumulative}
-                onChange={settings.setVegasCumulative}
-                description="Carry your Vegas balance across games."
-              />
+            <fieldset className="win95-fieldset">
+              <legend>Table felt</legend>
+              <div style={{ display: 'flex', gap: 14, flexWrap: 'wrap' }}>
+                {FELTS.map((f) => {
+                  const current =
+                    document.documentElement.getAttribute('data-felt') || 'green';
+                  const on = current === f.id;
+                  return (
+                    <label
+                      key={f.id}
+                      style={{ display: 'flex', alignItems: 'center', gap: 5, cursor: 'default', fontSize: 12 }}
+                    >
+                      <button
+                        type="button"
+                        onClick={() => {
+                          document.documentElement.setAttribute('data-felt', f.id);
+                          try {
+                            localStorage.setItem('aevanor.felt', f.id);
+                          } catch {
+                            /* ignore */
+                          }
+                        }}
+                        style={{
+                          width: 13,
+                          height: 13,
+                          borderRadius: '50%',
+                          boxShadow: 'inset -1px -1px #fff, inset 1px 1px grey',
+                          background: '#fff',
+                          display: 'grid',
+                          placeItems: 'center',
+                          padding: 0,
+                          border: 0,
+                          cursor: 'default',
+                        }}
+                      >
+                        <span
+                          style={{
+                            width: 7,
+                            height: 7,
+                            borderRadius: '50%',
+                            background: on ? '#04057a' : 'transparent',
+                          }}
+                        />
+                      </button>
+                      <span
+                        style={{
+                          width: 14,
+                          height: 14,
+                          boxShadow: 'inset 0 0 0 1px rgba(0,0,0,.4)',
+                          background: f.swatch,
+                        }}
+                      />
+                      {f.label}
+                    </label>
+                  );
+                })}
+              </div>
+            </fieldset>
+
+            <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
+              <fieldset className="win95-fieldset" style={{ flex: 1, minWidth: 140 }}>
+                <legend>Klondike draw</legend>
+                {([1, 3] as const).map((n) => (
+                  <label
+                    key={n}
+                    style={{ display: 'flex', alignItems: 'center', gap: 6, cursor: 'default', fontSize: 12, padding: '2px 0' }}
+                  >
+                    <RadioDot
+                      on={settings.drawCount === n}
+                      onClick={() => {
+                        settings.setDrawCount(n);
+                        if (settings.variantId === 'klondike') onConfirmNewDeal?.();
+                      }}
+                    />
+                    Draw {n === 1 ? 'one' : 'three'} card{n === 1 ? '' : 's'}
+                  </label>
+                ))}
+              </fieldset>
+
+              <fieldset className="win95-fieldset" style={{ flex: 1, minWidth: 140 }}>
+                <legend>Spider suits</legend>
+                {([1, 2, 4] as SpiderSuits[]).map((n) => (
+                  <label
+                    key={n}
+                    style={{ display: 'flex', alignItems: 'center', gap: 6, cursor: 'default', fontSize: 12, padding: '2px 0' }}
+                  >
+                    <RadioDot
+                      on={settings.spiderSuits === n}
+                      onClick={() => {
+                        settings.setSpiderSuits(n);
+                        if (settings.variantId === 'spider') onConfirmNewDeal?.();
+                      }}
+                    />
+                    {n === 1 ? 'One suit (easy)' : n === 2 ? 'Two suits' : 'Four suits (hard)'}
+                  </label>
+                ))}
+              </fieldset>
             </div>
-          ) : null}
-        </section>
 
-        {settings.variantId === 'klondike' ? (
-          <section>
-            <h3 className="mb-3 font-ui text-hud font-semibold text-ui-text">Stock passes</h3>
-            <SegmentedControl<StockPassLimit>
-              label="Stock pass limit"
-              value={settings.stockPassLimit}
-              onChange={settings.setStockPassLimit}
-              options={[
-                { value: 'unlimited', label: 'Unlimited' },
-                { value: 1, label: '1' },
-                { value: 3, label: '3' },
-              ]}
-            />
-          </section>
-        ) : null}
+            <fieldset className="win95-fieldset">
+              <legend>General</legend>
+              <div style={{ display: 'flex', gap: 18, flexWrap: 'wrap' }}>
+                <CheckToggle
+                  label="Sound effects"
+                  on={settings.soundEnabled}
+                  onClick={() => settings.setSoundEnabled(!settings.soundEnabled)}
+                />
+                <CheckToggle
+                  label="Timed game"
+                  on={settings.showTimer}
+                  onClick={() => settings.setShowTimer(!settings.showTimer)}
+                />
+                <CheckToggle
+                  label="Win animation"
+                  on={settings.motionEnabled}
+                  onClick={() => settings.setMotionEnabled(!settings.motionEnabled)}
+                />
+                <CheckToggle
+                  label="Four-color deck"
+                  on={settings.fourColorDeck}
+                  onClick={() => settings.setFourColorDeck(!settings.fourColorDeck)}
+                />
+                <CheckToggle
+                  label="Left-handed"
+                  on={settings.leftHanded}
+                  onClick={() => settings.setLeftHanded(!settings.leftHanded)}
+                />
+              </div>
+            </fieldset>
 
-        <section className="space-y-1">
-          <Toggle label="Show timer" checked={settings.showTimer} onChange={settings.setShowTimer} />
-          <Toggle label="Sound" checked={settings.soundEnabled} onChange={settings.setSoundEnabled} />
-          <Toggle label="Motion" checked={settings.motionEnabled} onChange={settings.setMotionEnabled} description="Respects system reduced-motion when off." />
-          <Toggle label="Haptics" checked={settings.hapticsEnabled} onChange={settings.setHapticsEnabled} />
-          <Toggle label="Left-handed layout" checked={settings.leftHanded} onChange={settings.setLeftHanded} />
-          {settings.variantId === 'klondike' ? (
-            <Toggle label="Winnable deals only" checked={settings.winnableOnly} onChange={settings.setWinnableOnly} />
-          ) : null}
-          <Toggle label="Four-color deck" checked={settings.fourColorDeck} onChange={settings.setFourColorDeck} />
-        </section>
+            <fieldset className="win95-fieldset">
+              <legend>Game</legend>
+              <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                {(
+                  [
+                    ['klondike', 'Klondike'],
+                    ['freecell', 'FreeCell'],
+                    ['spider', 'Spider'],
+                  ] as const
+                ).map(([id, label]) => (
+                  <Win95Button
+                    key={id}
+                    onClick={() => applyVariant(id)}
+                    className={settings.variantId === id ? 'win95-btn--primary' : ''}
+                  >
+                    {label}
+                  </Win95Button>
+                ))}
+              </div>
+            </fieldset>
 
-        <section>
-          <h3 className="sheet-title mb-4">Theme</h3>
-          <ThemePicker layout="list" />
-        </section>
-
-        <section>
-          <h3 className="mb-3 font-ui text-hud font-semibold text-ui-text">Cloud sync</h3>
-          <AuthPanel />
-        </section>
-
-        <section>
-          <h3 className="mb-3 font-ui text-hud font-semibold text-ui-text">Data</h3>
-          <div className="flex flex-col gap-2">
-            <Button variant="secondary" onClick={handleExport}>
-              Export backup
-            </Button>
-            <Button variant="secondary" onClick={() => fileRef.current?.click()}>
-              Import backup
-            </Button>
-            <input
-              ref={fileRef}
-              type="file"
-              accept="application/json"
-              className="hidden"
-              onChange={(event) => {
-                const file = event.target.files?.[0];
-                if (file) void handleImport(file);
-              }}
-            />
+            <div style={{ textAlign: 'right' }}>
+              <Win95Button className="win95-btn--primary" onClick={onClose}>
+                Done
+              </Win95Button>
+            </div>
           </div>
-        </section>
+        </Win95Dialog>
       </div>
-    </Sheet>
+    </div>
+  );
+}
+
+function RadioDot({ on, onClick }: { on: boolean; onClick: () => void }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      style={{
+        width: 13,
+        height: 13,
+        borderRadius: '50%',
+        boxShadow: 'inset -1px -1px #fff, inset 1px 1px grey',
+        background: '#fff',
+        display: 'grid',
+        placeItems: 'center',
+        padding: 0,
+        border: 0,
+        cursor: 'default',
+      }}
+    >
+      <span
+        style={{
+          width: 7,
+          height: 7,
+          borderRadius: '50%',
+          background: on ? '#04057a' : 'transparent',
+        }}
+      />
+    </button>
+  );
+}
+
+function CheckToggle({
+  label,
+  on,
+  onClick,
+}: {
+  label: string;
+  on: boolean;
+  onClick: () => void;
+}) {
+  return (
+    <label style={{ display: 'flex', alignItems: 'center', gap: 6, cursor: 'default', fontSize: 12 }}>
+      <button
+        type="button"
+        onClick={onClick}
+        style={{
+          width: 14,
+          height: 14,
+          boxShadow: 'inset -1px -1px #fff, inset 1px 1px grey, inset -2px -2px #dfdfdf, inset 2px 2px #0a0a0a',
+          background: '#fff',
+          display: 'grid',
+          placeItems: 'center',
+          fontSize: 11,
+          fontWeight: 'bold',
+          color: '#0a5f30',
+          padding: 0,
+          border: 0,
+          cursor: 'default',
+        }}
+      >
+        {on ? '✔' : ''}
+      </button>
+      {label}
+    </label>
   );
 }

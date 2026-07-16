@@ -1,65 +1,100 @@
 /**
- * Design tokens — SPEC §5–§8
- * Heritage (default) on :root; Midnight and Studio override via [data-theme].
+ * Aevanor Solitaire — Win9x / "Aevanor 95" design tokens
+ * Source: docs/design/Aevanor Solitaire.dc.html
  */
 
 :root {
-  /* §5.1 Color — Heritage (default) */
-  --baize-center: #1c7a52;
-  --baize-edge: #0c4a30;
-  --table-vignette-alpha: 0.45;
-  --card-face: #fbf8f1;
-  --card-face-edge: #e9e1d0;
-  --ink-red: #c0362c;
-  --ink-black: #23262e;
+  /* Desktop & chrome */
+  --desktop: #0a807e;
+  --chrome: #c0c0c0;
+  --chrome-hilite: #ffffff;
+  --chrome-light: #dfdfdf;
+  --chrome-shadow: #808080;
+  --chrome-dkshadow: #0a0a0a;
+  --title-start: #04057a;
+  --title-end: #1a86d8;
+  --title-text: #ffffff;
+  --accent-green: #0a5f30;
+  --accent-green-hi: #4bd07a;
+  --accent-green-lo: #063a1c;
+  --link: #04057a;
+  --link-hover: #1a86d8;
+
+  /* Felt (default green) */
+  --baize-center: #1c9350;
+  --baize-mid: #0c6135;
+  --baize-edge: #08461f;
+  --table-vignette-alpha: 0.5;
+
+  /* Cards — classic desktop solitaire */
+  --card-face: #fdfdfb;
+  --card-face-edge: #b8b8b8;
+  --ink-red: #c22222;
+  --ink-black: #1a1a1a;
   --ink-suit-hearts: var(--ink-red);
   --ink-suit-diamonds: var(--ink-red);
   --ink-suit-clubs: var(--ink-black);
   --ink-suit-spades: var(--ink-black);
-  --card-back-base: #8e2a2a;
-  --card-back-accent: #f3e9d2;
-  --card-border: rgba(0, 0, 0, 0.18);
-  --placeholder-stroke: rgba(255, 255, 255, 0.3);
-  --placeholder-fill: rgba(0, 0, 0, 0.1);
-  --foundation-watermark: rgba(255, 255, 255, 0.16);
+  --card-back-base: #1a3a6e;
+  --card-back-accent: #26529a;
+  --card-back-edge: #eef0f2;
+  --card-border: #b8b8b8;
+  --placeholder-stroke: rgba(255, 255, 255, 0.22);
+  --placeholder-fill: rgba(255, 255, 255, 0.06);
+  --foundation-watermark: rgba(255, 255, 255, 0.32);
+  --foundation-watermark-red: rgba(255, 180, 180, 0.4);
   --highlight-valid: #ffcf5c;
   --highlight-invalid: #e04a37;
-  --hint-pulse: #74e0a8;
-  --ui-surface: #ffffff;
-  --ui-surface-2: #f4f1ea;
-  --ui-text: #1e2128;
-  --ui-text-muted: #6b6f77;
-  --accent: #2e7d5b;
+  --hint-pulse: #ffec78;
+
+  /* UI surfaces (dialogs / chrome) */
+  --ui-surface: #c0c0c0;
+  --ui-surface-2: #c8c8c8;
+  --ui-text: #000000;
+  --ui-text-muted: #555555;
+  --accent: #0a5f30;
   --accent-text: #ffffff;
   --on-baize-text: #ffffff;
   --on-baize-text-muted: rgba(255, 255, 255, 0.78);
-  --ui-scrim: rgba(0, 0, 0, 0.45);
-  --ui-surface-glass: color-mix(in srgb, var(--ui-surface) 88%, transparent);
+  --ui-scrim: rgba(0, 20, 20, 0.28);
+  --ui-surface-glass: #c0c0c0;
+  --stat-digit: #04057a;
+  --stat-digit-score: #0a5f30;
 
-  /* §5.2 Typography */
-  --font-ui: "Inter", system-ui, sans-serif;
-  --font-index: "Inter", system-ui, sans-serif;
-  --font-index-weight: 800;
-  --font-court: "Inter", system-ui, sans-serif;
+  /* Typography — Tahoma UI + Silkscreen digits */
+  --font-ui: Tahoma, Verdana, Geneva, "DejaVu Sans", sans-serif;
+  --font-pixel: var(--font-silkscreen), "Silkscreen", monospace;
+  --font-index: Tahoma, Verdana, sans-serif;
+  --font-index-weight: 700;
+  --font-court: Tahoma, Verdana, sans-serif;
   --font-court-weight: 700;
-  --text-hud: clamp(13px, 2.6vw, 16px);
-  --text-title: clamp(22px, 5vw, 34px);
-  --text-button-size: 15px;
-  --text-button-weight: 600;
+  --text-hud: 12px;
+  --text-title: 12px;
+  --text-button-size: 12px;
+  --text-button-weight: 400;
 
-  /* §5.3 Spacing, radius, elevation */
+  /* Spacing / radius — sharp Win9x */
   --space-unit: 4px;
-  --card-radius-ratio: 0.06;
-  --ui-radius: 12px;
-  --panel-radius: 18px;
-  --hud-radius: 14px;
-  --elev-card-resting: 0 1px 2px rgba(0, 0, 0, 0.22);
-  --elev-card-lifted: 0 8px 18px rgba(0, 0, 0, 0.3);
-  --elev-card-dragging: 0 16px 32px rgba(0, 0, 0, 0.38);
-  --elev-modal: 0 24px 60px rgba(0, 0, 0, 0.4);
+  --card-radius-ratio: 0.08;
+  --ui-radius: 0px;
+  --panel-radius: 0px;
+  --hud-radius: 0px;
 
-  /* §6 Card & board geometry */
-  --card-aspect: 0.7142857143; /* 5 / 7 */
+  /* Elevation → classic bevels (used as box-shadow) */
+  --bevel-raised: inset -1px -1px #0a0a0a, inset 1px 1px #fff, inset -2px -2px grey,
+    inset 2px 2px #dfdfdf;
+  --bevel-raised-window: inset -1px -1px #0a0a0a, inset 1px 1px #dfdfdf, inset -2px -2px grey,
+    inset 2px 2px #fff;
+  --bevel-sunken: inset -1px -1px #fff, inset 1px 1px grey, inset -2px -2px #dfdfdf,
+    inset 2px 2px #0a0a0a;
+  --bevel-pressed: inset 1px 1px #0a0a0a, inset -1px -1px #fff, inset 2px 2px grey;
+  --elev-card-resting: 0 1px 2px rgba(0, 0, 0, 0.4);
+  --elev-card-lifted: 0 4px 10px rgba(0, 0, 0, 0.45);
+  --elev-card-dragging: 0 6px 14px rgba(0, 0, 0, 0.5);
+  --elev-modal: none;
+
+  /* Geometry (unchanged ratios) */
+  --card-aspect: 0.7142857143;
   --card-w-max: 104px;
   --card-w-min: 40px;
   --gap-x-ratio: 0.18;
@@ -68,14 +103,9 @@
   --waste-fan-ratio: 0.26;
   --board-pad-ratio: 0.22;
   --row-gap-ratio: 0.3;
-  /*
-   * Card width divisor per variant, from (100vw - 2*pad - (n-1)*gap) / n
-   * with pad/gap ∝ card-w → 100vw / (n + (n-1)*0.18 + 2*0.22):
-   * Klondike n=7 → 8.52, FreeCell n=8 → 9.70, Spider n=10 → 12.06.
-   */
   --card-w-divisor: 8.52;
 
-  /* §7 Z-index layers */
+  /* Z-index */
   --z-baize: 0;
   --z-pile-placeholder: 1;
   --z-card-base: 10;
@@ -85,13 +115,14 @@
   --z-hud: 2500;
   --z-modal: 3000;
   --z-toast: 3500;
+  --z-taskbar: 70;
+  --z-menu: 120;
+  --z-start: 130;
 
-  /* §8.1 Easing & spring reference (springs consumed in JS via tokens.ts) */
+  /* Motion */
   --ease-standard: cubic-bezier(0.2, 0.8, 0.2, 1);
   --ease-decel: cubic-bezier(0.16, 1, 0.3, 1);
   --ease-accel: cubic-bezier(0.4, 0, 1, 1);
-
-  /* §8.2–§8.7 Motion durations */
   --dur-flip: 180ms;
   --dur-snap: 220ms;
   --dur-deal-card: 300ms;
@@ -115,18 +146,13 @@
   --card-w-divisor: 12.06;
 }
 
-/*
- * Derived geometry re-evaluates wherever the divisor is overridden
- * (custom properties resolve against the element they're declared on).
- */
 :root,
 [data-variant] {
-  --card-w: clamp(
-    var(--card-w-min),
-    calc(100vw / var(--card-w-divisor)),
-    var(--card-w-max)
+  --card-w: min(
+    var(--card-w-max),
+    max(var(--card-w-min), calc(100vw / var(--card-w-divisor)))
   );
-  --card-h: calc(var(--card-w) * 1.4);
+  --card-h: calc(var(--card-w) / var(--card-aspect));
   --card-radius: calc(var(--card-w) * var(--card-radius-ratio));
   --gap-x: calc(var(--card-w) * var(--gap-x-ratio));
   --overlap-faceup: calc(var(--card-h) * var(--overlap-faceup-ratio));
@@ -136,67 +162,119 @@
   --row-gap: calc(var(--card-h) * var(--row-gap-ratio));
 }
 
+/* Felt color options (Options dialog) */
+[data-felt='green'] {
+  --baize-center: #1c9350;
+  --baize-mid: #0c6135;
+  --baize-edge: #08461f;
+}
+[data-felt='blue'] {
+  --baize-center: #2a83c4;
+  --baize-mid: #12507f;
+  --baize-edge: #0a3557;
+}
+[data-felt='burgundy'] {
+  --baize-center: #a8353d;
+  --baize-mid: #6b1e26;
+  --baize-edge: #43101a;
+}
+
+/* Card-back patterns */
+[data-card-back='weave'] {
+  --card-back-base: #1a3a6e;
+  --card-back-accent: #26529a;
+  --card-back-image: repeating-linear-gradient(
+      45deg,
+      #26529a 0 5px,
+      #1a3a6e 5px 10px
+    ),
+    repeating-linear-gradient(-45deg, rgba(120, 160, 220, 0.5) 0 5px, transparent 5px 10px);
+}
+[data-card-back='argyle'] {
+  --card-back-base: #6e1a2e;
+  --card-back-accent: #93304a;
+  --card-back-image: repeating-linear-gradient(
+      45deg,
+      #93304a 0 9px,
+      #6e1a2e 9px 18px
+    ),
+    repeating-linear-gradient(-45deg, #93304a 0 9px, transparent 9px 18px);
+}
+[data-card-back='waves'] {
+  --card-back-base: #166a64;
+  --card-back-accent: #2a938a;
+  --card-back-image: repeating-radial-gradient(circle at 50% 0, #2a938a 0 4px, #166a64 4px 8px);
+}
+[data-card-back='citadel'] {
+  --card-back-base: #2a2a6e;
+  --card-back-accent: #3d3d97;
+  --card-back-image: repeating-linear-gradient(0deg, #3d3d97 0 4px, #2a2a6e 4px 8px),
+    repeating-linear-gradient(90deg, rgba(150, 150, 220, 0.35) 0 4px, transparent 4px 8px);
+}
+[data-card-back='bloom'] {
+  --card-back-base: #2f5a2a;
+  --card-back-accent: #5aa84e;
+  --card-back-image: radial-gradient(circle at 50% 50%, #5aa84e 2px, transparent 3px);
+  --card-back-size: 12px 12px;
+}
+[data-card-back='circuit'] {
+  --card-back-base: #14324a;
+  --card-back-accent: #1f5273;
+  --card-back-image: repeating-linear-gradient(90deg, #1f5273 0 2px, transparent 2px 12px),
+    repeating-linear-gradient(0deg, #1f5273 0 2px, transparent 2px 12px);
+}
+
+/* Four-color deck still supported */
 [data-four-color='true'] {
-  --ink-suit-hearts: #c0362c;
-  --ink-suit-diamonds: #2b5bd7;
-  --ink-suit-clubs: #1e8e5a;
-  --ink-suit-spades: #23262e;
+  --ink-suit-hearts: #c22222;
+  --ink-suit-diamonds: #d97812;
+  --ink-suit-clubs: #1a6b3c;
+  --ink-suit-spades: #1a1a1a;
 }
 
-[data-theme="midnight"] {
-  --baize-center: #15323b;
-  --baize-edge: #0a1a1f;
-  --table-vignette-alpha: 0.55;
-  --card-face: #f5f3ec;
-  --card-face-edge: #ded9cc;
-  --ink-red: #d4584c;
-  --ink-black: #2a2d34;
-  --card-back-base: #1e3a4c;
-  --card-back-accent: #5fa8c9;
-  --card-border: rgba(0, 0, 0, 0.3);
-  --placeholder-stroke: rgba(255, 255, 255, 0.22);
-  --placeholder-fill: rgba(0, 0, 0, 0.18);
-  --foundation-watermark: rgba(255, 255, 255, 0.12);
-  --highlight-valid: #6fe3c0;
-  --highlight-invalid: #ff6b57;
-  --hint-pulse: #5fe0ff;
-  --ui-surface: #16191f;
-  --ui-surface-2: #1f242c;
-  --ui-text: #eceff3;
-  --ui-text-muted: #9aa1ab;
-  --accent: #3dd6a6;
-  --accent-text: #08110e;
-  --on-baize-text: #eceff3;
-  --on-baize-text-muted: rgba(236, 239, 243, 0.72);
-  --ui-scrim: rgba(0, 0, 0, 0.58);
-  --ui-surface-glass: color-mix(in srgb, var(--ui-surface) 92%, transparent);
+/* Legacy theme attrs map to felt (keep settings hydrate working) */
+[data-theme='midnight'] {
+  --baize-center: #2a83c4;
+  --baize-mid: #12507f;
+  --baize-edge: #0a3557;
+}
+[data-theme='studio'] {
+  --baize-center: #a8353d;
+  --baize-mid: #6b1e26;
+  --baize-edge: #43101a;
 }
 
-[data-theme="studio"] {
-  --baize-center: #2e9e86;
-  --baize-edge: #26876f;
-  --table-vignette-alpha: 0.18;
-  --card-face: #ffffff;
-  --card-face-edge: #ececec;
-  --ink-red: #d8392b;
-  --ink-black: #15171c;
-  --card-back-base: #0e7c66;
-  --card-back-accent: #bfead9;
-  --card-border: rgba(0, 0, 0, 0.12);
-  --placeholder-stroke: rgba(255, 255, 255, 0.4);
-  --placeholder-fill: rgba(0, 0, 0, 0.06);
-  --foundation-watermark: rgba(255, 255, 255, 0.22);
-  --highlight-valid: #ffd66b;
-  --highlight-invalid: #e5533c;
-  --hint-pulse: #4fd0a0;
-  --ui-surface: #ffffff;
-  --ui-surface-2: #f3f6f4;
-  --ui-text: #15181c;
-  --ui-text-muted: #5c6168;
-  --accent: #0e7c66;
-  --accent-text: #ffffff;
-  --on-baize-text: #ffffff;
-  --on-baize-text-muted: rgba(255, 255, 255, 0.82);
-  --card-radius-ratio: 0.08;
-  --ui-radius: 16px;
+@keyframes hintpulse {
+  0%,
+  100% {
+    box-shadow: 0 0 0 3px rgba(255, 236, 120, 0.95), 0 0 16px 5px rgba(255, 214, 40, 0.85);
+  }
+  50% {
+    box-shadow: 0 0 0 3px rgba(255, 236, 120, 0.35), 0 0 10px 2px rgba(255, 214, 40, 0.3);
+  }
+}
+
+@keyframes barmove {
+  to {
+    background-position: 24px 0;
+  }
+}
+
+@keyframes splashin {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes trophy {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-6px);
+  }
 }

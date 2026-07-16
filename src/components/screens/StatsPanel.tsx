@@ -1,83 +1,104 @@
 'use client';
 
 import { AchievementBadge } from '@/components/ui/AchievementBadge';
-import { Button } from '@/components/ui/Button';
-import { Sheet } from '@/components/ui/Sheet';
-import { StatTile } from '@/components/ui/StatTile';
-import { formatDuration, formatNumber, formatPercent } from '@/lib/format';
-import {
-  dailyStreakMessage,
-  streakMessage,
-} from '@/lib/stats-copy';
+import { Win95Button, Win95Dialog, formatTimer } from '@/components/win95/primitives';
+import { formatNumber } from '@/lib/format';
 import { ACHIEVEMENTS, useAchievementsStore } from '@/state/achievements';
-import { useSettingsStore } from '@/state/settings';
-import { useStatsStore, winRate } from '@/state/stats';
+import { useStatsStore, winRate, type ModeStats } from '@/state/stats';
 
 interface StatsPanelProps {
   open: boolean;
   onClose: () => void;
 }
 
+function row(name: string, mode: ModeStats | undefined, idx: number) {
+  const played = mode?.played ?? 0;
+  const won = mode?.won ?? 0;
+  const pct = played ? `${Math.round(winRate(won, played) * 100)}%` : '—';
+  const bestTime = mode?.bestTimeMs ? formatTimer(mode.bestTimeMs) : '—';
+  const bestMoves = mode?.fewestMoves ?? '—';
+  return (
+    <div key={name} className="win95-table__row" style={{ background: idx % 2 ? '#eef' : '#fff' }}>
+      <span style={{ fontWeight: 'bold' }}>{name}</span>
+      <span style={{ textAlign: 'center' }}>{played}</span>
+      <span style={{ textAlign: 'center' }}>{won}</span>
+      <span style={{ textAlign: 'center' }}>{pct}</span>
+      <span className="win95-pixel" style={{ textAlign: 'center', fontSize: 11 }}>
+        {bestTime}
+      </span>
+      <span className="win95-pixel" style={{ textAlign: 'center', fontSize: 11 }}>
+        {bestMoves}
+      </span>
+    </div>
+  );
+}
+
 export function StatsPanel({ open, onClose }: StatsPanelProps) {
   const stats = useStatsStore();
-  const vegasCumulative = useSettingsStore((s) => s.vegasCumulative);
-  const scoreMode = useSettingsStore((s) => s.scoreMode);
   const achievements = useAchievementsStore();
-  const overallRate = winRate(stats.gamesWon, stats.gamesPlayed);
-  const draw1Rate = winRate(stats.draw1.won, stats.draw1.played);
-  const draw3Rate = winRate(stats.draw3.won, stats.draw3.played);
-  const freecellRate = winRate(stats.freecell?.won ?? 0, stats.freecell?.played ?? 0);
-  const spiderRate = winRate(stats.spider?.won ?? 0, stats.spider?.played ?? 0);
+  const reset = useStatsStore((s) => s.reset);
+
+  if (!open) return null;
 
   return (
-    <Sheet open={open} onClose={onClose} title="Statistics">
-      <div className="grid grid-cols-2 gap-2">
-        <StatTile label="Games played" value={formatNumber(stats.gamesPlayed)} />
-        <StatTile label="Games won" value={formatNumber(stats.gamesWon)} />
-        <StatTile label="Win rate" value={formatPercent(overallRate)} />
-        <StatTile label="Current streak" value={formatNumber(stats.currentStreak)} hint={streakMessage(stats.currentStreak)} />
-        <StatTile label="Best streak" value={formatNumber(stats.bestStreak)} />
-        <StatTile label="Total time" value={formatDuration(stats.totalTimeMs)} />
-        <StatTile label="Draw-1 win rate" value={formatPercent(draw1Rate)} />
-        <StatTile label="Draw-3 win rate" value={formatPercent(draw3Rate)} />
-        <StatTile label="FreeCell win rate" value={formatPercent(freecellRate)} />
-        <StatTile label="Spider win rate" value={formatPercent(spiderRate)} />
-        <StatTile
-          label="Daily streak"
-          value={formatNumber(stats.dailyCurrentStreak)}
-          hint={dailyStreakMessage(stats.dailyCurrentStreak)}
-          className="col-span-2"
-        />
-        {scoreMode === 'vegas' && vegasCumulative ? (
-          <StatTile
-            label="Vegas bankroll"
-            value={`$${formatNumber(stats.vegasBankroll)}`}
-            hint="Cumulative balance across Vegas games."
-            className="col-span-2"
-          />
-        ) : null}
-      </div>
+    <div className="win95-scrim" onClick={onClose}>
+      <div onClick={(e) => e.stopPropagation()}>
+        <Win95Dialog title="Statistics" onClose={onClose}>
+          <div className="win95-table">
+            <div className="win95-table__head">
+              <span>Game</span>
+              <span style={{ textAlign: 'center' }}>Played</span>
+              <span style={{ textAlign: 'center' }}>Won</span>
+              <span style={{ textAlign: 'center' }}>Win %</span>
+              <span style={{ textAlign: 'center' }}>Best Time</span>
+              <span style={{ textAlign: 'center' }}>Best Moves</span>
+            </div>
+            {row('Klondike', { played: stats.draw1.played + stats.draw3.played, won: stats.draw1.won + stats.draw3.won, bestTimeMs: pickBestTime(stats.draw1, stats.draw3), fewestMoves: pickBestMoves(stats.draw1, stats.draw3) }, 0)}
+            {row('FreeCell', stats.freecell, 1)}
+            {row('Spider', stats.spider, 2)}
+          </div>
 
-      <h3 className="section-label mb-3 mt-6">
-        Achievements
-      </h3>
-      <div className="flex gap-2.5">
-        {ACHIEVEMENTS.map((achievement) => (
-          <AchievementBadge
-            key={achievement.id}
-            achievement={achievement}
-            unlocked={achievements.unlocked.includes(achievement.id)}
-            unlockedAt={achievements.unlockedAt[achievement.id]}
-            compact
-          />
-        ))}
-      </div>
+          <div style={{ marginTop: 12, fontSize: 12, color: '#333' }}>
+            Overall {formatNumber(stats.gamesWon)}/{formatNumber(stats.gamesPlayed)} · Daily streak{' '}
+            {stats.dailyCurrentStreak}
+          </div>
 
-      <div className="mt-6">
-        <Button fullWidth variant="secondary" onClick={onClose}>
-          Close
-        </Button>
+          <div style={{ display: 'flex', gap: 8, marginTop: 12, flexWrap: 'wrap' }}>
+            {ACHIEVEMENTS.map((a) => (
+              <AchievementBadge
+                key={a.id}
+                achievement={a}
+                unlocked={achievements.unlocked.includes(a.id)}
+                unlockedAt={achievements.unlockedAt[a.id]}
+                compact
+              />
+            ))}
+          </div>
+
+          <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 12 }}>
+            <Win95Button
+              onClick={() => {
+                if (window.confirm('Reset all statistics?')) reset();
+              }}
+            >
+              Reset…
+            </Win95Button>
+            <Win95Button onClick={onClose} className="win95-btn--primary">
+              OK
+            </Win95Button>
+          </div>
+        </Win95Dialog>
       </div>
-    </Sheet>
+    </div>
   );
+}
+
+function pickBestTime(a: ModeStats, b: ModeStats): number | null {
+  const times = [a.bestTimeMs, b.bestTimeMs].filter((t): t is number => t != null);
+  return times.length ? Math.min(...times) : null;
+}
+
+function pickBestMoves(a: ModeStats, b: ModeStats): number | null {
+  const moves = [a.fewestMoves, b.fewestMoves].filter((t): t is number => t != null);
+  return moves.length ? Math.min(...moves) : null;
 }
