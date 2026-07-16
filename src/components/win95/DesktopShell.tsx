@@ -86,6 +86,17 @@ export function DesktopShell({
     return () => window.clearInterval(id);
   }, []);
 
+  /* Phones/tablets: keep the window edge-to-edge so the felt stays playable */
+  useEffect(() => {
+    const mq = window.matchMedia('(max-width: 900px)');
+    const sync = () => {
+      if (mq.matches) setMaximized(true);
+    };
+    sync();
+    mq.addEventListener('change', sync);
+    return () => mq.removeEventListener('change', sync);
+  }, []);
+
   useEffect(() => {
     let clearId = 0;
     const onFlash = (e: Event) => {
@@ -303,14 +314,20 @@ export function DesktopShell({
       <div className={`win95-window${maximized ? ' win95-window--maximized' : ''}`}>
         <div className="win95-titlebar">
           <span className="win95-titlebar__icon">♠</span>
-          <span className="win95-titlebar__label">{winTitle}</span>
+          <span className="win95-titlebar__label win95-titlebar__label--full">{winTitle}</span>
+          <span className="win95-titlebar__label win95-titlebar__label--short">{variantName}</span>
           <div className="win95-titlebar__controls">
-            <button type="button" className="win95-caption-btn" aria-label="Minimize" onClick={onPause}>
+            <button
+              type="button"
+              className="win95-caption-btn win95-caption-btn--min"
+              aria-label="Minimize"
+              onClick={onPause}
+            >
               _
             </button>
             <button
               type="button"
-              className="win95-caption-btn"
+              className="win95-caption-btn win95-caption-btn--max"
               aria-label={maximized ? 'Restore' : 'Maximize'}
               onClick={() => setMaximized((v) => !v)}
             >
@@ -330,48 +347,66 @@ export function DesktopShell({
         <Win95MenuBar menus={menus} />
 
         <div className="win95-toolbar">
-          <Win95Button onClick={onNewGame} disabled={locked}>
-            <span style={{ color: '#0a5f30', fontSize: 14 }}>♣</span>
-            <span className="win95-btn__text">New</span>
-          </Win95Button>
-          <Win95Button
-            className="win95-btn--secondary-mobile"
-            onClick={onRestart}
-            disabled={locked}
-          >
-            ↻<span className="win95-btn__text"> Restart</span>
-          </Win95Button>
-          <Win95Button onClick={onUndo} disabled={locked || game.history.length === 0}>
-            ↶<span className="win95-btn__text"> Undo</span>
-          </Win95Button>
-          <Win95Button onClick={onHint} disabled={locked || game.status !== 'playing'}>
-            <span style={{ color: '#c9a000' }}>💡</span>
-            <span className="win95-btn__text"> Hint</span>
-          </Win95Button>
-          <Win95Button
-            onClick={onAuto}
-            disabled={locked || game.status !== 'playing'}
-            title={
-              game.variantId === 'spider'
-                ? 'Auto-complete is for Solitaire & FreeCell'
-                : canAuto
-                  ? 'Finish to foundations'
-                  : 'Move available cards to foundations'
-            }
-          >
-            ⏭<span className="win95-btn__text"> Auto</span>
-          </Win95Button>
+          <div className="win95-toolbar__actions" role="toolbar" aria-label="Game actions">
+            <Win95Button onClick={onNewGame} disabled={locked} title="New Game">
+              <span className="win95-btn__icon" style={{ color: '#0a5f30', fontSize: 14 }}>
+                ♣
+              </span>
+              <span className="win95-btn__text">New</span>
+            </Win95Button>
+            <Win95Button
+              className="win95-btn--secondary-mobile"
+              onClick={onRestart}
+              disabled={locked}
+              title="Restart Deal"
+            >
+              <span className="win95-btn__icon">↻</span>
+              <span className="win95-btn__text">Restart</span>
+            </Win95Button>
+            <Win95Button
+              onClick={onUndo}
+              disabled={locked || game.history.length === 0}
+              title="Undo"
+            >
+              <span className="win95-btn__icon">↶</span>
+              <span className="win95-btn__text">Undo</span>
+            </Win95Button>
+            <Win95Button
+              onClick={onHint}
+              disabled={locked || game.status !== 'playing'}
+              title="Hint"
+            >
+              <span className="win95-btn__icon" style={{ color: '#c9a000' }}>
+                ✦
+              </span>
+              <span className="win95-btn__text">Hint</span>
+            </Win95Button>
+            <Win95Button
+              onClick={onAuto}
+              disabled={locked || game.status !== 'playing'}
+              title={
+                game.variantId === 'spider'
+                  ? 'Auto-complete is for Solitaire & FreeCell'
+                  : canAuto
+                    ? 'Finish to foundations'
+                    : 'Move available cards to foundations'
+              }
+            >
+              <span className="win95-btn__icon">⏭</span>
+              <span className="win95-btn__text">Auto</span>
+            </Win95Button>
+          </div>
 
-          <div className="win95-sep" />
+          <div className="win95-sep win95-sep--toolbar" />
 
           <div className="win95-tabs" role="group" aria-label="Game variant">
             {(
               [
-                ['klondike', 'Solitaire'],
-                ['freecell', 'FreeCell'],
-                ['spider', 'Spider'],
+                ['klondike', 'Solitaire', 'Sol'],
+                ['freecell', 'FreeCell', 'FC'],
+                ['spider', 'Spider', 'Sp'],
               ] as const
-            ).map(([id, label]) => (
+            ).map(([id, label, short]) => (
               <button
                 key={id}
                 type="button"
@@ -379,14 +414,15 @@ export function DesktopShell({
                 aria-pressed={game.variantId === id}
                 onClick={() => onSelectVariant(id)}
               >
-                {label}
+                <span className="win95-tab__full">{label}</span>
+                <span className="win95-tab__short">{short}</span>
               </button>
             ))}
           </div>
 
-          <div style={{ flex: 1, minWidth: 4 }} />
+          <div className="win95-toolbar__spacer" />
 
-          <div style={{ display: 'flex', gap: 6, alignItems: 'center', flex: 'none' }}>
+          <div className="win95-toolbar__stats" aria-label="Game stats">
             {showTimer ? (
               <div className="win95-stat">
                 <span className="win95-stat__label">TIME</span>
@@ -398,7 +434,7 @@ export function DesktopShell({
               <span className="win95-stat__value">{game.moves}</span>
             </div>
             {game.scoreMode !== 'none' ? (
-              <div className="win95-stat win95-btn--secondary-mobile">
+              <div className="win95-stat win95-stat--score">
                 <span className="win95-stat__label">SCORE</span>
                 <span className="win95-stat__value win95-stat__value--score">{game.score}</span>
               </div>
@@ -449,7 +485,7 @@ export function DesktopShell({
           }}
         >
           <span style={{ color: '#0a5f30' }}>♠</span>
-          <span>{winTitle}</span>
+          <span className="win95-task__label">{winTitle}</span>
         </button>
         <div className="win95-tray">
           <button
@@ -475,11 +511,12 @@ export function DesktopShell({
             <div className="win95-start-menu__banner">AEVANOR&nbsp;95</div>
             <div className="win95-start-menu__body">
               {[
-                { icon: '🃏', label: 'New Game', onClick: onNewGame },
+                { icon: '♣', label: 'New Game', onClick: onNewGame },
+                { icon: '↻', label: 'Restart Deal', onClick: onRestart },
                 { sep: true },
                 { icon: '♠', label: 'Solitaire', onClick: () => onSelectVariant('klondike') },
                 { icon: '♣', label: 'FreeCell', onClick: () => onSelectVariant('freecell') },
-                { icon: '🕷', label: 'Spider', onClick: () => onSelectVariant('spider') },
+                { icon: '◆', label: 'Spider', onClick: () => onSelectVariant('spider') },
                 { icon: '📅', label: 'Daily Challenge', onClick: onOpenDaily },
                 { sep: true },
                 { icon: '📊', label: 'Statistics', onClick: onOpenStats },
@@ -487,7 +524,7 @@ export function DesktopShell({
                 { icon: '?', label: 'How to Play', onClick: onOpenHelp },
                 { icon: 'ℹ', label: 'About', onClick: onOpenAbout },
                 { sep: true },
-                { icon: '⏻', label: 'Restart…', onClick: onHome },
+                { icon: '⏻', label: 'Exit', onClick: onHome },
               ].map((item, i) =>
                 'sep' in item && item.sep ? (
                   <div key={`s-${i}`} className="win95-menu__sep" />

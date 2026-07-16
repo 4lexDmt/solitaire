@@ -217,15 +217,23 @@
   .card-view::before {
     content: '';
     position: absolute;
-    inset: max(-6px, calc((44px - var(--card-h)) / 2));
+    /* Expand hit area toward ~44px without overlapping neighbors too much */
+    inset: max(-8px, calc((44px - var(--card-h)) / 2))
+      max(-4px, calc((40px - var(--card-w)) / 2));
     z-index: -1;
   }
 
   .board__pile[role='button']::before {
     content: '';
     position: absolute;
-    inset: max(-6px, calc((44px - var(--card-h)) / 2));
+    inset: max(-8px, calc((44px - var(--card-h)) / 2))
+      max(-4px, calc((40px - var(--card-w)) / 2));
     z-index: -1;
+  }
+
+  .card-view--selected {
+    outline-width: 3px;
+    outline-offset: 1px;
   }
 }
 

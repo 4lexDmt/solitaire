@@ -162,36 +162,40 @@
   --row-gap: calc(var(--card-h) * var(--row-gap-ratio));
 }
 
-/* Mobile: smaller minimums + tighter packing so 7–10 columns fit the felt */
+/* Mobile: fit 7–10 columns in the felt with readable faces + easier taps */
 @media (max-width: 900px) {
   :root {
-    --card-w-min: 30px;
-    --card-w-max: 72px;
-    --gap-x-ratio: 0.12;
-    --board-pad-ratio: 0.1;
-    --overlap-faceup-ratio: 0.2;
+    --card-w-min: 34px;
+    --card-w-max: 76px;
+    --gap-x-ratio: 0.1;
+    --board-pad-ratio: 0.08;
+    /* Slightly more of each face-up card shows — easier to read ranks */
+    --overlap-faceup-ratio: 0.22;
     --overlap-facedown-ratio: 0.1;
-    --row-gap-ratio: 0.2;
-    --card-w-divisor: 7.94; /* 7 + 6*0.12 + 2*0.1 */
+    --row-gap-ratio: 0.18;
+    --card-w-divisor: 7.8; /* 7 + 6*0.1 + 2*0.08 */
   }
   [data-variant='freecell'] {
-    --card-w-divisor: 9.04; /* 8 + 7*0.12 + 2*0.1 */
+    --card-w-divisor: 8.86; /* 8 + 7*0.1 + 2*0.08 */
   }
   [data-variant='spider'] {
-    --card-w-min: 26px;
-    --gap-x-ratio: 0.08;
-    --board-pad-ratio: 0.06;
-    --card-w-divisor: 10.84; /* 10 + 9*0.08 + 2*0.06 */
+    --card-w-min: 28px;
+    --gap-x-ratio: 0.06;
+    --board-pad-ratio: 0.05;
+    --overlap-faceup-ratio: 0.2;
+    --card-w-divisor: 10.64; /* 10 + 9*0.06 + 2*0.05 */
   }
 }
 
 @media (max-width: 420px) {
   :root {
-    --card-w-min: 28px;
-    --card-w-max: 56px;
+    --card-w-min: 32px;
+    --card-w-max: 58px;
+    --board-pad-ratio: 0.06;
   }
   [data-variant='spider'] {
-    --card-w-min: 22px;
+    --card-w-min: 24px;
+    --board-pad-ratio: 0.04;
   }
 }
 
