@@ -8,6 +8,7 @@ export function dailyDateKey(date = new Date()): string {
   return date.toISOString().slice(0, 10);
 }
 
+/** True for date-keyed daily seed strings (not winnable-pool pick ids). */
 export function isDailySeed(seed: string): boolean {
   return /^klondike-\d{8}$/.test(seed) || /^daily-pool-\d{8}$/.test(seed);
 }

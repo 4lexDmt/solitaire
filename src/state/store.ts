@@ -27,7 +27,9 @@ function applyThemeToDom(theme: ThemeId): void {
 }
 
 function randomSeed(): string {
-  return Math.random().toString(36).slice(2, 10);
+  // Always 8 chars so short Math.random() strings never weaken the seed.
+  const raw = Math.random().toString(36).slice(2);
+  return (raw + 'xxxxxxxx').slice(0, 8);
 }
 
 export interface GameStore {

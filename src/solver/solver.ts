@@ -250,9 +250,9 @@ function scoreMove(state: GameState, move: Move): number {
 }
 
 /**
- * Prune symmetric/no-op moves. Since any card may move to an empty column,
- * all empty columns are interchangeable: only target the lowest-index one,
- * and never move a whole tableau pile there (a pure column permutation).
+ * Prune symmetric/no-op moves. Empty columns are interchangeable (only Kings
+ * may fill them): target the lowest-index empty column only, and never move a
+ * whole tableau pile there (a pure column permutation).
  */
 function pruneMoves(moves: Move[], state: GameState): Move[] {
   let firstEmptyTableau: string | null = null;

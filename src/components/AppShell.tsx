@@ -313,28 +313,41 @@ export function AppShell() {
       setWinAchievements([]);
       setPaused(false);
       setConfirm(null);
-      setIsDaily(Boolean(options?.daily));
 
-      const gameVariantId = options?.daily
+      const wantDaily = Boolean(options?.daily);
+      const gameVariantId = wantDaily
         ? 'klondike'
         : (options?.variantId ?? useSettingsStore.getState().variantId);
 
       if (options?.variantId) setVariantId(options.variantId);
-      if (options?.daily) {
+      if (wantDaily) {
         setVariantId('klondike');
         useSettingsStore.getState().setDrawCount(1);
       }
 
       const settings = useSettingsStore.getState();
-      const drawForGame = options?.daily ? 1 : settings.drawCount;
+      const drawForGame = wantDaily ? 1 : settings.drawCount;
       let seed = options?.seed;
-      if (options?.daily) {
+      let dailyOk = false;
+
+      if (wantDaily) {
         try {
           seed = await dailyWinnableSeed(1);
+          dailyOk = true;
         } catch {
-          seed = options?.seed;
+          if (options?.seed) {
+            // Restart / redraw offline — keep the already-dealt daily seed.
+            seed = options.seed;
+            dailyOk = true;
+          } else {
+            // Never label a fresh random deal as today's challenge.
+            seed = undefined;
+            dailyOk = false;
+          }
         }
       }
+
+      setIsDaily(dailyOk);
 
       if (!seed && settings.winnableOnly && gameVariantId === 'klondike') {
         try {

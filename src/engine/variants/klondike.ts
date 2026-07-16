@@ -53,7 +53,8 @@ function isDescendingAlternating(run: Card[]): boolean {
 
 function canPlaceOnTableau(card: Card, target: Pile): boolean {
   if (target.cards.length === 0) {
-    return true;
+    // Classic Solitaire: only Kings may fill an empty column.
+    return card.rank === 13;
   }
   const dest = topCard(target)!;
   return dest.color !== card.color && dest.rank === card.rank + 1;

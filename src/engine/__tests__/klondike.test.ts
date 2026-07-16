@@ -41,9 +41,10 @@ describe('klondike rules', () => {
     expect(canPlaceOnTableau(createCard('hearts', 6, true), pile('tableau-0', 'tableau', [createCard('clubs', 5, true)]))).toBe(false);
   });
 
-  it('empty tableau accepts any card', () => {
+  it('empty tableau accepts only Kings', () => {
     expect(canPlaceOnTableau(createCard('spades', 13, true), pile('tableau-0', 'tableau', []))).toBe(true);
-    expect(canPlaceOnTableau(createCard('hearts', 6, true), pile('tableau-0', 'tableau', []))).toBe(true);
+    expect(canPlaceOnTableau(createCard('hearts', 12, true), pile('tableau-0', 'tableau', []))).toBe(false);
+    expect(canPlaceOnTableau(createCard('hearts', 6, true), pile('tableau-0', 'tableau', []))).toBe(false);
   });
 
   it('foundation build-up by suit from ace', () => {
@@ -205,13 +206,36 @@ describe('klondike rules', () => {
       'tableau-0': pile('tableau-0', 'tableau', [createCard('spades', 4, true)]),
       'tableau-1': pile('tableau-1', 'tableau', [createCard('hearts', 7, true)]),
       'tableau-2': pile('tableau-2', 'tableau', [createCard('clubs', 8, true)]),
+      // D2 can build on C3 — not an empty column (Kings only).
+      'tableau-3': pile('tableau-3', 'tableau', [createCard('clubs', 3, true)]),
       waste: pile('waste', 'waste', [createCard('diamonds', 2, true)]),
       stock: pile('stock', 'stock', []),
     });
     const moves = klondike.getLegalMoves(state);
     expect(moves.some((m) => m.from === 'foundation-0' && m.to === 'tableau-0')).toBe(true);
     expect(moves.some((m) => m.from === 'tableau-1' && m.to === 'tableau-2')).toBe(true);
-    expect(moves.some((m) => m.from === 'waste')).toBe(true);
+    expect(moves.some((m) => m.from === 'waste' && m.to === 'tableau-3')).toBe(true);
+  });
+
+  it('canDrop rejects non-King onto empty tableau', () => {
+    const state = stateWith({
+      waste: pile('waste', 'waste', [createCard('hearts', 6, true)]),
+      'tableau-0': pile('tableau-0', 'tableau', []),
+      stock: pile('stock', 'stock', []),
+    });
+    expect(klondike.canDrop(state, ['H6'], 'waste', 'tableau-0')).toBe(false);
+    expect(
+      klondike.canDrop(
+        stateWith({
+          waste: pile('waste', 'waste', [createCard('spades', 13, true)]),
+          'tableau-0': pile('tableau-0', 'tableau', []),
+          stock: pile('stock', 'stock', []),
+        }),
+        ['SK'],
+        'waste',
+        'tableau-0',
+      ),
+    ).toBe(true);
   });
 
   it('getLegalMoves includes draw and recycle', () => {
