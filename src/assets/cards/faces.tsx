@@ -27,7 +27,8 @@ function IndexBlock({
 }) {
   const ink = inkColor(card);
   const rank = rankLabel(card.rank);
-  const fontSize = rank === '10' ? 44 : 58;
+  /* Slightly tighter indices so faces stay balanced on small mobile cards */
+  const fontSize = rank === '10' ? 40 : 52;
 
   return (
     <g transform={transform}>
@@ -37,7 +38,7 @@ function IndexBlock({
         textAnchor="middle"
         dominantBaseline="hanging"
         fill={ink}
-        fontFamily="var(--font-index, Inter, system-ui, sans-serif)"
+        fontFamily="var(--font-index, Tahoma, Verdana, sans-serif)"
         fontWeight="800"
         fontSize={fontSize}
         style={{
@@ -47,7 +48,7 @@ function IndexBlock({
       >
         {rank}
       </text>
-      <PlacedSuitGlyph suit={card.suit} color={ink} cx={30} cy={79} size={30} />
+      <PlacedSuitGlyph suit={card.suit} color={ink} cx={30} cy={74} size={28} />
     </g>
   );
 }
@@ -86,7 +87,12 @@ function CenterPips({ card }: { card: Card }) {
 /** Programmatic card face for any of the 52 cards — design system Contract H. */
 export function CardFaceSvg({ card }: CardFaceSvgProps) {
   return (
-    <svg viewBox="0 0 250 350" aria-hidden className="h-full w-full">
+    <svg
+      viewBox="0 0 250 350"
+      aria-hidden
+      className="h-full w-full"
+      preserveAspectRatio="xMidYMid meet"
+    >
       <rect width="250" height="350" fill="var(--card-face)" />
       <IndexBlock card={card} />
       <IndexBlock card={card} transform="rotate(180 125 175)" />

@@ -50,7 +50,7 @@ export function GameScreen({
         message={game.status === 'won' ? 'Game won' : game.status === 'lost' ? 'No moves left' : ''}
         politeness="assertive"
       />
-      <main className="game-screen__table relative flex flex-1 flex-col overflow-x-auto overflow-y-auto">
+      <main className="game-screen__table">
         <Board game={game} />
       </main>
 

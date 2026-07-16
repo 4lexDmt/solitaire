@@ -335,18 +335,25 @@ export function DesktopShell({
 
         <div className="win95-toolbar">
           <Win95Button onClick={onNewGame} disabled={locked}>
-            <span style={{ color: '#0a5f30', fontSize: 14 }}>♣</span> New
-          </Win95Button>
-          <Win95Button onClick={onRestart} disabled={locked}>
-            ↻ Restart
-          </Win95Button>
-          <Win95Button onClick={onUndo} disabled={locked || game.history.length === 0}>
-            ↶ Undo
-          </Win95Button>
-          <Win95Button onClick={onHint} disabled={locked || game.status !== 'playing'}>
-            <span style={{ color: '#c9a000' }}>💡</span> Hint
+            <span style={{ color: '#0a5f30', fontSize: 14 }}>♣</span>
+            <span className="win95-btn__text">New</span>
           </Win95Button>
           <Win95Button
+            className="win95-btn--secondary-mobile"
+            onClick={onRestart}
+            disabled={locked}
+          >
+            ↻<span className="win95-btn__text"> Restart</span>
+          </Win95Button>
+          <Win95Button onClick={onUndo} disabled={locked || game.history.length === 0}>
+            ↶<span className="win95-btn__text"> Undo</span>
+          </Win95Button>
+          <Win95Button onClick={onHint} disabled={locked || game.status !== 'playing'}>
+            <span style={{ color: '#c9a000' }}>💡</span>
+            <span className="win95-btn__text"> Hint</span>
+          </Win95Button>
+          <Win95Button
+            className="win95-btn--secondary-mobile"
             onClick={onAuto}
             disabled={locked || game.status !== 'playing'}
             title={
@@ -357,7 +364,7 @@ export function DesktopShell({
                   : 'Move available cards to foundations'
             }
           >
-            ⏭ Auto
+            ⏭<span className="win95-btn__text"> Auto</span>
           </Win95Button>
 
           <div className="win95-sep" />
@@ -382,9 +389,9 @@ export function DesktopShell({
             ))}
           </div>
 
-          <div style={{ flex: 1 }} />
+          <div style={{ flex: 1, minWidth: 4 }} />
 
-          <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+          <div style={{ display: 'flex', gap: 6, alignItems: 'center', flex: 'none' }}>
             {showTimer ? (
               <div className="win95-stat">
                 <span className="win95-stat__label">TIME</span>
@@ -396,7 +403,7 @@ export function DesktopShell({
               <span className="win95-stat__value">{game.moves}</span>
             </div>
             {game.scoreMode !== 'none' ? (
-              <div className="win95-stat">
+              <div className="win95-stat win95-btn--secondary-mobile">
                 <span className="win95-stat__label">SCORE</span>
                 <span className="win95-stat__value win95-stat__value--score">{game.score}</span>
               </div>

@@ -10,6 +10,15 @@
     'stock waste gap foundation-0 foundation-1 foundation-2 foundation-3'
     'tableau-0 tableau-1 tableau-2 tableau-3 tableau-4 tableau-5 tableau-6';
   row-gap: var(--row-gap);
+  /* Size cards to the felt container, not the full viewport */
+  --card-w: min(
+    var(--card-w-max),
+    max(var(--card-w-min), calc(100cqi / var(--card-w-divisor)))
+  );
+  box-sizing: border-box;
+  min-height: 100%;
+  touch-action: pan-y;
+  -webkit-overflow-scrolling: touch;
 }
 
 .board[data-variant='freecell'] {
@@ -149,6 +158,16 @@
   user-select: none;
   touch-action: none;
   font-family: Tahoma, Verdana, sans-serif;
+  /* Keep SVG faces from stretching oddly inside the card box */
+  display: block;
+}
+
+.card-view__inner,
+.card-view__inner svg {
+  pointer-events: none;
+  width: 100%;
+  height: 100%;
+  display: block;
 }
 
 .classic-face {
@@ -359,11 +378,6 @@ html[data-four-color='true'] .card-view__inner:not(.card-view__inner--four-color
   pointer-events: none;
 }
 
-.card-view__inner,
-.card-view__inner svg {
-  pointer-events: none;
-}
-
 .board__pile:focus-visible {
   outline: 2px solid var(--accent);
   outline-offset: 2px;
@@ -379,12 +393,6 @@ html[data-four-color='true'] .card-view__inner:not(.card-view__inner--four-color
   clip: rect(0, 0, 0, 0);
   white-space: nowrap;
   border: 0;
-}
-
-
-.card-view__inner {
-  width: 100%;
-  height: 100%;
 }
 
 .pile-placeholder__suit-ghost {
@@ -446,13 +454,12 @@ html[data-four-color='true'] .card-view__inner:not(.card-view__inner--four-color
   grid-area: waste;
 }
 
-@media (max-width: 380px) {
-  .board[data-variant='klondike'] {
-    grid-template-areas:
-      'stock waste gap foundation-0 foundation-1'
-      '. . . foundation-2 foundation-3'
-      'tableau-0 tableau-1 tableau-2 tableau-3 tableau-4'
-      'tableau-5 tableau-6 . . .';
-    grid-template-columns: repeat(5, var(--card-w));
+/* Keep classic column counts on phones — card sizing handles fit */
+@supports not (width: 1cqi) {
+  .board {
+    --card-w: min(
+      var(--card-w-max),
+      max(var(--card-w-min), calc(100vw / var(--card-w-divisor)))
+    );
   }
 }

@@ -92,18 +92,6 @@
   bottom: 38px;
 }
 
-@media (max-width: 720px) {
-  .desktop__icons {
-    display: none;
-  }
-  .win95-window {
-    left: 4px;
-    right: 4px;
-    top: 4px;
-    bottom: 40px;
-  }
-}
-
 .win95-titlebar {
   height: 26px;
   flex: none;
@@ -388,6 +376,11 @@
     var(--baize-edge)
   );
   box-shadow: inset 0 0 130px rgba(0, 0, 0, 0.5);
+  container-type: inline-size;
+  container-name: felt;
+  overflow: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
 }
 
 /* Status bar */
@@ -709,13 +702,16 @@
   display: flex;
   flex-direction: column;
   flex: 1;
-  min-height: 0;
+  min-height: 100%;
   height: 100%;
+  width: 100%;
+  position: relative;
 }
 
 .game-screen__table {
   flex: 1;
-  min-height: 0;
+  min-height: 100%;
+  width: 100%;
   display: flex;
   flex-direction: column;
   position: relative;
@@ -730,4 +726,180 @@
 }
 .baize-surface::after {
   display: none !important;
+}
+
+/* ========== Mobile / narrow layout ========== */
+@media (max-width: 900px) {
+  .desktop__icons {
+    display: none;
+  }
+
+  .win95-window,
+  .win95-window--maximized {
+    top: env(safe-area-inset-top, 0px);
+    left: 0;
+    right: 0;
+    bottom: calc(36px + env(safe-area-inset-bottom, 0px));
+    padding: 2px;
+  }
+
+  /* Menus live in Start on phones — reclaim vertical space for the felt */
+  .win95-menubar {
+    display: none;
+  }
+
+  .win95-titlebar {
+    height: 28px;
+    min-height: 28px;
+  }
+
+  .win95-caption-btn {
+    width: 28px;
+    height: 24px;
+    font-size: 11px;
+  }
+
+  .win95-toolbar {
+    gap: 3px;
+    padding: 3px 4px;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    overflow-y: hidden;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+
+  .win95-toolbar::-webkit-scrollbar {
+    display: none;
+  }
+
+  .win95-btn {
+    height: 34px;
+    min-height: 34px;
+    padding: 0 8px;
+    font-size: 12px;
+    flex: none;
+  }
+
+  .win95-btn__text {
+    display: none;
+  }
+
+  .win95-sep {
+    height: 28px;
+    margin: 0 2px;
+  }
+
+  .win95-tabs {
+    flex: none;
+  }
+
+  .win95-tab {
+    height: 30px;
+    padding: 0 8px;
+    font-size: 11px;
+  }
+
+  .win95-stat {
+    min-width: 44px;
+    padding: 2px 6px;
+  }
+
+  .win95-stat__value {
+    font-size: 12px;
+  }
+
+  .win95-statusbar {
+    height: 20px;
+    font-size: 10px;
+  }
+
+  .win95-statusbar__pane:not(.win95-statusbar__pane--main) {
+    display: none;
+  }
+
+  .win95-taskbar {
+    height: calc(36px + env(safe-area-inset-bottom, 0px));
+    padding: 3px 4px env(safe-area-inset-bottom, 0px);
+  }
+
+  .win95-task {
+    max-width: min(42vw, 160px);
+    height: 28px;
+  }
+
+  .win95-start {
+    height: 28px;
+    min-height: 28px;
+  }
+
+  .win95-start-menu {
+    left: 0;
+    right: 0;
+    bottom: calc(37px + env(safe-area-inset-bottom, 0px));
+    width: auto;
+    max-height: min(70vh, 420px);
+  }
+
+  .win95-start-menu__item {
+    padding: 10px 12px;
+    font-size: 14px;
+    min-height: 44px;
+  }
+
+  .win95-scrim {
+    padding: 12px;
+    padding-bottom: calc(12px + env(safe-area-inset-bottom, 0px));
+    align-items: center;
+  }
+
+  .win95-dialog,
+  .win95-dialog--sm,
+  .win95-dialog--lg {
+    max-width: 100%;
+    max-height: min(85vh, 640px);
+    overflow: auto;
+  }
+
+  .win95-boot__panel {
+    width: min(440px, 94%);
+  }
+
+  .win95-table__head,
+  .win95-table__row {
+    grid-template-columns: 1.1fr 0.6fr 0.6fr 0.6fr 0.9fr 0.9fr;
+    font-size: 10px;
+    padding: 4px;
+  }
+
+  .game-screen__table {
+    overflow: visible;
+  }
+}
+
+@media (max-width: 480px) {
+  .win95-titlebar__label {
+    font-size: 11px;
+  }
+
+  /* Keep only primary actions + variant tabs on the toolbar strip */
+  .win95-toolbar .win95-btn--secondary-mobile {
+    display: none;
+  }
+
+  .win95-tray span:last-child {
+    display: none; /* hide clock; keep sound */
+  }
+}
+
+@media (pointer: coarse) {
+  .win95-btn,
+  .win95-tab,
+  .win95-start,
+  .win95-caption-btn,
+  .win95-menubar__item,
+  .win95-menu__item,
+  .win95-start-menu__item {
+    cursor: pointer;
+  }
 }

@@ -162,6 +162,39 @@
   --row-gap: calc(var(--card-h) * var(--row-gap-ratio));
 }
 
+/* Mobile: smaller minimums + tighter packing so 7–10 columns fit the felt */
+@media (max-width: 900px) {
+  :root {
+    --card-w-min: 30px;
+    --card-w-max: 72px;
+    --gap-x-ratio: 0.12;
+    --board-pad-ratio: 0.1;
+    --overlap-faceup-ratio: 0.2;
+    --overlap-facedown-ratio: 0.1;
+    --row-gap-ratio: 0.2;
+    --card-w-divisor: 7.94; /* 7 + 6*0.12 + 2*0.1 */
+  }
+  [data-variant='freecell'] {
+    --card-w-divisor: 9.04; /* 8 + 7*0.12 + 2*0.1 */
+  }
+  [data-variant='spider'] {
+    --card-w-min: 26px;
+    --gap-x-ratio: 0.08;
+    --board-pad-ratio: 0.06;
+    --card-w-divisor: 10.84; /* 10 + 9*0.08 + 2*0.06 */
+  }
+}
+
+@media (max-width: 420px) {
+  :root {
+    --card-w-min: 28px;
+    --card-w-max: 56px;
+  }
+  [data-variant='spider'] {
+    --card-w-min: 22px;
+  }
+}
+
 /* Felt color options (Options dialog) */
 [data-felt='green'] {
   --baize-center: #1c9350;
