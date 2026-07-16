@@ -95,15 +95,15 @@
 
   /* Geometry (unchanged ratios) */
   --card-aspect: 0.7142857143;
-  --card-w-max: 104px;
+  --card-w-max: 112px;
   --card-w-min: 40px;
-  --gap-x-ratio: 0.18;
-  --overlap-faceup-ratio: 0.24;
-  --overlap-facedown-ratio: 0.11;
+  --gap-x-ratio: 0.14;
+  --overlap-faceup-ratio: 0.26;
+  --overlap-facedown-ratio: 0.12;
   --waste-fan-ratio: 0.26;
-  --board-pad-ratio: 0.22;
-  --row-gap-ratio: 0.3;
-  --card-w-divisor: 8.52;
+  --board-pad-ratio: 0.14;
+  --row-gap-ratio: 0.22;
+  --card-w-divisor: 8.26; /* 7 + 6*0.14 + 2*0.14 */
 
   /* Z-index */
   --z-baize: 0;
@@ -139,11 +139,11 @@
 }
 
 [data-variant='freecell'] {
-  --card-w-divisor: 9.7;
+  --card-w-divisor: 9.4; /* 8 + 7*0.14 + 2*0.14 */
 }
 
 [data-variant='spider'] {
-  --card-w-divisor: 12.06;
+  --card-w-divisor: 11.54; /* 10 + 9*0.14 + 2*0.14 */
 }
 
 :root,

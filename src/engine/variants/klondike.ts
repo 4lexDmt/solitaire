@@ -200,7 +200,7 @@ function enumerateDrawRecycle(state: GameState): Move[] {
 
 export const klondike: Variant = {
   id: 'klondike',
-  name: 'Klondike',
+  name: 'Solitaire',
   layout: KLONDIKE_LAYOUT,
 
   createDeck() {

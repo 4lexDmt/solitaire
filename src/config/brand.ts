@@ -6,5 +6,5 @@ export const BRAND = {
   gameName: "Solitaire",
   tagline: "Solitaire, beautifully restored.",
   description:
-    "Premium solitaire — Klondike, FreeCell, and Spider. A nostalgic desktop restoration. Calm, ad-free, offline-first.",
+    "Premium solitaire — Solitaire, FreeCell, and Spider. A nostalgic desktop restoration. Calm, ad-free, offline-first.",
 } as const;

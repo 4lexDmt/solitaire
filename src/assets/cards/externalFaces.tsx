@@ -9,14 +9,19 @@ interface ExternalCardFaceProps {
 export function ExternalCardFace({ card }: ExternalCardFaceProps) {
   const src = cardSvgUrl(card);
   return (
-    <svg viewBox="0 0 250 350" aria-hidden className="h-full w-full">
-      <rect width="250" height="350" fill="var(--card-face)" rx="4" />
+    <svg
+      viewBox="0 0 250 350"
+      aria-hidden
+      className="h-full w-full"
+      preserveAspectRatio="xMidYMid meet"
+    >
+      <rect width="250" height="350" fill="var(--card-face)" />
       <image
         href={src}
-        x="11"
-        y="17"
-        width="228"
-        height="316"
+        x="0"
+        y="0"
+        width="250"
+        height="350"
         preserveAspectRatio="xMidYMid meet"
         className="card-face-art"
       />

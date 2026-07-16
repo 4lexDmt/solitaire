@@ -92,7 +92,7 @@ export function HomeScreen({
           value={variantId}
           onChange={onVariantChange}
           options={[
-            { value: 'klondike', label: 'Klondike' },
+            { value: 'klondike', label: 'Solitaire' },
             { value: 'freecell', label: 'FreeCell' },
             { value: 'spider', label: 'Spider' },
           ]}

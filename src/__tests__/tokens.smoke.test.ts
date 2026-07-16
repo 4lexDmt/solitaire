@@ -32,10 +32,10 @@ describe("token exports (SPEC §5–§8 smoke)", () => {
 
   it("exports card geometry ratios from spec §6", () => {
     expect(GEOMETRY.aspect).toBeCloseTo(5 / 7);
-    expect(GEOMETRY.cardWidthMax).toBe(104);
+    expect(GEOMETRY.cardWidthMax).toBe(112);
     expect(GEOMETRY.cardWidthMin).toBe(40);
-    expect(GEOMETRY.overlapFaceupRatio).toBe(0.24);
-    expect(GEOMETRY.overlapFacedownRatio).toBe(0.11);
+    expect(GEOMETRY.overlapFaceupRatio).toBe(0.26);
+    expect(GEOMETRY.overlapFacedownRatio).toBe(0.12);
     expect(GEOMETRY.wasteFanRatio).toBe(0.26);
   });
 

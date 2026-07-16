@@ -18,9 +18,11 @@ import {
   saveStats,
 } from '@/persistence/db';
 import { pullCloudStats, syncActiveSave, syncOnGameEnd } from '@/lib/supabase/sync';
+import { getAutoCompleteMoves } from '@/lib/autoComplete';
 import { HAPTIC, vibrate } from '@/lib/haptics';
 import { playSound } from '@/lib/sound';
 import { flashStatus } from '@/lib/statusFlash';
+import { variantLabel } from '@/lib/variantLabel';
 import type { VariantId } from '@/engine/variants';
 import { useAchievementsStore, type AchievementId } from '@/state/achievements';
 import { type UserSettings, useSettingsStore } from '@/state/settings';
@@ -463,32 +465,37 @@ export function AppShell() {
 
   const handleAuto = useCallback(() => {
     if (game.variantId === 'spider') {
-      flashStatus('Auto-complete is available in Klondike & FreeCell.');
+      flashStatus('Auto-complete is available in Solitaire & FreeCell.');
       return;
     }
     if (game.status !== 'playing') return;
+
+    let movedAny = false;
 
     const step = () => {
       const state = useGameStore.getState().game;
       if (state.status !== 'playing') return;
 
-      const pileOrder = [
-        ...(state.piles.waste ? ['waste'] : []),
-        ...Object.keys(state.piles)
-          .filter((id) => id.startsWith('tableau-') || id.startsWith('cell-'))
-          .sort(),
-      ];
-
-      for (const pileId of pileOrder) {
-        const pile = state.piles[pileId];
-        if (!pile?.cards.length) continue;
-        const top = pile.cards[pile.cards.length - 1];
-        if (!top.faceUp) continue;
-        if (useGameStore.getState().autoMoveToFoundation(pileId, top.id)) {
-          window.setTimeout(step, 110);
-          return;
+      const moves = getAutoCompleteMoves(state);
+      if (moves.length === 0) {
+        if (!movedAny) {
+          flashStatus('No cards can be sent to the foundations right now.');
+          playSound('invalid');
         }
+        return;
       }
+
+      const m = moves[0];
+      if (!useGameStore.getState().move(m.from, m.to, m.cardIds)) {
+        if (!movedAny) {
+          flashStatus('No cards can be sent to the foundations right now.');
+          playSound('invalid');
+        }
+        return;
+      }
+
+      movedAny = true;
+      window.setTimeout(step, 110);
     };
 
     step();
@@ -565,7 +572,7 @@ export function AppShell() {
             'Complete a King-to-Ace same-suit run to clear it.',
           ]
         : [
-            'Klondike builds foundations Ace to King by suit.',
+            'Solitaire builds foundations Ace to King by suit.',
             'Tableau builds down by alternating colors.',
             'Only Kings may fill empty columns.',
             'Draw from the stock when you need more cards.',
@@ -712,7 +719,7 @@ export function AppShell() {
         <div className="win95-scrim" onClick={() => setDialog(null)}>
           <div onClick={(e) => e.stopPropagation()}>
             <Win95Dialog
-              title={`How to Play — ${game.variantId === 'freecell' ? 'FreeCell' : game.variantId === 'spider' ? 'Spider' : 'Klondike'}`}
+              title={`How to Play — ${variantLabel(game.variantId)}`}
               onClose={() => setDialog(null)}
               size="lg"
             >
@@ -754,7 +761,7 @@ export function AppShell() {
                   <span>♣</span>
                 </div>
                 <div className="win95-inset" style={{ textAlign: 'left', fontSize: 12, lineHeight: 1.5 }}>
-                  Klondike · FreeCell · Spider
+                  Solitaire · FreeCell · Spider
                   <br />
                   Calm, ad-free, offline-first.
                   <br />
@@ -780,7 +787,7 @@ export function AppShell() {
                 <div style={{ fontSize: 34, marginBottom: 2 }}>📅</div>
                 <div style={{ fontWeight: 'bold', fontSize: 15 }}>{dailyDateKey()}</div>
                 <div style={{ fontSize: 11, color: '#555', marginBottom: 14 }}>
-                  Deal · Klondike (Draw 1)
+                  Deal · Solitaire (Draw 1)
                 </div>
                 <div style={{ display: 'flex', gap: 8, justifyContent: 'center', marginBottom: 16 }}>
                   <div className="win95-inset" style={{ flex: 1, padding: 8 }}>

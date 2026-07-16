@@ -2,6 +2,7 @@
 
 import { canAutoComplete } from '@/lib/autoComplete';
 import { STATUS_FLASH_EVENT } from '@/lib/statusFlash';
+import { variantLabel } from '@/lib/variantLabel';
 import { useSettingsStore } from '@/state/settings';
 import { useStatsStore } from '@/state/stats';
 import {
@@ -120,18 +121,13 @@ export function DesktopShell({
     return () => window.removeEventListener('keydown', onKey);
   }, [onNewGame, onHint]);
 
-  const variantName =
-    game.variantId === 'freecell'
-      ? 'FreeCell'
-      : game.variantId === 'spider'
-        ? 'Spider'
-        : 'Klondike';
+  const variantName = variantLabel(game.variantId);
 
   const winTitle = `Aevanor Solitaire — ${variantName}`;
 
   const modeStr = useMemo(() => {
     if (isDaily) return 'Daily Challenge';
-    if (game.variantId === 'klondike') return `Klondike • Draw ${drawCount}`;
+    if (game.variantId === 'klondike') return `Solitaire • Draw ${drawCount}`;
     if (game.variantId === 'spider') return `Spider • ${spiderSuits}-suit`;
     return 'FreeCell';
   }, [drawCount, game.variantId, isDaily, spiderSuits]);
@@ -164,7 +160,7 @@ export function DesktopShell({
         { type: 'sep' as const },
         {
           type: 'item' as const,
-          label: 'Klondike',
+          label: 'Solitaire',
           mark: game.variantId === 'klondike' ? '●' : '',
           onClick: () => onSelectVariant('klondike'),
         },
@@ -353,12 +349,11 @@ export function DesktopShell({
             <span className="win95-btn__text"> Hint</span>
           </Win95Button>
           <Win95Button
-            className="win95-btn--secondary-mobile"
             onClick={onAuto}
             disabled={locked || game.status !== 'playing'}
             title={
               game.variantId === 'spider'
-                ? 'Auto-complete is for Klondike & FreeCell'
+                ? 'Auto-complete is for Solitaire & FreeCell'
                 : canAuto
                   ? 'Finish to foundations'
                   : 'Move available cards to foundations'
@@ -372,7 +367,7 @@ export function DesktopShell({
           <div className="win95-tabs" role="group" aria-label="Game variant">
             {(
               [
-                ['klondike', 'Klondike'],
+                ['klondike', 'Solitaire'],
                 ['freecell', 'FreeCell'],
                 ['spider', 'Spider'],
               ] as const
@@ -482,7 +477,7 @@ export function DesktopShell({
               {[
                 { icon: '🃏', label: 'New Game', onClick: onNewGame },
                 { sep: true },
-                { icon: '♠', label: 'Klondike', onClick: () => onSelectVariant('klondike') },
+                { icon: '♠', label: 'Solitaire', onClick: () => onSelectVariant('klondike') },
                 { icon: '♣', label: 'FreeCell', onClick: () => onSelectVariant('freecell') },
                 { icon: '🕷', label: 'Spider', onClick: () => onSelectVariant('spider') },
                 { icon: '📅', label: 'Daily Challenge', onClick: onOpenDaily },

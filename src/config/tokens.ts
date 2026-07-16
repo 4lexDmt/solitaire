@@ -33,20 +33,20 @@ export const SPRINGS = {
 export const GEOMETRY = {
   aspect: 5 / 7,
   heightMultiplier: 1.4,
-  cardWidthMax: 104,
+  cardWidthMax: 112,
   cardWidthMin: 40,
-  cardWidthDivisor: 8.52, // klondike (7 columns); see cardWidthDivisors for other variants
+  cardWidthDivisor: 8.26, // solitaire/klondike (7 columns)
   cardWidthDivisors: {
-    klondike: 8.52, // 7 + 6*0.18 + 2*0.22
-    freecell: 9.7, // 8 + 7*0.18 + 2*0.22
-    spider: 12.06, // 10 + 9*0.18 + 2*0.22
+    klondike: 8.26, // 7 + 6*0.14 + 2*0.14
+    freecell: 9.4, // 8 + 7*0.14 + 2*0.14
+    spider: 11.54, // 10 + 9*0.14 + 2*0.14
   } as Record<string, number>,
-  gapRatio: 0.18,
-  overlapFaceupRatio: 0.24,
-  overlapFacedownRatio: 0.11,
+  gapRatio: 0.14,
+  overlapFaceupRatio: 0.26,
+  overlapFacedownRatio: 0.12,
   wasteFanRatio: 0.26,
-  boardPadRatio: 0.22,
-  rowGapRatio: 0.3,
+  boardPadRatio: 0.14,
+  rowGapRatio: 0.22,
   cardRadiusRatio: 0.06,
   cardRadiusRatioStudio: 0.08,
   uiRadius: 12,

@@ -179,7 +179,7 @@ export function SettingsPanel({ open, onClose, onConfirmNewDeal }: SettingsPanel
 
             <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
               <fieldset className="win95-fieldset" style={{ flex: 1, minWidth: 140 }}>
-                <legend>Klondike draw</legend>
+                <legend>Solitaire draw</legend>
                 {([1, 3] as const).map((n) => (
                   <label
                     key={n}
@@ -253,7 +253,7 @@ export function SettingsPanel({ open, onClose, onConfirmNewDeal }: SettingsPanel
               <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
                 {(
                   [
-                    ['klondike', 'Klondike'],
+                    ['klondike', 'Solitaire'],
                     ['freecell', 'FreeCell'],
                     ['spider', 'Spider'],
                   ] as const

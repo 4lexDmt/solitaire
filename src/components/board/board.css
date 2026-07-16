@@ -1,9 +1,11 @@
 .board {
   display: grid;
   width: 100%;
-  max-width: calc(7 * var(--card-w) + 6 * var(--gap-x) + 2 * var(--board-pad));
+  max-width: none;
   margin-inline: auto;
   padding: var(--board-pad);
+  justify-content: center;
+  align-content: start;
   grid-template-columns: repeat(7, var(--card-w));
   column-gap: var(--gap-x);
   grid-template-areas:
@@ -22,7 +24,6 @@
 }
 
 .board[data-variant='freecell'] {
-  max-width: calc(8 * var(--card-w) + 7 * var(--gap-x) + 2 * var(--board-pad));
   grid-template-columns: repeat(8, var(--card-w));
   grid-template-areas:
     'cell-0 cell-1 cell-2 cell-3 foundation-0 foundation-1 foundation-2 foundation-3'
@@ -30,7 +31,6 @@
 }
 
 .board[data-variant='spider'] {
-  max-width: calc(10 * var(--card-w) + 9 * var(--gap-x) + 2 * var(--board-pad));
   grid-template-columns: repeat(10, var(--card-w));
   grid-template-areas:
     'foundation-0 foundation-1 foundation-2 foundation-3 foundation-4 foundation-5 foundation-6 foundation-7 gap stock'

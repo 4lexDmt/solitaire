@@ -9,6 +9,7 @@ import { formatNumber } from '@/lib/format';
 import type { GameState } from '@/engine/types';
 import { ACHIEVEMENTS, getAchievement, type AchievementId } from '@/state/achievements';
 import { useStatsStore } from '@/state/stats';
+import { variantLabel } from '@/lib/variantLabel';
 import { useEffect, useState } from 'react';
 
 interface WinScreenProps {
@@ -47,12 +48,7 @@ export function WinScreen({
 
   const toastAchievement = newAchievements[toastIndex];
   const toastDef = toastAchievement ? getAchievement(toastAchievement) : undefined;
-  const gameName =
-    game.variantId === 'freecell'
-      ? 'FreeCell'
-      : game.variantId === 'spider'
-        ? 'Spider'
-        : 'Klondike';
+  const gameName = variantLabel(game.variantId);
 
   async function handleShare() {
     const text = buildDailyShareString({
