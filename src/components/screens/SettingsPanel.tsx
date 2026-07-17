@@ -1,8 +1,9 @@
 'use client';
 
-import { Win95Button, Win95Dialog } from '@/components/win95/primitives';
+import { Win95Button, Win95Dialog, Win95Select } from '@/components/win95/primitives';
 import type { SpiderSuits } from '@/engine/variant';
 import type { VariantId } from '@/engine/variants';
+import { VARIANT_OPTIONS } from '@/lib/variantLabel';
 import { useSettingsStore } from '@/state/settings';
 import { useEffect, useState } from 'react';
 
@@ -250,27 +251,13 @@ export function SettingsPanel({ open, onClose, onConfirmNewDeal }: SettingsPanel
 
             <fieldset className="win95-fieldset">
               <legend>Game</legend>
-              <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-                {(
-                  [
-                    ['klondike', 'Solitaire'],
-                    ['freecell', 'FreeCell'],
-                    ['spider', 'Spider'],
-                    ['pyramid', 'Pyramid'],
-                    ['tripeaks', 'TriPeaks'],
-                    ['yukon', 'Yukon'],
-                    ['golf', 'Golf'],
-                  ] as const
-                ).map(([id, label]) => (
-                  <Win95Button
-                    key={id}
-                    onClick={() => applyVariant(id)}
-                    className={settings.variantId === id ? 'win95-btn--primary' : ''}
-                  >
-                    {label}
-                  </Win95Button>
-                ))}
-              </div>
+              <Win95Select
+                label="Game variant"
+                value={settings.variantId}
+                options={VARIANT_OPTIONS.map((v) => ({ value: v.id, label: v.label }))}
+                onChange={applyVariant}
+                className="win95-select--block"
+              />
             </fieldset>
 
             <div style={{ textAlign: 'right' }}>

@@ -66,3 +66,40 @@ body {
   font-weight: bold;
   color: #333;
 }
+
+/* Home screen game picker */
+.home-screen__field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  width: 100%;
+}
+
+.home-screen__field-label {
+  font-family: var(--font-ui);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--ui-text-muted, #555);
+}
+
+.home-screen__select {
+  width: 100%;
+  min-height: 44px;
+  padding: 10px 36px 10px 12px;
+  border: 1px solid color-mix(in srgb, var(--ui-text, #222) 18%, transparent);
+  border-radius: 10px;
+  background-color: var(--ui-surface, #fff);
+  background-image: linear-gradient(45deg, transparent 50%, #666 50%),
+    linear-gradient(135deg, #666 50%, transparent 50%);
+  background-position:
+    calc(100% - 18px) calc(50% - 3px),
+    calc(100% - 12px) calc(50% - 3px);
+  background-size: 6px 6px, 6px 6px;
+  background-repeat: no-repeat;
+  color: var(--ui-text, #111);
+  font-family: var(--font-ui);
+  font-size: 15px;
+  font-weight: 600;
+  appearance: none;
+  -webkit-appearance: none;
+}

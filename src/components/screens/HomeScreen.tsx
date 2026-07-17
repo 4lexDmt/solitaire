@@ -9,6 +9,7 @@ import type { SpiderSuits } from '@/engine/variant';
 import type { VariantId } from '@/engine/variants';
 import { useClientDailyLabel } from '@/hooks/useClientDailyDate';
 import { dailyStreakMessage } from '@/lib/stats-copy';
+import { VARIANT_OPTIONS } from '@/lib/variantLabel';
 import { useSettingsStore } from '@/state/settings';
 import { useStatsStore } from '@/state/stats';
 
@@ -87,20 +88,21 @@ export function HomeScreen({
           </Button>
         ) : null}
 
-        <SegmentedControl<VariantId>
-          label="Game variant"
-          value={variantId}
-          onChange={onVariantChange}
-          options={[
-            { value: 'klondike', label: 'Solitaire' },
-            { value: 'freecell', label: 'FreeCell' },
-            { value: 'spider', label: 'Spider' },
-            { value: 'pyramid', label: 'Pyramid' },
-            { value: 'tripeaks', label: 'TriPeaks' },
-            { value: 'yukon', label: 'Yukon' },
-            { value: 'golf', label: 'Golf' },
-          ]}
-        />
+        <label className="home-screen__field">
+          <span className="home-screen__field-label">Game</span>
+          <select
+            className="home-screen__select"
+            aria-label="Game variant"
+            value={variantId}
+            onChange={(e) => onVariantChange(e.target.value as VariantId)}
+          >
+            {VARIANT_OPTIONS.map((v) => (
+              <option key={v.id} value={v.id}>
+                {v.label}
+              </option>
+            ))}
+          </select>
+        </label>
 
         {variantId === 'spider' ? (
           <SegmentedControl<SpiderSuits>

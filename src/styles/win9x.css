@@ -283,6 +283,126 @@
   display: none;
 }
 
+/* Game variant combobox (toolbar + Options) */
+.win95-select {
+  position: relative;
+  flex: none;
+  z-index: 40;
+}
+
+.win95-select__trigger {
+  display: flex;
+  align-items: stretch;
+  width: 100%;
+  min-width: 118px;
+  height: 28px;
+  padding: 0;
+  border: 0;
+  background: #fff;
+  box-shadow: var(--bevel-sunken);
+  cursor: default;
+  font-family: var(--font-ui);
+  font-size: 12px;
+  color: #000;
+  text-align: left;
+}
+
+.win95-select__trigger:disabled {
+  color: #888;
+}
+
+.win95-select__trigger:focus-visible {
+  outline: 1px dotted #000;
+  outline-offset: -3px;
+}
+
+.win95-select__value {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  padding: 0 8px;
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.win95-select__chevron {
+  flex: none;
+  width: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--chrome);
+  box-shadow: var(--bevel-raised);
+  font-size: 10px;
+  line-height: 1;
+}
+
+.win95-select__menu {
+  position: absolute;
+  top: calc(100% + 2px);
+  left: 0;
+  min-width: 100%;
+  margin: 0;
+  padding: 2px;
+  list-style: none;
+  background: var(--chrome);
+  box-shadow: var(--bevel-raised), 2px 2px 0 rgba(0, 0, 0, 0.25);
+  z-index: 80;
+  max-height: min(60vh, 320px);
+  overflow: auto;
+}
+
+.win95-select__option {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  width: 100%;
+  border: 0;
+  background: transparent;
+  padding: 4px 10px 4px 4px;
+  font-family: var(--font-ui);
+  font-size: 12px;
+  text-align: left;
+  cursor: default;
+  color: #000;
+  white-space: nowrap;
+}
+
+.win95-select__option:hover,
+.win95-select__option:focus-visible {
+  background: var(--accent-green);
+  color: #fff;
+  outline: none;
+}
+
+.win95-select__option--selected {
+  font-weight: bold;
+}
+
+.win95-select__mark {
+  width: 14px;
+  text-align: center;
+  flex: none;
+  font-size: 10px;
+}
+
+.win95-select--block {
+  display: block;
+  width: 100%;
+  max-width: 280px;
+}
+
+.win95-select--block .win95-select__trigger {
+  min-width: 0;
+  width: 100%;
+}
+
+.win95-toolbar__game {
+  min-width: 128px;
+}
+
 .win95-btn {
   display: inline-flex;
   align-items: center;
@@ -824,15 +944,15 @@
   }
 
   /*
-   * Calm two-row toolbar (no horizontal scroll):
-   *  1) primary actions + variant tabs
+   * Calm two-row toolbar:
+   *  1) primary actions + game dropdown
    *  2) time / moves / score
    */
   .win95-toolbar {
     display: grid;
     grid-template-columns: 1fr auto;
     grid-template-areas:
-      'actions tabs'
+      'actions game'
       'stats stats';
     gap: 4px 6px;
     padding: 4px 5px;
@@ -851,13 +971,21 @@
     display: none;
   }
 
-  .win95-tabs {
-    grid-area: tabs;
-    flex: none;
+  .win95-toolbar__game {
+    grid-area: game;
     justify-self: end;
-    max-width: 100%;
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
+    min-width: 120px;
+    max-width: 46vw;
+    z-index: 50;
+  }
+
+  .win95-toolbar__game .win95-select__trigger {
+    height: 36px;
+    font-size: 13px;
+  }
+
+  .win95-toolbar__game .win95-select__chevron {
+    width: 22px;
   }
 
   .win95-toolbar__spacer {
@@ -1027,18 +1155,14 @@
     grid-template-columns: 1fr;
     grid-template-areas:
       'actions'
-      'tabs'
+      'game'
       'stats';
   }
 
-  .win95-tabs {
+  .win95-toolbar__game {
     justify-self: stretch;
     width: 100%;
-    display: flex;
-  }
-
-  .win95-tabs .win95-tab {
-    flex: 1;
+    max-width: none;
   }
 
   .win95-toolbar__stats {
@@ -1073,7 +1197,9 @@
   .win95-caption-btn,
   .win95-menubar__item,
   .win95-menu__item,
-  .win95-start-menu__item {
+  .win95-start-menu__item,
+  .win95-select__trigger,
+  .win95-select__option {
     cursor: pointer;
   }
 }
@@ -1121,17 +1247,22 @@
     flex: none;
   }
 
-  .win95-tabs {
+  .win95-toolbar__game {
     flex: none;
     margin-left: auto;
+    min-width: 110px;
+  }
+
+  .win95-toolbar__game .win95-select__trigger {
+    height: 28px;
+    font-size: 12px;
   }
 
   .win95-toolbar__stats {
     display: none;
   }
 
-  .win95-btn,
-  .win95-tab {
+  .win95-btn {
     height: 28px;
     min-height: 28px;
     min-width: 36px;

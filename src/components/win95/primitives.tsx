@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState, type ReactNode } from 'react';
+import { useEffect, useId, useRef, useState, type ReactNode } from 'react';
 
 export function Win95Button({
   children,
@@ -118,6 +118,88 @@ function DropdownMenu({
           </button>
         ),
       )}
+    </div>
+  );
+}
+
+/** Win95-style combobox (sunken field + raised ▼) for picking one option. */
+export function Win95Select<T extends string>({
+  value,
+  options,
+  onChange,
+  label,
+  className = '',
+  disabled = false,
+}: {
+  value: T;
+  options: readonly { value: T; label: string }[];
+  onChange: (value: T) => void;
+  label: string;
+  className?: string;
+  disabled?: boolean;
+}) {
+  const [open, setOpen] = useState(false);
+  const rootRef = useRef<HTMLDivElement>(null);
+  const listId = useId();
+  const selected = options.find((o) => o.value === value) ?? options[0];
+
+  useEffect(() => {
+    if (!open) return;
+    const onDoc = (e: MouseEvent) => {
+      if (!rootRef.current?.contains(e.target as Node)) setOpen(false);
+    };
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setOpen(false);
+    };
+    document.addEventListener('mousedown', onDoc);
+    document.addEventListener('keydown', onKey);
+    return () => {
+      document.removeEventListener('mousedown', onDoc);
+      document.removeEventListener('keydown', onKey);
+    };
+  }, [open]);
+
+  return (
+    <div className={`win95-select ${className}`.trim()} ref={rootRef}>
+      <button
+        type="button"
+        className="win95-select__trigger"
+        aria-label={label}
+        aria-haspopup="listbox"
+        aria-expanded={open}
+        aria-controls={listId}
+        disabled={disabled}
+        onClick={() => setOpen((v) => !v)}
+      >
+        <span className="win95-select__value">{selected?.label ?? ''}</span>
+        <span className="win95-select__chevron" aria-hidden>
+          ▾
+        </span>
+      </button>
+      {open ? (
+        <ul id={listId} className="win95-select__menu" role="listbox" aria-label={label}>
+          {options.map((option) => {
+            const isSelected = option.value === value;
+            return (
+              <li key={option.value} role="presentation">
+                <button
+                  type="button"
+                  role="option"
+                  aria-selected={isSelected}
+                  className={`win95-select__option${isSelected ? ' win95-select__option--selected' : ''}`}
+                  onClick={() => {
+                    onChange(option.value);
+                    setOpen(false);
+                  }}
+                >
+                  <span className="win95-select__mark">{isSelected ? '●' : ''}</span>
+                  {option.label}
+                </button>
+              </li>
+            );
+          })}
+        </ul>
+      ) : null}
     </div>
   );
 }

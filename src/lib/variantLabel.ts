@@ -1,12 +1,17 @@
 import type { VariantId } from '@/engine/variants';
 
+/** Canonical game list for menus, dropdowns, and stats. */
+export const VARIANT_OPTIONS: readonly { id: VariantId; label: string }[] = [
+  { id: 'klondike', label: 'Solitaire' },
+  { id: 'freecell', label: 'FreeCell' },
+  { id: 'spider', label: 'Spider' },
+  { id: 'pyramid', label: 'Pyramid' },
+  { id: 'tripeaks', label: 'TriPeaks' },
+  { id: 'yukon', label: 'Yukon' },
+  { id: 'golf', label: 'Golf' },
+] as const;
+
 /** User-facing variant names — Klondike is shown as "Solitaire". */
 export function variantLabel(id: string | VariantId): string {
-  if (id === 'freecell') return 'FreeCell';
-  if (id === 'spider') return 'Spider';
-  if (id === 'pyramid') return 'Pyramid';
-  if (id === 'tripeaks') return 'TriPeaks';
-  if (id === 'yukon') return 'Yukon';
-  if (id === 'golf') return 'Golf';
-  return 'Solitaire';
+  return VARIANT_OPTIONS.find((v) => v.id === id)?.label ?? 'Solitaire';
 }

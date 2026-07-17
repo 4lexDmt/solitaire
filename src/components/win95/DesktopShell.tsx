@@ -2,18 +2,24 @@
 
 import { canAutoComplete } from '@/lib/autoComplete';
 import { STATUS_FLASH_EVENT } from '@/lib/statusFlash';
-import { variantLabel } from '@/lib/variantLabel';
+import { VARIANT_OPTIONS, variantLabel } from '@/lib/variantLabel';
 import { useSettingsStore } from '@/state/settings';
 import { useStatsStore } from '@/state/stats';
 import {
   Win95Button,
   Win95MenuBar,
+  Win95Select,
   formatClock,
   formatTimer,
 } from '@/components/win95/primitives';
 import { useCallback, useEffect, useMemo, useState, type ReactNode } from 'react';
 import type { VariantId } from '@/engine/variants';
 import type { GameState } from '@/engine/types';
+
+const VARIANT_SELECT_OPTIONS = VARIANT_OPTIONS.map((v) => ({
+  value: v.id,
+  label: v.label,
+}));
 
 const STATUS: Record<string, string> = {
   klondike: 'Build the foundations from Ace to King, one suit each.',
@@ -144,7 +150,7 @@ export function DesktopShell({
     if (isDaily) return 'Daily Challenge';
     if (game.variantId === 'klondike') return `Solitaire • Draw ${drawCount}`;
     if (game.variantId === 'spider') return `Spider • ${spiderSuits}-suit`;
-    return 'FreeCell';
+    return variantLabel(game.variantId);
   }, [drawCount, game.variantId, isDaily, spiderSuits]);
 
   const statusText = statusFlash ?? STATUS[game.variantId] ?? STATUS.klondike;
@@ -430,30 +436,14 @@ export function DesktopShell({
 
           <div className="win95-sep win95-sep--toolbar" />
 
-          <div className="win95-tabs" role="group" aria-label="Game variant">
-            {(
-              [
-                ['klondike', 'Solitaire', 'Sol'],
-                ['freecell', 'FreeCell', 'FC'],
-                ['spider', 'Spider', 'Sp'],
-                ['pyramid', 'Pyramid', 'Py'],
-                ['tripeaks', 'TriPeaks', 'TP'],
-                ['yukon', 'Yukon', 'Yk'],
-                ['golf', 'Golf', 'Gl'],
-              ] as const
-            ).map(([id, label, short]) => (
-              <button
-                key={id}
-                type="button"
-                className="win95-tab"
-                aria-pressed={game.variantId === id}
-                onClick={() => onSelectVariant(id)}
-              >
-                <span className="win95-tab__full">{label}</span>
-                <span className="win95-tab__short">{short}</span>
-              </button>
-            ))}
-          </div>
+          <Win95Select
+            className="win95-toolbar__game"
+            label="Game variant"
+            value={game.variantId as VariantId}
+            options={VARIANT_SELECT_OPTIONS}
+            onChange={onSelectVariant}
+            disabled={locked}
+          />
 
           <div className="win95-toolbar__spacer" />
 
