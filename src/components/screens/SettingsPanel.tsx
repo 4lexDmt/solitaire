@@ -246,6 +246,15 @@ export function SettingsPanel({ open, onClose, onConfirmNewDeal }: SettingsPanel
                   on={settings.leftHanded}
                   onClick={() => settings.setLeftHanded(!settings.leftHanded)}
                 />
+                <CheckToggle
+                  label="Winnable deals only (Solitaire)"
+                  on={settings.winnableOnly}
+                  onClick={() => settings.setWinnableOnly(!settings.winnableOnly)}
+                />
+                <div style={{ fontSize: 11, color: '#555', marginTop: 4, lineHeight: 1.4 }}>
+                  Uses a real solver so every Solitaire deal is solvable with
+                  perfect play. Does not apply to other games.
+                </div>
               </div>
             </fieldset>
 

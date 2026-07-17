@@ -29,16 +29,26 @@ export function buildDailyShareString(options: {
   elapsedMs: number;
   drawCount: 1 | 3;
   streak: number;
+  siteUrl?: string;
 }): string {
   const dateKey = (options.date ?? new Date()).toISOString().slice(0, 10);
   const minutes = Math.max(1, Math.round(options.elapsedMs / 60_000));
-  const efficiency = Math.min(5, Math.max(1, Math.round(52 / Math.max(options.moves, 1) * 5)));
+  const efficiency = Math.min(
+    5,
+    Math.max(1, Math.round((52 / Math.max(options.moves, 1)) * 5)),
+  );
   const bars = '█'.repeat(efficiency) + '░'.repeat(5 - efficiency);
+  const site =
+    options.siteUrl ??
+    (typeof window !== 'undefined'
+      ? `${window.location.origin}/daily`
+      : 'https://aevanor.com/daily');
   return [
-    `Solitaire Daily ${dateKey}`,
+    `Aevanor Daily ${dateKey}`,
     `Draw-${options.drawCount} · ${options.moves} moves · ${minutes}m`,
     bars,
     options.streak > 1 ? `🔥 ${options.streak}-day streak` : '',
+    site,
   ]
     .filter(Boolean)
     .join('\n');

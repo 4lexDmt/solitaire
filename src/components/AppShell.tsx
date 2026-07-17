@@ -60,7 +60,7 @@ function pickSettings(state: ReturnType<typeof useSettingsStore.getState>): User
   };
 }
 
-type Dialog = 'help' | 'about' | 'daily' | null;
+type Dialog = 'help' | 'about' | 'daily' | 'install' | 'bookmark' | null;
 
 type ConfirmState = {
   message: string;
@@ -69,7 +69,19 @@ type ConfirmState = {
 
 const WIN_DIALOG_DELAY_MS = 2800;
 
-export function AppShell() {
+interface BeforeInstallPromptEvent extends Event {
+  prompt: () => Promise<void>;
+  userChoice: Promise<{ outcome: 'accepted' | 'dismissed' }>;
+}
+
+interface AppShellProps {
+  /** Prefill variant when landing from SEO routes like /freecell. */
+  initialVariant?: VariantId;
+  /** Auto-start today's daily challenge (used by /daily). */
+  autoStartDaily?: boolean;
+}
+
+export function AppShell({ initialVariant, autoStartDaily = false }: AppShellProps = {}) {
   const [booting, setBooting] = useState(true);
   const [bootPct, setBootPct] = useState(0);
   const [dealReady, setDealReady] = useState(false);
@@ -84,6 +96,8 @@ export function AppShell() {
   const [hasSavedGame, setHasSavedGame] = useState(false);
   const [isDaily, setIsDaily] = useState(false);
   const [hydrated, setHydrated] = useState(false);
+  const [canInstall, setCanInstall] = useState(false);
+  const installEventRef = useRef<BeforeInstallPromptEvent | null>(null);
   const { reducedMotion } = useReducedMotion();
   const motionEnabled = useSettingsStore((s) => s.motionEnabled);
 
@@ -145,6 +159,9 @@ export function AppShell() {
       ]);
       if (cancelled) return;
       if (settings) hydrateSettings(settings);
+      if (initialVariant) {
+        useSettingsStore.getState().setVariantId(initialVariant);
+      }
       if (stats) hydrateStats(stats);
       if (achievements) {
         hydrateAchievements(achievements.unlocked, achievements.unlockedAt);
@@ -159,7 +176,40 @@ export function AppShell() {
     return () => {
       cancelled = true;
     };
-  }, [hydrateAchievements, hydrateSettings, hydrateStats, setGameTheme, theme]);
+  }, [
+    hydrateAchievements,
+    hydrateSettings,
+    hydrateStats,
+    initialVariant,
+    setGameTheme,
+    theme,
+  ]);
+
+  useEffect(() => {
+    if (!initialVariant) return;
+    setVariantId(initialVariant);
+  }, [initialVariant, setVariantId]);
+
+  useEffect(() => {
+    const onBeforeInstall = (event: Event) => {
+      event.preventDefault();
+      installEventRef.current = event as BeforeInstallPromptEvent;
+      setCanInstall(true);
+    };
+    window.addEventListener('beforeinstallprompt', onBeforeInstall);
+    return () => window.removeEventListener('beforeinstallprompt', onBeforeInstall);
+  }, []);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    if (window.matchMedia('(display-mode: standalone)').matches) return;
+    if (localStorage.getItem('aevanor-bookmark-dismissed') === '1') return;
+    if (localStorage.getItem('aevanor-pwa-install-dismissed') === '1') return;
+    const id = window.setTimeout(() => {
+      if (!installEventRef.current) setDialog((d) => d ?? 'bookmark');
+    }, 8000);
+    return () => window.clearTimeout(id);
+  }, []);
 
   useEffect(() => {
     if (!hydrated) return;
@@ -539,8 +589,13 @@ export function AppShell() {
     if (!hydrated || startedRef.current) return;
     startedRef.current = true;
     void (async () => {
+      if (autoStartDaily) {
+        await startGame({ daily: true });
+        setDealReady(true);
+        return;
+      }
       const saved = await loadSavedGame();
-      if (saved) {
+      if (saved && !initialVariant) {
         usedUndoRef.current = saved.usedUndo;
         worryBackRef.current = saved.worryBack;
         setIsDaily(saved.isDaily);
@@ -549,10 +604,10 @@ export function AppShell() {
         setDealReady(true);
         return;
       }
-      await startGame();
+      await startGame(initialVariant ? { variantId: initialVariant } : undefined);
       setDealReady(true);
     })();
-  }, [hydrated, startGame, theme]);
+  }, [autoStartDaily, hydrated, initialVariant, startGame, theme]);
 
   useEffect(() => {
     if (paused || game.status !== 'playing') return;
@@ -712,6 +767,8 @@ export function AppShell() {
         onSelectVariant={(id) => requestNewGame({ variantId: id })}
         onHome={requestExit}
         onDrawCountChange={handleDrawCountChange}
+        canInstallApp={canInstall}
+        onInstallApp={() => setDialog('install')}
       >
         <GameScreen
           game={game}
@@ -813,19 +870,95 @@ export function AppShell() {
                   <span>♣</span>
                 </div>
                 <div className="win95-inset" style={{ textAlign: 'left', fontSize: 12, lineHeight: 1.5 }}>
-                  Solitaire · FreeCell · Spider · Pyramid · TriPeaks
+                  Solitaire · FreeCell · Spider · Pyramid
                   <br />
-                  Calm, ad-free, offline-first.
+                  TriPeaks · Yukon · Golf
                   <br />
                   <br />
-                  An original Aevanor take on classic desktop solitaire — retro
-                  chrome, our own card art, no accounts required.
+                  Calm, ad-free, offline-first. Original Aevanor Win9x chrome
+                  and card art — no accounts required to play.
+                  <br />
+                  <br />
+                  <strong>Fair deals:</strong> seeded shuffle; optional Winnable
+                  deals only (Solitaire) uses a real solver so every deal is
+                  solvable with perfect play.
                 </div>
                 <div style={{ marginTop: 16 }}>
                   <Win95Button className="win95-btn--primary" onClick={() => setDialog(null)}>
                     OK
                   </Win95Button>
                 </div>
+              </div>
+            </Win95Dialog>
+          </div>
+        </div>
+      ) : null}
+
+      {dialog === 'install' ? (
+        <div className="win95-scrim" onClick={() => setDialog(null)}>
+          <div onClick={(e) => e.stopPropagation()}>
+            <Win95Dialog title="Install Aevanor" onClose={() => setDialog(null)} size="sm">
+              <div style={{ fontSize: 13, lineHeight: 1.5 }}>
+                Add Aevanor to your home screen for offline play and a
+                full-screen desktop.
+              </div>
+              <div style={{ marginTop: 16, display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
+                <Win95Button
+                  className="win95-btn--primary"
+                  onClick={() => {
+                    const ev = installEventRef.current;
+                    if (!ev) {
+                      setDialog(null);
+                      return;
+                    }
+                    void ev.prompt();
+                    void ev.userChoice.then((choice) => {
+                      if (choice.outcome === 'accepted') {
+                        localStorage.setItem('aevanor-pwa-install-dismissed', '1');
+                        setCanInstall(false);
+                        installEventRef.current = null;
+                      }
+                      setDialog(null);
+                    });
+                  }}
+                >
+                  Install
+                </Win95Button>
+                <Win95Button
+                  onClick={() => {
+                    localStorage.setItem('aevanor-pwa-install-dismissed', '1');
+                    setDialog(null);
+                  }}
+                >
+                  Not now
+                </Win95Button>
+              </div>
+            </Win95Dialog>
+          </div>
+        </div>
+      ) : null}
+
+      {dialog === 'bookmark' ? (
+        <div className="win95-scrim" onClick={() => setDialog(null)}>
+          <div onClick={(e) => e.stopPropagation()}>
+            <Win95Dialog title="Bookmark Aevanor" onClose={() => setDialog(null)} size="sm">
+              <div style={{ fontSize: 13, lineHeight: 1.5 }}>
+                Press{' '}
+                {typeof navigator !== 'undefined' && /Mac|iPhone|iPad|iPod/i.test(navigator.platform || navigator.userAgent)
+                  ? '⌘+D'
+                  : 'Ctrl+D'}{' '}
+                so today&apos;s daily and offline play are one click away.
+              </div>
+              <div style={{ marginTop: 16, textAlign: 'right' }}>
+                <Win95Button
+                  className="win95-btn--primary"
+                  onClick={() => {
+                    localStorage.setItem('aevanor-bookmark-dismissed', '1');
+                    setDialog(null);
+                  }}
+                >
+                  Got it
+                </Win95Button>
               </div>
             </Win95Dialog>
           </div>

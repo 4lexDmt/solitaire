@@ -51,6 +51,8 @@ interface DesktopShellProps {
   onSelectVariant: (id: VariantId) => void;
   onHome: () => void;
   onDrawCountChange?: (n: 1 | 3) => void;
+  onInstallApp?: () => void;
+  canInstallApp?: boolean;
   isDaily?: boolean;
 }
 
@@ -74,6 +76,8 @@ export function DesktopShell({
   onSelectVariant,
   onHome,
   onDrawCountChange,
+  onInstallApp,
+  canInstallApp,
   isDaily,
 }: DesktopShellProps) {
   const [startOpen, setStartOpen] = useState(false);
@@ -547,6 +551,9 @@ export function DesktopShell({
                 { icon: '♦', label: 'Yukon', onClick: () => onSelectVariant('yukon') },
                 { icon: '◕', label: 'Golf', onClick: () => onSelectVariant('golf') },
                 { icon: '📅', label: 'Daily Challenge', onClick: onOpenDaily },
+                ...(canInstallApp && onInstallApp
+                  ? [{ icon: '⬇', label: 'Install Aevanor…', onClick: onInstallApp }]
+                  : []),
                 { sep: true },
                 { icon: '📊', label: 'Statistics', onClick: onOpenStats },
                 { icon: '⚙', label: 'Options', onClick: onOpenSettings },

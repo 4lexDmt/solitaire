@@ -58,8 +58,13 @@ export function WinScreen({
       streak: dailyStreak,
     });
     try {
-      if (navigator.share) await navigator.share({ text });
-      else {
+      if (navigator.share) {
+        await navigator.share({
+          title: 'Aevanor Daily',
+          text,
+          url: `${window.location.origin}/daily`,
+        });
+      } else {
         await navigator.clipboard.writeText(text);
         setCopied(true);
         window.setTimeout(() => setCopied(false), 2000);

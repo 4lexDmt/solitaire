@@ -1,6 +1,18 @@
 # Solitaire
 
-Premium Klondike solitaire — calm, ad-free, and offline-first. Built with Next.js 16, a pure deterministic engine, Motion-powered interactions, and optional Supabase cloud sync.
+Premium solitaire on a Win9x desktop — calm, ad-free, and offline-first. Built with Next.js 16, a pure deterministic engine, Motion-powered interactions, and optional Supabase cloud sync.
+
+**Product strategy:** [docs/STRATEGY.md](docs/STRATEGY.md)  
+**Monetization:** [docs/MONETIZATION.md](docs/MONETIZATION.md)
+
+## Play routes
+
+| Path | Purpose |
+|---|---|
+| `/` | Win9x desktop — all seven games |
+| `/solitaire` / `/klondike` | SEO + play Solitaire |
+| `/freecell` `/spider` `/pyramid` `/tripeaks` `/yukon` `/golf` | SEO + play that variant |
+| `/daily` | Auto-start today's shared daily |
 
 ## Requirements
 
