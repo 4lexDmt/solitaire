@@ -627,7 +627,7 @@ export function AppShell() {
                 <span>♣</span>
               </div>
               <div style={{ fontSize: 11, color: '#333', marginBottom: 6 }}>
-                Solitaire, beautifully restored — v3.1
+                Classic solitaire — Solitaire · FreeCell · Spider — v3.1
               </div>
               <div className="win95-boot__bar">
                 <div className="win95-boot__fill" style={{ width: `${bootPct}%` }} />
@@ -779,7 +779,8 @@ export function AppShell() {
                   Calm, ad-free, offline-first.
                   <br />
                   <br />
-                  A nostalgic restoration of the desktop solitaire everyone remembers.
+                  An original Aevanor take on classic desktop solitaire — retro
+                  chrome, our own card art, no accounts required.
                 </div>
                 <div style={{ marginTop: 16 }}>
                   <Win95Button className="win95-btn--primary" onClick={() => setDialog(null)}>
