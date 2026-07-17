@@ -97,6 +97,8 @@ export function HomeScreen({
             { value: 'spider', label: 'Spider' },
             { value: 'pyramid', label: 'Pyramid' },
             { value: 'tripeaks', label: 'TriPeaks' },
+            { value: 'yukon', label: 'Yukon' },
+            { value: 'golf', label: 'Golf' },
           ]}
         />
 

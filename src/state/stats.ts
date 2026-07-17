@@ -22,6 +22,8 @@ export interface PlayerStats {
   spider: ModeStats;
   pyramid: ModeStats;
   tripeaks: ModeStats;
+  yukon: ModeStats;
+  golf: ModeStats;
   dailyCompleted: number;
   dailyCurrentStreak: number;
   dailyBestStreak: number;
@@ -48,6 +50,8 @@ export const DEFAULT_STATS: PlayerStats = {
   spider: { ...EMPTY_MODE_STATS },
   pyramid: { ...EMPTY_MODE_STATS },
   tripeaks: { ...EMPTY_MODE_STATS },
+  yukon: { ...EMPTY_MODE_STATS },
+  golf: { ...EMPTY_MODE_STATS },
   dailyCompleted: 0,
   dailyCurrentStreak: 0,
   dailyBestStreak: 0,
@@ -57,7 +61,7 @@ export const DEFAULT_STATS: PlayerStats = {
 
 export interface GameResult {
   won: boolean;
-  variantId?: string; // 'klondike' (default) | 'freecell' | 'spider' | 'pyramid' | 'tripeaks'
+  variantId?: string; // 'klondike' (default) | 'freecell' | 'spider' | 'pyramid' | 'tripeaks' | 'yukon' | 'golf'
   drawCount: 1 | 3;
   elapsedMs: number;
   moves: number;
@@ -142,7 +146,15 @@ export const useStatsStore = create<StatsStore>((set) => ({
 
   recordGame: (result) => {
     set((stats) => {
-      const modeKey: 'draw1' | 'draw3' | 'freecell' | 'spider' | 'pyramid' | 'tripeaks' =
+      const modeKey:
+        | 'draw1'
+        | 'draw3'
+        | 'freecell'
+        | 'spider'
+        | 'pyramid'
+        | 'tripeaks'
+        | 'yukon'
+        | 'golf' =
         result.variantId === 'freecell'
           ? 'freecell'
           : result.variantId === 'spider'
@@ -151,9 +163,13 @@ export const useStatsStore = create<StatsStore>((set) => ({
               ? 'pyramid'
               : result.variantId === 'tripeaks'
                 ? 'tripeaks'
-                : result.drawCount === 1
-                  ? 'draw1'
-                  : 'draw3';
+                : result.variantId === 'yukon'
+                  ? 'yukon'
+                  : result.variantId === 'golf'
+                    ? 'golf'
+                    : result.drawCount === 1
+                      ? 'draw1'
+                      : 'draw3';
       const modeStats = updateModeStats(
         stats[modeKey] ?? { ...EMPTY_MODE_STATS },
         result.won,

@@ -855,6 +855,9 @@
     grid-area: tabs;
     flex: none;
     justify-self: end;
+    max-width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
   }
 
   .win95-toolbar__spacer {

@@ -327,7 +327,10 @@ export function AppShell() {
 
       const settings = useSettingsStore.getState();
       const drawForGame =
-        wantDaily || gameVariantId === 'pyramid' || gameVariantId === 'tripeaks'
+        wantDaily ||
+        gameVariantId === 'pyramid' ||
+        gameVariantId === 'tripeaks' ||
+        gameVariantId === 'golf'
           ? 1
           : settings.drawCount;
       let seed = options?.seed;
@@ -483,9 +486,10 @@ export function AppShell() {
     if (
       game.variantId === 'spider' ||
       game.variantId === 'pyramid' ||
-      game.variantId === 'tripeaks'
+      game.variantId === 'tripeaks' ||
+      game.variantId === 'golf'
     ) {
-      flashStatus('Auto-complete is available in Solitaire & FreeCell.');
+      flashStatus('Auto-complete is available in Solitaire, FreeCell & Yukon.');
       return;
     }
     if (game.status !== 'playing') return;
@@ -605,12 +609,26 @@ export function AppShell() {
                 'Ace wraps with King. Consecutive peak plays score a streak.',
                 'Clear all three peaks to win.',
               ]
-            : [
-                'Solitaire builds foundations Ace to King by suit.',
-                'Tableau builds down by alternating colors.',
-                'Only Kings may fill empty columns.',
-                'Draw from the stock when you need more cards.',
-              ];
+            : game.variantId === 'yukon'
+              ? [
+                  'Yukon deals the whole deck to seven columns — no stock.',
+                  'Build down by alternating colors; only Kings fill empty columns.',
+                  'Any face-up card may move, along with every card on top of it.',
+                  'Foundations build Ace to King by suit.',
+                ]
+              : game.variantId === 'golf'
+                ? [
+                    'Golf deals five cards to each of seven columns, all face-up.',
+                    'Play a column top onto the waste when ranks are adjacent.',
+                    'Ace does not wrap with King. Draw from the stock when stuck.',
+                    'Clear every tableau card to win — the stock does not recycle.',
+                  ]
+                : [
+                    'Solitaire builds foundations Ace to King by suit.',
+                    'Tableau builds down by alternating colors.',
+                    'Only Kings may fill empty columns.',
+                    'Draw from the stock when you need more cards.',
+                  ];
 
   if (booting || !dealReady) {
     return (
@@ -648,7 +666,7 @@ export function AppShell() {
                 <span>♣</span>
               </div>
               <div style={{ fontSize: 11, color: '#333', marginBottom: 6 }}>
-                Classic solitaire — five games, one desktop — v3.2
+                Classic solitaire — seven games, one desktop — v3.3
               </div>
               <div className="win95-boot__bar">
                 <div className="win95-boot__fill" style={{ width: `${bootPct}%` }} />
@@ -786,7 +804,7 @@ export function AppShell() {
                   AEVANOR
                 </div>
                 <div style={{ fontSize: 12, margin: '6px 0 14px' }}>
-                  Solitaire Collection — Version 3.2
+                  Solitaire Collection — Version 3.3
                 </div>
                 <div style={{ display: 'flex', gap: 6, justifyContent: 'center', marginBottom: 14, fontSize: 22 }}>
                   <span>♠</span>

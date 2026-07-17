@@ -1,6 +1,7 @@
 import { vegasBuyIn } from './scoring';
 import type { Card, GameState, Move, ScoreMode, StockPassLimit } from './types';
 import type { SpiderSuits, Variant } from './variant';
+import { getVariant } from './variants';
 import { klondike } from './variants/klondike';
 
 export interface NewGameOptions {
@@ -205,6 +206,7 @@ export function canRecycle(state: GameState): boolean {
   const stock = state.piles.stock;
   if (!waste || !stock) return false;
   if (waste.cards.length === 0 || stock.cards.length > 0) return false;
+  if (getVariant(state.variantId).stockRecycle === false) return false;
   if (state.stockPassLimit === 'unlimited') return true;
   return state.stockRecycles < state.stockPassLimit;
 }

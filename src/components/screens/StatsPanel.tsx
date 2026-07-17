@@ -58,6 +58,8 @@ export function StatsPanel({ open, onClose }: StatsPanelProps) {
             {row('Spider', stats.spider, 2)}
             {row('Pyramid', stats.pyramid, 3)}
             {row('TriPeaks', stats.tripeaks, 4)}
+            {row('Yukon', stats.yukon, 5)}
+            {row('Golf', stats.golf, 6)}
           </div>
 
           <div style={{ marginTop: 12, fontSize: 12, color: '#333' }}>

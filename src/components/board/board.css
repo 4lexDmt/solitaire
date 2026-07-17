@@ -40,6 +40,20 @@
     'tableau-0 tableau-1 tableau-2 tableau-3 tableau-4 tableau-5 tableau-6 tableau-7';
 }
 
+.board[data-variant='yukon'] {
+  grid-template-columns: repeat(7, var(--card-w));
+  grid-template-areas:
+    'foundation-0 foundation-1 foundation-2 foundation-3 . . .'
+    'tableau-0 tableau-1 tableau-2 tableau-3 tableau-4 tableau-5 tableau-6';
+}
+
+.board[data-variant='golf'] {
+  grid-template-columns: repeat(7, var(--card-w));
+  grid-template-areas:
+    'stock waste gap . . . .'
+    'tableau-0 tableau-1 tableau-2 tableau-3 tableau-4 tableau-5 tableau-6';
+}
+
 .board[data-variant='spider'] {
   grid-template-columns: repeat(10, var(--card-w));
   grid-template-areas:
@@ -460,6 +474,18 @@ html[data-four-color='true'] .card-view__inner:not(.card-view__inner--four-color
   grid-template-areas:
     'foundation-0 foundation-1 foundation-2 foundation-3 cell-0 cell-1 cell-2 cell-3'
     'tableau-0 tableau-1 tableau-2 tableau-3 tableau-4 tableau-5 tableau-6 tableau-7';
+}
+
+.board--left-handed[data-variant='yukon'] {
+  grid-template-areas:
+    '. . . foundation-0 foundation-1 foundation-2 foundation-3'
+    'tableau-0 tableau-1 tableau-2 tableau-3 tableau-4 tableau-5 tableau-6';
+}
+
+.board--left-handed[data-variant='golf'] {
+  grid-template-areas:
+    '. . . . gap waste stock'
+    'tableau-0 tableau-1 tableau-2 tableau-3 tableau-4 tableau-5 tableau-6';
 }
 
 .board--left-handed[data-variant='spider'] {

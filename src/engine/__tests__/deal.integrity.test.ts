@@ -3,11 +3,13 @@ import { buildDeck, buildSpiderDeck } from '../deck';
 import { newGame } from '../reducer';
 import { createRng, shuffle } from '../rng';
 import { freecell } from '../variants/freecell';
+import { golf } from '../variants/golf';
 import { klondike } from '../variants/klondike';
 import { pyramid } from '../variants/pyramid';
 import { slotId } from '../variants/slotLayout';
 import { spider } from '../variants/spider';
 import { tripeaks } from '../variants/tripeaks';
+import { yukon } from '../variants/yukon';
 
 function allCardIds(piles: Record<string, { cards: { id: string }[] }>): string[] {
   return Object.values(piles).flatMap((p) => p.cards.map((c) => c.id));
@@ -98,6 +100,27 @@ describe('pyramid & tripeaks deal integrity', () => {
     expect(ids).toHaveLength(52);
     expect(new Set(ids).size).toBe(52);
     expect(game.piles.stock.cards).toHaveLength(24);
+  });
+});
+
+describe('yukon & golf deal integrity', () => {
+  it('yukon deals every card once with classic column sizes and no stock', () => {
+    const game = newGame({ seed: 'yukon-int', variant: yukon });
+    const ids = allCardIds(game.piles);
+    expect(ids).toHaveLength(52);
+    expect(new Set(ids).size).toBe(52);
+    expect(game.piles.stock).toBeUndefined();
+    expect(game.piles['tableau-0'].cards).toHaveLength(1);
+    expect(game.piles['tableau-6'].cards).toHaveLength(11);
+  });
+
+  it('golf deals 35 tableau + 1 waste + 16 stock', () => {
+    const game = newGame({ seed: 'golf-int', variant: golf, drawCount: 1 });
+    const ids = allCardIds(game.piles);
+    expect(ids).toHaveLength(52);
+    expect(new Set(ids).size).toBe(52);
+    expect(game.piles.waste.cards).toHaveLength(1);
+    expect(game.piles.stock.cards).toHaveLength(16);
   });
 });
 

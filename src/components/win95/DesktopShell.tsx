@@ -21,6 +21,8 @@ const STATUS: Record<string, string> = {
   spider: 'Clear a full suit King to Ace to remove it from play.',
   pyramid: 'Remove free cards that sum to 13. Kings remove alone.',
   tripeaks: 'Play free peak cards of adjacent rank onto the waste.',
+  yukon: 'Move any face-up card (and cards on it). Build down alternating colors.',
+  golf: 'Play tableau tops of adjacent rank onto the waste. No wrapping.',
 };
 
 interface DesktopShellProps {
@@ -200,6 +202,18 @@ export function DesktopShell({
           label: 'TriPeaks',
           mark: game.variantId === 'tripeaks' ? '●' : '',
           onClick: () => onSelectVariant('tripeaks'),
+        },
+        {
+          type: 'item' as const,
+          label: 'Yukon',
+          mark: game.variantId === 'yukon' ? '●' : '',
+          onClick: () => onSelectVariant('yukon'),
+        },
+        {
+          type: 'item' as const,
+          label: 'Golf',
+          mark: game.variantId === 'golf' ? '●' : '',
+          onClick: () => onSelectVariant('golf'),
         },
         { type: 'sep' as const },
         { type: 'item' as const, label: 'Daily Challenge…', onClick: onOpenDaily },
@@ -399,8 +413,11 @@ export function DesktopShell({
               onClick={onAuto}
               disabled={locked || game.status !== 'playing'}
               title={
-                game.variantId === 'spider'
-                  ? 'Auto-complete is for Solitaire & FreeCell'
+                game.variantId === 'spider' ||
+                game.variantId === 'pyramid' ||
+                game.variantId === 'tripeaks' ||
+                game.variantId === 'golf'
+                  ? 'Auto-complete is for Solitaire, FreeCell & Yukon'
                   : canAuto
                     ? 'Finish to foundations'
                     : 'Move available cards to foundations'
@@ -421,6 +438,8 @@ export function DesktopShell({
                 ['spider', 'Spider', 'Sp'],
                 ['pyramid', 'Pyramid', 'Py'],
                 ['tripeaks', 'TriPeaks', 'TP'],
+                ['yukon', 'Yukon', 'Yk'],
+                ['golf', 'Golf', 'Gl'],
               ] as const
             ).map(([id, label, short]) => (
               <button
@@ -535,6 +554,8 @@ export function DesktopShell({
                 { icon: '◆', label: 'Spider', onClick: () => onSelectVariant('spider') },
                 { icon: '▲', label: 'Pyramid', onClick: () => onSelectVariant('pyramid') },
                 { icon: '△', label: 'TriPeaks', onClick: () => onSelectVariant('tripeaks') },
+                { icon: '♦', label: 'Yukon', onClick: () => onSelectVariant('yukon') },
+                { icon: '◕', label: 'Golf', onClick: () => onSelectVariant('golf') },
                 { icon: '📅', label: 'Daily Challenge', onClick: onOpenDaily },
                 { sep: true },
                 { icon: '📊', label: 'Statistics', onClick: onOpenStats },

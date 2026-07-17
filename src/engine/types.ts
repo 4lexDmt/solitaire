@@ -53,7 +53,7 @@ export type GameStatus = 'idle' | 'dealing' | 'playing' | 'won' | 'lost';
 export type StockPassLimit = 'unlimited' | 1 | 3;
 
 export interface GameState {
-  variantId: string; // 'klondike' | 'freecell' | 'spider' | 'pyramid' | 'tripeaks'
+  variantId: string; // 'klondike' | 'freecell' | 'spider' | 'pyramid' | 'tripeaks' | 'yukon' | 'golf'
   seed: string; // reproducible deal seed
   drawCount: 1 | 3;
   spiderSuits?: 1 | 2 | 4; // spider only: number of distinct suits in the 104-card deck

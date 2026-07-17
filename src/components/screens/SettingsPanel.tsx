@@ -258,6 +258,8 @@ export function SettingsPanel({ open, onClose, onConfirmNewDeal }: SettingsPanel
                     ['spider', 'Spider'],
                     ['pyramid', 'Pyramid'],
                     ['tripeaks', 'TriPeaks'],
+                    ['yukon', 'Yukon'],
+                    ['golf', 'Golf'],
                   ] as const
                 ).map(([id, label]) => (
                   <Win95Button

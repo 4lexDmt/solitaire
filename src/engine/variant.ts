@@ -30,6 +30,8 @@ export interface Variant {
   dealsToTableau?: boolean;
   /** Foundations are auto-fill only; cards can never be picked up from them (Spider). */
   foundationsLocked?: boolean;
+  /** When false, waste cannot be recycled to stock (Golf). Default: allowed. */
+  stockRecycle?: boolean;
   /**
    * Rewrite a player move before apply (e.g. Pyramid: dropping onto a pairing
    * free card becomes a dual remove to the discard foundation).
