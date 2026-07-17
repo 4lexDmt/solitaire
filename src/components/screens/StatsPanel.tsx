@@ -56,6 +56,8 @@ export function StatsPanel({ open, onClose }: StatsPanelProps) {
             {row('Solitaire', { played: stats.draw1.played + stats.draw3.played, won: stats.draw1.won + stats.draw3.won, bestTimeMs: pickBestTime(stats.draw1, stats.draw3), fewestMoves: pickBestMoves(stats.draw1, stats.draw3) }, 0)}
             {row('FreeCell', stats.freecell, 1)}
             {row('Spider', stats.spider, 2)}
+            {row('Pyramid', stats.pyramid, 3)}
+            {row('TriPeaks', stats.tripeaks, 4)}
           </div>
 
           <div style={{ marginTop: 12, fontSize: 12, color: '#333' }}>

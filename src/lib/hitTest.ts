@@ -2,6 +2,7 @@ import type { GameState } from '@/engine/types';
 import type { Variant } from '@/engine/variant';
 import { getVariant } from '@/engine/variants';
 import { topCard } from '@/engine/variants/klondike';
+import { isSlotFree, slotIndex } from '@/engine/variants/slotLayout';
 
 export interface PointerTarget {
   pileId: string;
@@ -97,11 +98,17 @@ export function getMovableCardIds(
 
   if (pile.type === 'stock') return null;
 
-  if (pile.type === 'waste' || pile.type === 'cell' || pile.type === 'foundation') {
+  if (pile.type === 'waste' || pile.type === 'cell' || pile.type === 'foundation' || pile.type === 'slot') {
     if (pile.type === 'foundation' && variant.foundationsLocked) return null;
     const top = topCard(pile);
     if (!top || !top.faceUp) return null;
     if (cardId && cardId !== top.id) return null;
+    if (pile.type === 'slot') {
+      const idx = slotIndex(pileId);
+      if (idx < 0) return null;
+      const mode = state.variantId === 'tripeaks' ? 'tripeaks' : 'pyramid';
+      if (!isSlotFree(state, idx, mode)) return null;
+    }
     return [top.id];
   }
 

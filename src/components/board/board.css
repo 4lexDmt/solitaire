@@ -479,3 +479,76 @@ html[data-four-color='true'] .card-view__inner:not(.card-view__inner--four-color
     );
   }
 }
+
+/* Pyramid / TriPeaks — flex rows instead of tableau grid */
+.board--slots,
+.board[data-variant='pyramid'],
+.board[data-variant='tripeaks'] {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  gap: calc(var(--card-h) * 0.08);
+  grid-template-columns: none;
+  grid-template-areas: none;
+  --card-w: min(72px, max(36px, calc(100cqi / 9.2)));
+}
+
+.board__slot-toolbar {
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  gap: calc(var(--card-w) * 0.2);
+  width: 100%;
+  flex-wrap: wrap;
+  margin-bottom: calc(var(--card-h) * 0.06);
+}
+
+.board__slot-toolbar .board__pile {
+  position: relative;
+  width: var(--card-w);
+  min-height: var(--card-h);
+}
+
+.board__slot-field {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: calc(var(--card-h) * -0.42);
+  width: 100%;
+}
+
+.board__slot-row {
+  display: flex;
+  justify-content: center;
+  gap: calc(var(--card-w) * 0.08);
+  position: relative;
+  z-index: 1;
+}
+
+.board__slot-row .board__pile--slot {
+  position: relative;
+  width: var(--card-w);
+  min-height: var(--card-h);
+  flex: none;
+}
+
+.board__pile--slot-covered {
+  filter: brightness(0.92);
+}
+
+.board__pile--slot-covered .card-view {
+  pointer-events: none;
+}
+
+@media (max-width: 900px) {
+  .board--slots,
+  .board[data-variant='pyramid'],
+  .board[data-variant='tripeaks'] {
+    --card-w: min(56px, max(30px, calc(100cqi / 9.5)));
+  }
+
+  .board__slot-field {
+    gap: calc(var(--card-h) * -0.38);
+  }
+}

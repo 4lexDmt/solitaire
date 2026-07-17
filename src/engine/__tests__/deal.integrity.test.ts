@@ -4,7 +4,10 @@ import { newGame } from '../reducer';
 import { createRng, shuffle } from '../rng';
 import { freecell } from '../variants/freecell';
 import { klondike } from '../variants/klondike';
+import { pyramid } from '../variants/pyramid';
+import { slotId } from '../variants/slotLayout';
 import { spider } from '../variants/spider';
+import { tripeaks } from '../variants/tripeaks';
 
 function allCardIds(piles: Record<string, { cards: { id: string }[] }>): string[] {
   return Object.values(piles).flatMap((p) => p.cards.map((c) => c.id));
@@ -74,6 +77,27 @@ describe('freecell deal integrity', () => {
       expect(cards).toHaveLength(i < 4 ? 7 : 6);
       expect(cards.every((c) => c.faceUp)).toBe(true);
     }
+  });
+});
+
+describe('pyramid & tripeaks deal integrity', () => {
+  it('pyramid deals 28 unique face-up slots + 24 stock', () => {
+    const game = newGame({ seed: 'pyr-int', variant: pyramid, drawCount: 1 });
+    const ids = allCardIds(game.piles);
+    expect(ids).toHaveLength(52);
+    expect(new Set(ids).size).toBe(52);
+    for (let i = 0; i < 28; i++) {
+      expect(game.piles[slotId(i)].cards).toHaveLength(1);
+    }
+    expect(game.piles.stock.cards).toHaveLength(24);
+  });
+
+  it('tripeaks deals 28 unique face-up slots + 24 stock', () => {
+    const game = newGame({ seed: 'tp-int', variant: tripeaks, drawCount: 1 });
+    const ids = allCardIds(game.piles);
+    expect(ids).toHaveLength(52);
+    expect(new Set(ids).size).toBe(52);
+    expect(game.piles.stock.cards).toHaveLength(24);
   });
 });
 

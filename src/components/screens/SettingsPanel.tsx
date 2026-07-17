@@ -256,6 +256,8 @@ export function SettingsPanel({ open, onClose, onConfirmNewDeal }: SettingsPanel
                     ['klondike', 'Solitaire'],
                     ['freecell', 'FreeCell'],
                     ['spider', 'Spider'],
+                    ['pyramid', 'Pyramid'],
+                    ['tripeaks', 'TriPeaks'],
                   ] as const
                 ).map(([id, label]) => (
                   <Win95Button

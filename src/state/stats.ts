@@ -20,6 +20,8 @@ export interface PlayerStats {
   draw3: ModeStats;
   freecell: ModeStats;
   spider: ModeStats;
+  pyramid: ModeStats;
+  tripeaks: ModeStats;
   dailyCompleted: number;
   dailyCurrentStreak: number;
   dailyBestStreak: number;
@@ -44,6 +46,8 @@ export const DEFAULT_STATS: PlayerStats = {
   draw3: { ...EMPTY_MODE_STATS },
   freecell: { ...EMPTY_MODE_STATS },
   spider: { ...EMPTY_MODE_STATS },
+  pyramid: { ...EMPTY_MODE_STATS },
+  tripeaks: { ...EMPTY_MODE_STATS },
   dailyCompleted: 0,
   dailyCurrentStreak: 0,
   dailyBestStreak: 0,
@@ -53,7 +57,7 @@ export const DEFAULT_STATS: PlayerStats = {
 
 export interface GameResult {
   won: boolean;
-  variantId?: string; // 'klondike' (default) | 'freecell' | 'spider'
+  variantId?: string; // 'klondike' (default) | 'freecell' | 'spider' | 'pyramid' | 'tripeaks'
   drawCount: 1 | 3;
   elapsedMs: number;
   moves: number;
@@ -138,14 +142,18 @@ export const useStatsStore = create<StatsStore>((set) => ({
 
   recordGame: (result) => {
     set((stats) => {
-      const modeKey: 'draw1' | 'draw3' | 'freecell' | 'spider' =
+      const modeKey: 'draw1' | 'draw3' | 'freecell' | 'spider' | 'pyramid' | 'tripeaks' =
         result.variantId === 'freecell'
           ? 'freecell'
           : result.variantId === 'spider'
             ? 'spider'
-            : result.drawCount === 1
-              ? 'draw1'
-              : 'draw3';
+            : result.variantId === 'pyramid'
+              ? 'pyramid'
+              : result.variantId === 'tripeaks'
+                ? 'tripeaks'
+                : result.drawCount === 1
+                  ? 'draw1'
+                  : 'draw3';
       const modeStats = updateModeStats(
         stats[modeKey] ?? { ...EMPTY_MODE_STATS },
         result.won,

@@ -23,13 +23,23 @@ export interface Variant {
   isWon(state: GameState): boolean;
   autoMoveTarget(state: GameState, cardId: string): string | null;
   autoMoveToFoundation(state: GameState, pileId: string, cardId: string): string | null;
-  score(move: Move, mode: ScoreMode): number;
+  score(move: Move, mode: ScoreMode, state?: GameState): number;
   /** Face-up run starting at cardId that may be picked up as a unit ([] if not movable). */
   getMovableRun(state: GameState, pile: Pile, cardId: string): Card[];
   /** Stock deals one card to every tableau column instead of the waste (Spider). */
   dealsToTableau?: boolean;
   /** Foundations are auto-fill only; cards can never be picked up from them (Spider). */
   foundationsLocked?: boolean;
+  /**
+   * Rewrite a player move before apply (e.g. Pyramid: dropping onto a pairing
+   * free card becomes a dual remove to the discard foundation).
+   */
+  normalizeMove?(
+    state: GameState,
+    from: string,
+    to: string,
+    cardIds: string[],
+  ): { from: string; to: string; cardIds: string[]; partner?: Move['partner'] } | null;
   /** Remove any completed K→A same-suit runs to foundations; mutates piles (Spider). */
   settleCompletions?(piles: Record<string, Pile>): CompletedRun[];
 }

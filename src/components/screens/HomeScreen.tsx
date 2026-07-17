@@ -95,6 +95,8 @@ export function HomeScreen({
             { value: 'klondike', label: 'Solitaire' },
             { value: 'freecell', label: 'FreeCell' },
             { value: 'spider', label: 'Spider' },
+            { value: 'pyramid', label: 'Pyramid' },
+            { value: 'tripeaks', label: 'TriPeaks' },
           ]}
         />
 

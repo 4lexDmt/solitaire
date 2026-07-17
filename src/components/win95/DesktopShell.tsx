@@ -19,6 +19,8 @@ const STATUS: Record<string, string> = {
   klondike: 'Build the foundations from Ace to King, one suit each.',
   freecell: 'Free the aces — park cards in the cells and build down.',
   spider: 'Clear a full suit King to Ace to remove it from play.',
+  pyramid: 'Remove free cards that sum to 13. Kings remove alone.',
+  tripeaks: 'Play free peak cards of adjacent rank onto the waste.',
 };
 
 interface DesktopShellProps {
@@ -186,6 +188,18 @@ export function DesktopShell({
           label: 'Spider',
           mark: game.variantId === 'spider' ? '●' : '',
           onClick: () => onSelectVariant('spider'),
+        },
+        {
+          type: 'item' as const,
+          label: 'Pyramid',
+          mark: game.variantId === 'pyramid' ? '●' : '',
+          onClick: () => onSelectVariant('pyramid'),
+        },
+        {
+          type: 'item' as const,
+          label: 'TriPeaks',
+          mark: game.variantId === 'tripeaks' ? '●' : '',
+          onClick: () => onSelectVariant('tripeaks'),
         },
         { type: 'sep' as const },
         { type: 'item' as const, label: 'Daily Challenge…', onClick: onOpenDaily },
@@ -405,6 +419,8 @@ export function DesktopShell({
                 ['klondike', 'Solitaire', 'Sol'],
                 ['freecell', 'FreeCell', 'FC'],
                 ['spider', 'Spider', 'Sp'],
+                ['pyramid', 'Pyramid', 'Py'],
+                ['tripeaks', 'TriPeaks', 'TP'],
               ] as const
             ).map(([id, label, short]) => (
               <button
@@ -517,6 +533,8 @@ export function DesktopShell({
                 { icon: '♠', label: 'Solitaire', onClick: () => onSelectVariant('klondike') },
                 { icon: '♣', label: 'FreeCell', onClick: () => onSelectVariant('freecell') },
                 { icon: '◆', label: 'Spider', onClick: () => onSelectVariant('spider') },
+                { icon: '▲', label: 'Pyramid', onClick: () => onSelectVariant('pyramid') },
+                { icon: '△', label: 'TriPeaks', onClick: () => onSelectVariant('tripeaks') },
                 { icon: '📅', label: 'Daily Challenge', onClick: onOpenDaily },
                 { sep: true },
                 { icon: '📊', label: 'Statistics', onClick: onOpenStats },

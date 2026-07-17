@@ -326,7 +326,10 @@ export function AppShell() {
       }
 
       const settings = useSettingsStore.getState();
-      const drawForGame = wantDaily ? 1 : settings.drawCount;
+      const drawForGame =
+        wantDaily || gameVariantId === 'pyramid' || gameVariantId === 'tripeaks'
+          ? 1
+          : settings.drawCount;
       let seed = options?.seed;
       let dailyOk = false;
 
@@ -477,7 +480,11 @@ export function AppShell() {
   }, [game.status, game.variantId, hint]);
 
   const handleAuto = useCallback(() => {
-    if (game.variantId === 'spider') {
+    if (
+      game.variantId === 'spider' ||
+      game.variantId === 'pyramid' ||
+      game.variantId === 'tripeaks'
+    ) {
       flashStatus('Auto-complete is available in Solitaire & FreeCell.');
       return;
     }
@@ -584,12 +591,26 @@ export function AppShell() {
             'Deal from the stock to every column when none are empty.',
             'Complete a King-to-Ace same-suit run to clear it.',
           ]
-        : [
-            'Solitaire builds foundations Ace to King by suit.',
-            'Tableau builds down by alternating colors.',
-            'Only Kings may fill empty columns.',
-            'Draw from the stock when you need more cards.',
-          ];
+        : game.variantId === 'pyramid'
+          ? [
+              'Pyramid deals 28 cards in a triangle; the rest stay in the stock.',
+              'Only uncovered cards (and the waste top) can be played.',
+              'Remove two free cards that sum to 13, or a King alone.',
+              'Clear every pyramid card to win.',
+            ]
+          : game.variantId === 'tripeaks'
+            ? [
+                'TriPeaks deals 28 cards into three overlapping peaks.',
+                'Draw to the waste, then play free peak cards of adjacent rank.',
+                'Ace wraps with King. Consecutive peak plays score a streak.',
+                'Clear all three peaks to win.',
+              ]
+            : [
+                'Solitaire builds foundations Ace to King by suit.',
+                'Tableau builds down by alternating colors.',
+                'Only Kings may fill empty columns.',
+                'Draw from the stock when you need more cards.',
+              ];
 
   if (booting || !dealReady) {
     return (
@@ -774,7 +795,7 @@ export function AppShell() {
                   <span>♣</span>
                 </div>
                 <div className="win95-inset" style={{ textAlign: 'left', fontSize: 12, lineHeight: 1.5 }}>
-                  Solitaire · FreeCell · Spider
+                  Solitaire · FreeCell · Spider · Pyramid · TriPeaks
                   <br />
                   Calm, ad-free, offline-first.
                   <br />

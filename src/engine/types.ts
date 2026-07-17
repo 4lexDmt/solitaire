@@ -10,10 +10,10 @@ export interface Card {
   faceUp: boolean;
 }
 
-export type PileType = 'stock' | 'waste' | 'foundation' | 'tableau' | 'cell';
+export type PileType = 'stock' | 'waste' | 'foundation' | 'tableau' | 'cell' | 'slot';
 
 export interface Pile {
-  id: string; // e.g. 'stock' | 'waste' | 'foundation-0'.. | 'tableau-0'.. | 'cell-0'.. (per variant layout)
+  id: string; // e.g. 'stock' | 'waste' | 'foundation-0'.. | 'tableau-0'.. | 'cell-0'.. | 'slot-0'..
   type: PileType;
   cards: Card[]; // index 0 = bottom of pile
   suit?: Suit; // foundations may be locked to a suit once seeded
@@ -33,6 +33,8 @@ export interface Move {
   from: string; // pile id
   to: string; // pile id
   cardIds: string[]; // the moved cards, bottom→top (a run can be >1)
+  /** Second source removed in the same action (Pyramid pair-to-13). */
+  partner?: { from: string; cardIds: string[] };
   flipped?: { pileId: string; cardId: string }; // a card revealed/flipped as a result
   recycled?: boolean; // true for waste→stock recycle
   drew?: number; // for stock→waste draws (1 or 3) or spider tableau deals (10)
@@ -51,7 +53,7 @@ export type GameStatus = 'idle' | 'dealing' | 'playing' | 'won' | 'lost';
 export type StockPassLimit = 'unlimited' | 1 | 3;
 
 export interface GameState {
-  variantId: string; // 'klondike' | 'freecell' | 'spider'
+  variantId: string; // 'klondike' | 'freecell' | 'spider' | 'pyramid' | 'tripeaks'
   seed: string; // reproducible deal seed
   drawCount: 1 | 3;
   spiderSuits?: 1 | 2 | 4; // spider only: number of distinct suits in the 104-card deck

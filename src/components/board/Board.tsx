@@ -18,6 +18,7 @@ import { AutoCompleteBar } from './AutoCompleteBar';
 import { CellPile } from './CellPile';
 import { DragLayer } from './DragLayer';
 import { FoundationRow } from './FoundationRow';
+import { PyramidField, TriPeaksField } from './SlotField';
 import { StockPile } from './StockPile';
 import { TableauColumn } from './TableauColumn';
 import { WastePile } from './WastePile';
@@ -317,6 +318,22 @@ export function Board({ game }: BoardProps) {
   );
 
   const stockFocus = getFocusProps({ kind: 'pile', pileId: 'stock' });
+  const isPyramid = game.variantId === 'pyramid';
+  const isTriPeaks = game.variantId === 'tripeaks';
+  const isSlotVariant = isPyramid || isTriPeaks;
+
+  const sharedSlotProps = {
+    game,
+    hintCardIds,
+    dropTarget,
+    isSelected,
+    isDragSource,
+    isFocused,
+    getFocusProps,
+    cardMotionProps,
+    onCardPointerDown: handlePointerDown,
+    onCardDoubleClick: handleCardDoubleClick,
+  };
 
   return (
     <>
@@ -329,7 +346,7 @@ export function Board({ game }: BoardProps) {
       <div
           key={game.seed}
           ref={boardRef}
-          className={`board${leftHanded ? ' board--left-handed' : ''}`}
+          className={`board${leftHanded ? ' board--left-handed' : ''}${isSlotVariant ? ' board--slots' : ''}`}
           data-variant={game.variantId}
           role="group"
           aria-label="Solitaire board"
@@ -337,77 +354,125 @@ export function Board({ game }: BoardProps) {
           onKeyDown={handleKeyDown}
           onClick={handleBoardClick}
         >
-        {stockPile ? <div className="board__pile board__pile--gap" aria-hidden /> : null}
-        {stockPile ? (
-          <StockPile
-            pile={stockPile}
-            hintCardIds={hintCardIds}
-            dropHighlight={dropTarget === 'stock'}
-            focusProps={stockFocus}
-            onStockActivate={() => handlePileActivate('stock')}
-          />
-        ) : null}
-        {wastePile ? (
-          <WastePile
-            pile={wastePile}
-            drawCount={game.drawCount}
-            hintCardIds={hintCardIds}
-            dropHighlight={dropTarget === 'waste'}
-            selection={selection}
-            isSelected={isSelected}
-            isDragSource={isDragSource}
-            isFocused={isFocused}
-            getFocusProps={getFocusProps}
-            cardMotionProps={cardMotionProps}
-            onCardPointerDown={handlePointerDown}
-            onCardDoubleClick={handleCardDoubleClick}
-          />
-        ) : null}
-        {cells.map((pile) => (
-          <CellPile
-            key={pile.id}
-            pile={pile}
-            hintCardIds={hintCardIds}
-            dropHighlight={dropTarget === pile.id}
-            isSelected={isSelected}
-            isDragSource={isDragSource}
-            isFocused={isFocused}
-            getFocusProps={getFocusProps}
-            cardMotionProps={cardMotionProps}
-            onCardPointerDown={handlePointerDown}
-            onCardDoubleClick={handleCardDoubleClick}
-          />
-        ))}
-        <FoundationRow
-          piles={foundations}
-          hintCardIds={hintCardIds}
-          dropTarget={dropTarget}
-          isSelected={isSelected}
-          isDragSource={isDragSource}
-          isFocused={isFocused}
-          getFocusProps={getFocusProps}
-          cardMotionProps={cardMotionProps}
-          onCardPointerDown={handlePointerDown}
-          onCardDoubleClick={handleCardDoubleClick}
-        />
-        {tableaus.map((pile) => (
-          <TableauColumn
-            key={pile.id}
-            pile={pile}
-            isMovable={(pileId, cardId) =>
-              getMovableCardIds(game, pileId, cardId) !== null
-            }
-            hintCardIds={hintCardIds}
-            dropHighlight={dropTarget === pile.id}
-            isSelected={isSelected}
-            isDragSource={isDragSource}
-            isFocused={isFocused}
-            getFocusProps={getFocusProps}
-            cardMotionProps={cardMotionProps}
-            onCardPointerDown={handlePointerDown}
-            onCardDoubleClick={handleCardDoubleClick}
-          />
-        ))}
+        {isSlotVariant ? (
+          <>
+            <div className="board__slot-toolbar">
+              {stockPile ? (
+                <StockPile
+                  pile={stockPile}
+                  hintCardIds={hintCardIds}
+                  dropHighlight={dropTarget === 'stock'}
+                  focusProps={stockFocus}
+                  onStockActivate={() => handlePileActivate('stock')}
+                />
+              ) : null}
+              {wastePile ? (
+                <WastePile
+                  pile={wastePile}
+                  drawCount={1}
+                  hintCardIds={hintCardIds}
+                  dropHighlight={dropTarget === 'waste'}
+                  selection={selection}
+                  isSelected={isSelected}
+                  isDragSource={isDragSource}
+                  isFocused={isFocused}
+                  getFocusProps={getFocusProps}
+                  cardMotionProps={cardMotionProps}
+                  onCardPointerDown={handlePointerDown}
+                  onCardDoubleClick={handleCardDoubleClick}
+                />
+              ) : null}
+              <FoundationRow
+                piles={foundations}
+                hintCardIds={hintCardIds}
+                dropTarget={dropTarget}
+                isSelected={isSelected}
+                isDragSource={isDragSource}
+                isFocused={isFocused}
+                getFocusProps={getFocusProps}
+                cardMotionProps={cardMotionProps}
+                onCardPointerDown={handlePointerDown}
+                onCardDoubleClick={handleCardDoubleClick}
+              />
+            </div>
+            {isPyramid ? <PyramidField {...sharedSlotProps} /> : null}
+            {isTriPeaks ? <TriPeaksField {...sharedSlotProps} /> : null}
+          </>
+        ) : (
+          <>
+            {stockPile ? <div className="board__pile board__pile--gap" aria-hidden /> : null}
+            {stockPile ? (
+              <StockPile
+                pile={stockPile}
+                hintCardIds={hintCardIds}
+                dropHighlight={dropTarget === 'stock'}
+                focusProps={stockFocus}
+                onStockActivate={() => handlePileActivate('stock')}
+              />
+            ) : null}
+            {wastePile ? (
+              <WastePile
+                pile={wastePile}
+                drawCount={game.drawCount}
+                hintCardIds={hintCardIds}
+                dropHighlight={dropTarget === 'waste'}
+                selection={selection}
+                isSelected={isSelected}
+                isDragSource={isDragSource}
+                isFocused={isFocused}
+                getFocusProps={getFocusProps}
+                cardMotionProps={cardMotionProps}
+                onCardPointerDown={handlePointerDown}
+                onCardDoubleClick={handleCardDoubleClick}
+              />
+            ) : null}
+            {cells.map((pile) => (
+              <CellPile
+                key={pile.id}
+                pile={pile}
+                hintCardIds={hintCardIds}
+                dropHighlight={dropTarget === pile.id}
+                isSelected={isSelected}
+                isDragSource={isDragSource}
+                isFocused={isFocused}
+                getFocusProps={getFocusProps}
+                cardMotionProps={cardMotionProps}
+                onCardPointerDown={handlePointerDown}
+                onCardDoubleClick={handleCardDoubleClick}
+              />
+            ))}
+            <FoundationRow
+              piles={foundations}
+              hintCardIds={hintCardIds}
+              dropTarget={dropTarget}
+              isSelected={isSelected}
+              isDragSource={isDragSource}
+              isFocused={isFocused}
+              getFocusProps={getFocusProps}
+              cardMotionProps={cardMotionProps}
+              onCardPointerDown={handlePointerDown}
+              onCardDoubleClick={handleCardDoubleClick}
+            />
+            {tableaus.map((pile) => (
+              <TableauColumn
+                key={pile.id}
+                pile={pile}
+                isMovable={(pileId, cardId) =>
+                  getMovableCardIds(game, pileId, cardId) !== null
+                }
+                hintCardIds={hintCardIds}
+                dropHighlight={dropTarget === pile.id}
+                isSelected={isSelected}
+                isDragSource={isDragSource}
+                isFocused={isFocused}
+                getFocusProps={getFocusProps}
+                cardMotionProps={cardMotionProps}
+                onCardPointerDown={handlePointerDown}
+                onCardDoubleClick={handleCardDoubleClick}
+              />
+            ))}
+          </>
+        )}
         </div>
 
       <DragLayer

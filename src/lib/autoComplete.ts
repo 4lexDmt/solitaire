@@ -27,7 +27,8 @@ export function canAutoComplete(state: GameState): boolean {
   if (state.status !== 'playing') return false;
 
   const variant = getVariant(state.variantId);
-  if (variant.foundationsLocked) return false; // Spider settles runs automatically
+  if (variant.foundationsLocked) return false; // Spider / Pyramid discard / TriPeaks
+  if (variant.id === 'pyramid' || variant.id === 'tripeaks') return false;
 
   if (!allCardsFaceUpExceptStock(state)) return false;
   if (variant.isWon(state)) return false;

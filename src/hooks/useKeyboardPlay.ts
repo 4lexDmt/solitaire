@@ -28,6 +28,7 @@ function buildPileOrder(game: GameState): string[] {
     ...byType('cell'),
     ...byType('foundation'),
     ...byType('tableau'),
+    ...byType('slot'),
   ];
 }
 
@@ -59,7 +60,7 @@ function buildFocusables(game: GameState): FocusTarget[] {
       continue;
     }
 
-    if (pile.type === 'cell' || pile.type === 'foundation') {
+    if (pile.type === 'cell' || pile.type === 'foundation' || pile.type === 'slot') {
       const top = pile.cards[pile.cards.length - 1];
       if (top?.faceUp) {
         items.push({ kind: 'card', pileId, cardId: top.id });

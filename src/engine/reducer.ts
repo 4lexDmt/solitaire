@@ -72,10 +72,17 @@ function executeCardMove(
   const toPile = next.piles[move.to];
 
   const startIdx = fromPile.cards.findIndex((c) => c.id === move.cardIds[0]);
-  const moving = fromPile.cards.splice(startIdx);
+  const moving = fromPile.cards.splice(startIdx, move.cardIds.length);
   appendCards(toPile, moving);
 
-  if (toPile.type === 'foundation' && toPile.cards.length === moving.length) {
+  if (move.partner) {
+    const partnerPile = next.piles[move.partner.from];
+    const pStart = partnerPile.cards.findIndex((c) => c.id === move.partner!.cardIds[0]);
+    const partnerCards = partnerPile.cards.splice(pStart, move.partner.cardIds.length);
+    appendCards(toPile, partnerCards);
+  }
+
+  if (toPile.type === 'foundation' && toPile.cards.length === moving.length + (move.partner?.cardIds.length ?? 0)) {
     toPile.suit = moving[0].suit;
   }
 
@@ -93,7 +100,7 @@ function executeCardMove(
     scoreDelta: 0,
     ts,
   };
-  fullMove.scoreDelta = variant.score(fullMove, next.scoreMode);
+  fullMove.scoreDelta = variant.score(fullMove, next.scoreMode, state);
 
   next.moves += 1;
   next.score += fullMove.scoreDelta;
@@ -245,7 +252,10 @@ export function applyMove(
     return state;
   }
 
-  const { state: next, move } = executeCardMove(state, { from, to, cardIds }, ts, variant);
+  const normalized = variant.normalizeMove?.(state, from, to, cardIds);
+  const resolved = normalized ?? { from, to, cardIds };
+
+  const { state: next, move } = executeCardMove(state, resolved, ts, variant);
   next.history = [...state.history, move];
   next.future = [];
   return next;
@@ -306,8 +316,15 @@ function reverseCardMove(state: GameState, move: Move): GameState {
   const fromPile = next.piles[move.to];
   const toPile = next.piles[move.from];
 
+  // Partner cards were appended after the primary cards — restore them first.
+  if (move.partner) {
+    const partnerCount = move.partner.cardIds.length;
+    const partnerCards = fromPile.cards.splice(fromPile.cards.length - partnerCount, partnerCount);
+    appendCards(next.piles[move.partner.from], partnerCards);
+  }
+
   const startIdx = fromPile.cards.findIndex((c) => c.id === move.cardIds[0]);
-  const moving = fromPile.cards.splice(startIdx);
+  const moving = fromPile.cards.splice(startIdx, move.cardIds.length);
   appendCards(toPile, moving);
 
   if (fromPile.type === 'foundation' && fromPile.cards.length === 0) {
@@ -321,7 +338,6 @@ function reverseCardMove(state: GameState, move: Move): GameState {
   next.moves -= 1;
   next.score -= move.scoreDelta;
   next.status = 'playing';
-  next.stockRecycles = Math.max(0, next.stockRecycles - 1);
 
   return next;
 }
