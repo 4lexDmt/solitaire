@@ -177,8 +177,8 @@ export function SettingsPanel({ open, onClose, onConfirmNewDeal }: SettingsPanel
               </div>
             </fieldset>
 
-            <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
-              <fieldset className="win95-fieldset" style={{ flex: 1, minWidth: 140 }}>
+            <div className="win95-options-split">
+              <fieldset className="win95-fieldset">
                 <legend>Solitaire draw</legend>
                 {([1, 3] as const).map((n) => (
                   <label
@@ -197,7 +197,7 @@ export function SettingsPanel({ open, onClose, onConfirmNewDeal }: SettingsPanel
                 ))}
               </fieldset>
 
-              <fieldset className="win95-fieldset" style={{ flex: 1, minWidth: 140 }}>
+              <fieldset className="win95-fieldset">
                 <legend>Spider suits</legend>
                 {([1, 2, 4] as SpiderSuits[]).map((n) => (
                   <label

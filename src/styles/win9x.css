@@ -627,19 +627,44 @@
 .win95-fieldset {
   border: 0;
   box-shadow: var(--bevel-sunken);
-  padding: 10px;
+  padding: 12px 10px 10px;
   margin: 0;
+  min-width: 0;
 }
 
+/*
+ * Mobile Safari / Chromium often float <legend> left, which drops the title
+ * onto the same line as the controls. Keep a clear Win9x section header.
+ */
 .win95-fieldset legend {
+  float: none;
+  display: table;
+  width: auto;
+  max-width: calc(100% - 8px);
   font-size: 11px;
-  padding: 0 4px;
+  line-height: 1.2;
+  padding: 0 6px;
+  margin: 0 0 6px 2px;
+  background: var(--chrome);
+  color: #000;
+  white-space: normal;
 }
 
 .win95-inset {
   background: #fff;
   box-shadow: var(--bevel-sunken);
   padding: 10px;
+}
+
+.win95-options-split {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.win95-options-split > .win95-fieldset {
+  flex: 1 1 160px;
+  min-width: 0;
 }
 
 .win95-table {
@@ -953,6 +978,28 @@
     max-width: 100%;
     max-height: min(85vh, 640px);
     overflow: auto;
+  }
+
+  .win95-dialog__body {
+    padding: 12px 10px;
+  }
+
+  .win95-options-split {
+    flex-direction: column;
+  }
+
+  .win95-options-split > .win95-fieldset {
+    flex: 1 1 auto;
+    width: 100%;
+  }
+
+  .win95-fieldset {
+    padding: 10px 8px 8px;
+  }
+
+  .win95-fieldset legend {
+    font-size: 12px;
+    margin-bottom: 8px;
   }
 
   .win95-boot__panel {
