@@ -488,49 +488,83 @@ html[data-four-color='true'] .card-view__inner:not(.card-view__inner--four-color
   flex-direction: column;
   align-items: center;
   justify-content: flex-start;
-  gap: calc(var(--card-h) * 0.08);
+  gap: calc(var(--card-h) * 0.06);
   grid-template-columns: none;
   grid-template-areas: none;
-  --card-w: min(72px, max(36px, calc(100cqi / 9.2)));
+  /* Fit the widest row: Pyramid 7, TriPeaks 10 */
+  --slot-cols: 7;
+  --slot-gap-ratio: 0.06;
+  --board-pad: max(4px, calc(var(--card-w) * 0.06));
+  --card-w: min(
+    72px,
+    max(
+      28px,
+      calc(
+        (100cqi - 2 * 6px) /
+          (var(--slot-cols) + (var(--slot-cols) - 1) * var(--slot-gap-ratio))
+      )
+    )
+  );
+}
+
+.board[data-variant='tripeaks'] {
+  --slot-cols: 10;
+  --slot-gap-ratio: 0.04;
+}
+
+.board[data-variant='pyramid'] {
+  --slot-cols: 7;
+  --slot-gap-ratio: 0.08;
 }
 
 .board__slot-toolbar {
   display: flex;
   align-items: flex-start;
   justify-content: center;
-  gap: calc(var(--card-w) * 0.2);
+  gap: calc(var(--card-w) * 0.18);
   width: 100%;
-  flex-wrap: wrap;
-  margin-bottom: calc(var(--card-h) * 0.06);
+  flex-wrap: nowrap;
+  flex-shrink: 0;
+  margin-bottom: calc(var(--card-h) * 0.04);
 }
 
 .board__slot-toolbar .board__pile {
   position: relative;
   width: var(--card-w);
   min-height: var(--card-h);
+  flex: none;
 }
 
 .board__slot-field {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: calc(var(--card-h) * -0.42);
+  gap: calc(var(--card-h) * -0.44);
   width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  overflow: visible;
 }
 
 .board__slot-row {
   display: flex;
   justify-content: center;
-  gap: calc(var(--card-w) * 0.08);
+  align-items: flex-start;
+  gap: calc(var(--card-w) * var(--slot-gap-ratio));
   position: relative;
   z-index: 1;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
 }
 
 .board__slot-row .board__pile--slot {
   position: relative;
   width: var(--card-w);
   min-height: var(--card-h);
-  flex: none;
+  flex: 0 0 var(--card-w);
+  max-width: var(--card-w);
 }
 
 .board__pile--slot-covered {
@@ -545,10 +579,65 @@ html[data-four-color='true'] .card-view__inner:not(.card-view__inner--four-color
   .board--slots,
   .board[data-variant='pyramid'],
   .board[data-variant='tripeaks'] {
-    --card-w: min(56px, max(30px, calc(100cqi / 9.5)));
+    --board-pad: 4px;
+    padding-inline: 4px;
+    padding-block: 6px;
+    gap: 4px;
+    /* Prefer fitting width over a large min size on phones */
+    --card-w: min(
+      52px,
+      max(
+        22px,
+        calc(
+          (100cqi - 8px) /
+            (var(--slot-cols) + (var(--slot-cols) - 1) * var(--slot-gap-ratio))
+        )
+      )
+    );
+  }
+
+  .board[data-variant='tripeaks'] {
+    --slot-gap-ratio: 0.03;
+    /* Extra vertical tuck so toolbar + 4 rows fit short viewports */
   }
 
   .board__slot-field {
-    gap: calc(var(--card-h) * -0.38);
+    gap: calc(var(--card-h) * -0.48);
+  }
+
+  .board[data-variant='tripeaks'] .board__slot-field {
+    gap: calc(var(--card-h) * -0.52);
+  }
+
+  .board__slot-toolbar {
+    gap: calc(var(--card-w) * 0.14);
+    margin-bottom: 2px;
+  }
+}
+
+@media (max-width: 420px) {
+  .board[data-variant='tripeaks'] {
+    --slot-gap-ratio: 0.02;
+  }
+
+  .board[data-variant='tripeaks'] .board__slot-field {
+    gap: calc(var(--card-h) * -0.55);
+  }
+}
+
+@supports not (width: 1cqi) {
+  .board--slots,
+  .board[data-variant='pyramid'],
+  .board[data-variant='tripeaks'] {
+    --card-w: min(
+      72px,
+      max(
+        22px,
+        calc(
+          (100vw - 24px) /
+            (var(--slot-cols) + (var(--slot-cols) - 1) * var(--slot-gap-ratio))
+        )
+      )
+    );
   }
 }
