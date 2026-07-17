@@ -12,10 +12,20 @@
     'stock waste gap foundation-0 foundation-1 foundation-2 foundation-3'
     'tableau-0 tableau-1 tableau-2 tableau-3 tableau-4 tableau-5 tableau-6';
   row-gap: var(--row-gap);
-  /* Size cards to the felt container, not the full viewport */
+  /*
+   * Fit felt width and height. --card-h-budget ≈ stock row + gap +
+   * enough tableau peeks to stay playable in short landscape viewports.
+   */
+  --card-h-budget: 4.4;
   --card-w: min(
     var(--card-w-max),
-    max(var(--card-w-min), calc(100cqi / var(--card-w-divisor)))
+    max(
+      var(--card-w-min),
+      min(
+        calc(100cqi / var(--card-w-divisor)),
+        calc(100cqh * var(--card-aspect) / var(--card-h-budget))
+      )
+    )
   );
   box-sizing: border-box;
   min-height: 100%;
@@ -475,7 +485,13 @@ html[data-four-color='true'] .card-view__inner:not(.card-view__inner--four-color
   .board {
     --card-w: min(
       var(--card-w-max),
-      max(var(--card-w-min), calc(100vw / var(--card-w-divisor)))
+      max(
+        var(--card-w-min),
+        min(
+          calc(100vw / var(--card-w-divisor)),
+          calc(100vh * var(--card-aspect) / var(--card-h-budget))
+        )
+      )
     );
   }
 }
@@ -494,14 +510,19 @@ html[data-four-color='true'] .card-view__inner:not(.card-view__inner--four-color
   /* Fit the widest row: Pyramid 7, TriPeaks 10 */
   --slot-cols: 7;
   --slot-gap-ratio: 0.06;
+  /* Toolbar (~1) + overlapped rows (~3) */
+  --card-h-budget: 4.2;
   --board-pad: max(4px, calc(var(--card-w) * 0.06));
   --card-w: min(
     72px,
     max(
       28px,
-      calc(
-        (100cqi - 2 * 6px) /
-          (var(--slot-cols) + (var(--slot-cols) - 1) * var(--slot-gap-ratio))
+      min(
+        calc(
+          (100cqi - 2 * 6px) /
+            (var(--slot-cols) + (var(--slot-cols) - 1) * var(--slot-gap-ratio))
+        ),
+        calc(100cqh * var(--card-aspect) / var(--card-h-budget))
       )
     )
   );
@@ -583,14 +604,18 @@ html[data-four-color='true'] .card-view__inner:not(.card-view__inner--four-color
     padding-inline: 4px;
     padding-block: 6px;
     gap: 4px;
-    /* Prefer fitting width over a large min size on phones */
+    --card-h-budget: 4;
+    /* Fit width and height; landscape phones need the height cap */
     --card-w: min(
       52px,
       max(
         22px,
-        calc(
-          (100cqi - 8px) /
-            (var(--slot-cols) + (var(--slot-cols) - 1) * var(--slot-gap-ratio))
+        min(
+          calc(
+            (100cqi - 8px) /
+              (var(--slot-cols) + (var(--slot-cols) - 1) * var(--slot-gap-ratio))
+          ),
+          calc(100cqh * var(--card-aspect) / var(--card-h-budget))
         )
       )
     );
@@ -598,7 +623,11 @@ html[data-four-color='true'] .card-view__inner:not(.card-view__inner--four-color
 
   .board[data-variant='tripeaks'] {
     --slot-gap-ratio: 0.03;
-    /* Extra vertical tuck so toolbar + 4 rows fit short viewports */
+    --card-h-budget: 3.6;
+  }
+
+  .board[data-variant='pyramid'] {
+    --card-h-budget: 4.1;
   }
 
   .board__slot-field {
@@ -633,11 +662,44 @@ html[data-four-color='true'] .card-view__inner:not(.card-view__inner--four-color
       72px,
       max(
         22px,
-        calc(
-          (100vw - 24px) /
-            (var(--slot-cols) + (var(--slot-cols) - 1) * var(--slot-gap-ratio))
+        min(
+          calc(
+            (100vw - 24px) /
+              (var(--slot-cols) + (var(--slot-cols) - 1) * var(--slot-gap-ratio))
+          ),
+          calc(100vh * var(--card-aspect) / var(--card-h-budget))
         )
       )
     );
+  }
+}
+
+@media (orientation: landscape) and (max-height: 560px) {
+  .board {
+    --card-h-budget: 3.6;
+  }
+
+  .board--slots,
+  .board[data-variant='pyramid'],
+  .board[data-variant='tripeaks'] {
+    padding-block: 2px;
+    gap: 2px;
+    --card-h-budget: 3.5;
+  }
+
+  .board[data-variant='tripeaks'] {
+    --card-h-budget: 3.2;
+  }
+
+  .board__slot-field {
+    gap: calc(var(--card-h) * -0.56);
+  }
+
+  .board[data-variant='tripeaks'] .board__slot-field {
+    gap: calc(var(--card-h) * -0.58);
+  }
+
+  .board__slot-toolbar {
+    margin-bottom: 0;
   }
 }

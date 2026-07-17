@@ -199,6 +199,23 @@
   }
 }
 
+/* Short landscape: allow smaller cards so height fit can win */
+@media (orientation: landscape) and (max-height: 560px) {
+  :root {
+    --card-w-min: 22px;
+    --card-w-max: 56px;
+    --overlap-faceup-ratio: 0.24;
+    --overlap-facedown-ratio: 0.09;
+    --row-gap-ratio: 0.12;
+    --board-pad-ratio: 0.04;
+  }
+  [data-variant='spider'] {
+    --card-w-min: 18px;
+    --gap-x-ratio: 0.04;
+    --board-pad-ratio: 0.03;
+  }
+}
+
 /* Felt color options (Options dialog) */
 [data-felt='green'] {
   --baize-center: #1c9350;

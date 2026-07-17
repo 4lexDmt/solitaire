@@ -648,7 +648,7 @@ export function AppShell() {
                 <span>♣</span>
               </div>
               <div style={{ fontSize: 11, color: '#333', marginBottom: 6 }}>
-                Classic solitaire — Solitaire · FreeCell · Spider — v3.1
+                Classic solitaire — five games, one desktop — v3.2
               </div>
               <div className="win95-boot__bar">
                 <div className="win95-boot__fill" style={{ width: `${bootPct}%` }} />
@@ -786,7 +786,7 @@ export function AppShell() {
                   AEVANOR
                 </div>
                 <div style={{ fontSize: 12, margin: '6px 0 14px' }}>
-                  Solitaire Collection — Version 3.1
+                  Solitaire Collection — Version 3.2
                 </div>
                 <div style={{ display: 'flex', gap: 6, justifyContent: 'center', marginBottom: 14, fontSize: 22 }}>
                   <span>♠</span>
